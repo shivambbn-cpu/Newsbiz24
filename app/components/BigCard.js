@@ -1,15 +1,21 @@
 "use client";
 
-import Link from "next/link";
+export default function BigPostCard({ post, onSelectPost }) {
+  if (!post) return <p>Loading big card...</p>;
 
-export default function BigCard({ post }) {
   return (
-    <Link href={`/post/${post.slug}`} className="big-card">
-      <img src={post.image} className="big-img" />
-      <div className="big-info">
+    <div className="big-card post-card" onClick={() => onSelectPost(post)}>
+      <img src={post.image} alt={post.title} className="big-img" />
+
+      <div className="big-details">
         <h2>{post.title}</h2>
-        <p>{post.short}</p>
+
+        <p>{(post.content || "").substring(0, 150)}...</p>
+
+        <small>
+          {new Date(post.date).toLocaleDateString("en-IN")}
+        </small>
       </div>
-    </Link>
+    </div>
   );
-  }
+}
