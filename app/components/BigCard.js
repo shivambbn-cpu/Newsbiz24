@@ -13,7 +13,12 @@ export default function BigPostCard({ post, onSelectPost }) {
         <p>{(post.content || "").substring(0, 150)}...</p>
 
         <small>
-          {new Date(post.date).toLocaleDateString("en-IN")}
+          Posted on :{" "}
+          {new Date(post.date).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}
         </small>
       </div>
     </div>
