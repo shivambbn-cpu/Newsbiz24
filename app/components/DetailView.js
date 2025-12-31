@@ -1,24 +1,37 @@
 "use client";
 
-export default function DetailView() {
+export default function DetailView({ post, onClose }) {
+  if (!post) return null;
+
   return (
-    <div id="detail-view" style={{ display: "none" }}>
-      <div id="blog-detail-card" className="blog-detail-card">
-        <img id="detail-image" className="detail-img" />
-        <h1 id="detail-title"></h1>
-        <div id="detail-content" className="detail-content"></div>
+    <div className="detail-view">
+      <button className="back-btn" onClick={onClose}>
+        ← Back
+      </button>
+
+      <div className="blog-detail-card">
+        <img
+          src={post.image}
+          alt={post.title}
+          className="detail-img"
+        />
+
+        <h1>{post.title}</h1>
 
         <p className="detail-date">
-          Posted on : <span id="detail-date"></span>
+          <strong>
+            Posted on :{" "}
+            {new Date(post.date).toLocaleDateString("en-IN", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}
+          </strong>
         </p>
-      </div>
 
-      <h3>Related Posts</h3>
-      <div id="related-posts" className="related-posts-section"></div>
-
-      <div className="latest-section">
-        <h3>Latest Posts</h3>
-        <div id="latest-posts"></div>
+        <div className="detail-content">
+          {post.content}
+        </div>
       </div>
     </div>
   );
