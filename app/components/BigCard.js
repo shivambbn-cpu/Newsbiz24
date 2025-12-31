@@ -10,7 +10,13 @@ export default function BigPostCard({ post, onSelectPost }) {
       <div className="big-details">
         <h2>{post.title}</h2>
 
-        <p>{(post.content || "").substring(0, 150)}...</p>
+        {/* Content with <br> support */}
+        <div
+          className="big-content"
+          dangerouslySetInnerHTML={{
+            __html: (post.content || "").substring(0, 150) + "...",
+          }}
+        ></div>
 
         <small>
           <strong>
