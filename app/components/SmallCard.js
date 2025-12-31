@@ -13,7 +13,7 @@ export default function SmallPostCard({ post, onSelectPost }) {
           className="small-content"
           dangerouslySetInnerHTML={{
             __html:
-              ((post.content || "").substring(0, 80) + "...").replace(
+              ((post.content || "").substring(0, 30) + "...").replace(
                 /\n/g,
                 "<br>"
               ),
