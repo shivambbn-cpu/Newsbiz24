@@ -2,29 +2,21 @@
 
 export default function SmallPostCard({ post, onSelectPost }) {
   return (
-    <div
-      className="small-card post-card"
-      onClick={() => onSelectPost(post)}
-    >
-      {/* IMAGE */}
-      <img
-        src={post.image}
-        alt={post.title}
-        className="small-img"
-      />
+    <div className="small-card post-card" onClick={() => onSelectPost(post)}>
+      <img src={post.image} alt={post.title} className="small-img" />
 
-      {/* TEXT BLOCK */}
       <div>
         <h4>{post.title}</h4>
 
-        {/* CONTENT */}
-        <p>
-          {(post.content || "").substring(0, 100)}...
-        </p>
+        <p>{(post.content || "").substring(0, 80)}...</p>
 
-        {/* DATE */}
         <small>
-          {new Date(post.date).toLocaleDateString("en-IN")}
+          Posted on :{" "}
+          {new Date(post.date).toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          })}
         </small>
       </div>
     </div>
