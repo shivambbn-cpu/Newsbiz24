@@ -5,9 +5,9 @@ import { useEffect } from "react";
 export default function DetailView({ post, onClose }) {
   if (!post) return null;
 
-  // 🔥 Scroll to top when detail opens
+  // 🔥 Scroll instantly to top when detail opens
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo(0, 0); // instant top
   }, [post]);
 
   return (
