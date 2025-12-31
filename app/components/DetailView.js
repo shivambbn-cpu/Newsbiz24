@@ -10,18 +10,16 @@ export default function DetailView({ post, onClose }) {
         ← Back
       </button>
 
+      {/* Blog detail card */}
       <div className="blog-detail-card">
-        <img src={post.image} alt={post.title} className="detail-img" />
+        <img
+          src={post.image}
+          alt={post.title}
+          className="detail-img"
+        />
 
         <h1>{post.title}</h1>
 
-        {/* Content with <br> and <strong> support */}
-        <div
-          className="detail-content"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        ></div>
-
-        {/* Date at the very end */}
         <p className="detail-date">
           <strong>
             Posted on :{" "}
@@ -32,6 +30,22 @@ export default function DetailView({ post, onClose }) {
             })}
           </strong>
         </p>
+
+        {/* Content with HTML / <br> support */}
+        <div
+          className="detail-content"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        ></div>
+      </div>
+
+      {/* Related posts */}
+      <h3>Related Posts</h3>
+      <div id="related-posts" className="related-posts-section"></div>
+
+      {/* Latest posts */}
+      <div className="latest-section">
+        <h3>Latest Posts</h3>
+        <div id="latest-posts"></div>
       </div>
     </div>
   );
