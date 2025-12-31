@@ -6,7 +6,7 @@ import SideMenu from "./components/SideMenu";
 import HomeView from "./components/HomeView";
 import DetailView from "./components/DetailView";
 import Footer from "./components/Footer";
-import { db } from "@/lib/firebase";
+import { db } from "../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 export default function HomePage() {
