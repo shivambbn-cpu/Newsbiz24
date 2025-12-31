@@ -6,55 +6,33 @@ import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 export default function PostDetail({ params }) {
-  const slug = decodeURIComponent(params.slug.trim()); // Hindi & English safe
+  const slug = decodeURIComponent(params.slug.trim());
   const categories = [
-    "astro",
-    "health",
-    "news",
-    "religious",
-    "weather",
-    "trending",
-    "lifestyles",
-    "business",
+    "astro","religious","health","business","news",
+    "trending","lifestyles","weather"
   ];
 
   const [post, setPost] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function fetchPost() {
-      let found = null;
-
-      // Loop through categories
-      for (const category of categories) {
-        try {
-          const q = query(collection(db, category), where("slug", "==", slug));
-          const snap = await getDocs(q);
-
-          if (!snap.empty) {
-            found = { id: snap.docs[0].id, ...snap.docs[0].data(), category };
-            break;
-          }
-        } catch (err) {
-          console.error("Firestore query error:", err);
+    async function openBlogBySlug() {
+      for (const cat of categories) {
+        const q = query(collection(db, cat), where("slug","==",slug));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const d = snap.docs[0];
+          setPost({ id: d.id, ...d.data(), category: cat });
+          return;
         }
       }
-
-      if (isMounted) {
-        setPost(found);
-        setLoading(false);
-      }
+      console.warn("No post found for slug:", slug);
+      // fallback: go to home
+      window.history.pushState({ page: "home" }, "", "/");
+      // showHomeView();  // tumhare previous function
     }
-
-    fetchPost();
-
-    return () => { isMounted = false; };
+    openBlogBySlug();
   }, [slug]);
 
-  if (loading) return <p>Loading...</p>;
-  if (!post) return <p>Post not found</p>;
-
-  return <DetailView post={post} onClose={() => {}} />;
+  if (!post) return <p>Loading...</p>;
+  return <DetailView post={post} onClose={() => window.history.back()} />;
 }
