@@ -1,32 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import SideMenu from "./components/SideMenu";
 import HomeView from "./components/HomeView";
 import DetailView from "./components/DetailView";
 import Footer from "./components/Footer";
+import { db } from "@/lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
+  const DEFAULT_CATEGORY = "astro";
 
   useEffect(() => {
-    async function fetchPosts() {
+    const fetchPosts = async () => {
       try {
-        // Example: Load posts from 'astro' category
-        const snapshot = await getDocs(collection(db, "astro"));
-        const loadedPosts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setPosts(loadedPosts);
+        const colRef = collection(db, DEFAULT_CATEGORY);
+        const snapshot = await getDocs(colRef);
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        data.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setPosts(data);
       } catch (err) {
-        console.error("Error fetching posts:", err);
+        console.error("Error loading posts:", err);
       }
-    }
+    };
+
     fetchPosts();
   }, []);
+
+  const openDetail = (post) => setSelectedPost(post);
+  const closeDetail = () => setSelectedPost(null);
+
+  // Split posts into BigCard (first) and SmallCards (rest)
+  const bigCard = posts[0];
+  const smallCards = posts.slice(1, 10); // next 9 posts as small cards
 
   return (
     <>
@@ -34,14 +43,18 @@ export default function HomePage() {
       <SideMenu />
 
       <div className="content-wrapper">
-        {/* HomeView को posts भेजें */}
-        <HomeView posts={posts} onSelectPost={setSelectedPost} />
-
-        {/* DetailView को selectedPost भेजें */}
-        <DetailView post={selectedPost} />
+        {!selectedPost ? (
+          <HomeView
+            bigCard={bigCard}
+            smallCards={smallCards}
+            onSelectPost={openDetail}
+          />
+        ) : (
+          <DetailView post={selectedPost} onClose={closeDetail} />
+        )}
       </div>
 
       <Footer />
     </>
   );
-}
+    }
