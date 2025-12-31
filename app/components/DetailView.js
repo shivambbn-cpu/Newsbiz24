@@ -2,43 +2,48 @@
 
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs, orderBy, limit } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+  limit,
+} from "firebase/firestore";
 import RelatedPosts from "./RelatedPosts";
 
 export default function DetailView({ post, onClose }) {
   const [relatedPosts, setRelatedPosts] = useState([]);
 
-  if (!post) return null;
+  if (!post || !post.category) return null;
 
-  /* 🔹 Scroll top */
+  /* 🔹 Top scroll */
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [post]);
 
   /* 🔹 Mobile back + ESC */
   useEffect(() => {
-    window.history.pushState(null, document.title);
+    window.history.pushState(null, "");
 
-    const pop = () => onClose && onClose();
-    const esc = (e) => e.key === "Escape" && onClose && onClose();
+    const onBack = () => onClose && onClose();
+    const onEsc = (e) => e.key === "Escape" && onClose && onClose();
 
-    window.addEventListener("popstate", pop);
-    window.addEventListener("keydown", esc);
+    window.addEventListener("popstate", onBack);
+    window.addEventListener("keydown", onEsc);
 
     return () => {
-      window.removeEventListener("popstate", pop);
-      window.removeEventListener("keydown", esc);
+      window.removeEventListener("popstate", onBack);
+      window.removeEventListener("keydown", onEsc);
     };
   }, [onClose]);
 
-  /* 🔥 FETCH RELATED POSTS (MAIN FIX) */
+  /* 🔥 FETCH RELATED POSTS (SAME CATEGORY ONLY) */
   useEffect(() => {
-    if (!post?.category) return;
-
     const loadRelated = async () => {
       try {
         const q = query(
-          collection(db, post.category),
+          collection(db, post.category), // ✅ SAME CATEGORY
           where("slug", "!=", post.slug),
           orderBy("slug"),
           orderBy("date", "desc"),
@@ -46,14 +51,16 @@ export default function DetailView({ post, onClose }) {
         );
 
         const snap = await getDocs(q);
-        const data = snap.docs.map(d => ({
+
+        const data = snap.docs.map((d) => ({
           id: d.id,
           ...d.data(),
+          category: post.category,
         }));
 
         setRelatedPosts(data);
-      } catch (e) {
-        console.error("Related post error", e);
+      } catch (err) {
+        console.error("❌ Related posts error", err);
       }
     };
 
@@ -84,7 +91,7 @@ export default function DetailView({ post, onClose }) {
         </p>
       </div>
 
-      {/* ✅ RELATED POSTS FINALLY SHOW */}
+      {/* ✅ SAME CATEGORY RELATED POSTS */}
       <RelatedPosts posts={relatedPosts} />
     </div>
   );
