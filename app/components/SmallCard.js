@@ -17,14 +17,27 @@ export default function SmallPostCard({ post, onSelectPost }) {
       <div>
         <h4>{post.title}</h4>
 
-        {/* CONTENT */}
-        <p>
-          {(post.content || "").substring(0, 100)}...
-        </p>
+        {/* CONTENT with <br> and <strong> support */}
+        <div
+          className="small-content"
+          dangerouslySetInnerHTML={{
+            __html: ((post.content || "").substring(0, 100) + "...").replace(
+              /\n/g,
+              "<br>"
+            ),
+          }}
+        ></div>
 
         {/* DATE */}
         <small>
-          {new Date(post.date).toLocaleDateString("en-IN")}
+          <strong>
+            Posted on :{" "}
+            {new Date(post.date).toLocaleDateString("en-IN", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}
+          </strong>
         </small>
       </div>
     </div>
