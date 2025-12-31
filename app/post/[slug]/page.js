@@ -1,56 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "../../../lib/firebase";
-import Header from "../../components/Header";
-import RelatedPosts from "../../components/RelatedPosts";
+import DetailView from "@/components/DetailView";
+import { db } from "@/lib/firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
-export default function BlogDetail({ params }) {
-  const { slug } = params;
+export default function PostDetail({ params }) {
+  const slug = decodeURIComponent(params.slug); // Hindi / English safe
+  const categories = [
+    "astro",
+    "health",
+    "news",
+    "religious",
+    "weather",
+    "trending",
+    "lifestyles",
+    "business",
+  ];
+
   const [post, setPost] = useState(null);
-  const [allPosts, setAllPosts] = useState([]);
 
   useEffect(() => {
     async function loadPost() {
-      const q = query(collection(db, "posts"), where("slug", "==", slug));
-      const snap = await getDocs(q);
-      snap.forEach((d) => setPost({ id: d.id, ...d.data() }));
-    }
-    loadPost();
+      let found = null;
 
-    async function loadAll() {
-      const snap = await getDocs(collection(db, "posts"));
-      setAllPosts(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      for (const category of categories) {
+        const q = query(collection(db, category), where("slug", "==", slug));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          found = { id: snap.docs[0].id, ...snap.docs[0].data(), category };
+          break;
+        }
+      }
+
+      setPost(found);
     }
-    loadAll();
+
+    loadPost();
   }, [slug]);
 
   if (!post) return <p>Loading...</p>;
 
-  const related = allPosts
-    .filter((p) => p.category === post.category && p.slug !== slug)
-    .slice(0, 5);
-
-  return (
-    <>
-      <Header />
-
-      <main className="detail-container">
-        <h1>{post.title}</h1>
-        <p className="meta">
-          {post.author} · {post.date}
-        </p>
-
-        <img src={post.image} alt="" className="detail-img" />
-
-        <div
-          className="detail-content"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        ></div>
-
-        <RelatedPosts posts={related} />
-      </main>
-    </>
-  );
-      }
+  return <DetailView post={post} onClose={() => {}} />;
+}
