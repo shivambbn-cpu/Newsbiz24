@@ -1,7 +1,7 @@
 "use client";
 
-import BigPostCard from "./BigPostCard";
-import SmallPostCard from "./SmallPostCard";
+import BigPostCard from "./BigCard";
+import SmallPostCard from "./SmallCard";
 
 export default function HomeView({ bigCard, smallCards, onSelectPost }) {
   return (
