@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
-import { db } from "../../../lib/firebase";
+import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 
 export default function DetailView({ post, onClose }) {
@@ -11,12 +11,12 @@ export default function DetailView({ post, onClose }) {
 
   if (!post) return null;
 
-  // 🔹 Scroll to top on detail open
+  // Scroll top
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [post]);
 
-  // 🔹 Mobile back button + ESC key
+  // Back + Escape
   useEffect(() => {
     window.history.pushState(null, document.title);
 
@@ -32,33 +32,30 @@ export default function DetailView({ post, onClose }) {
     };
   }, [onClose]);
 
-  // 🔹 WhatsApp floating button
+  // WhatsApp button (unchanged)
   useEffect(() => {
     let btn = document.getElementById("whatsapp-float-btn");
     const postUrl = `${window.location.origin}/post/${post.slug}`;
-    const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(post.title + " " + postUrl)}`;
+    const whatsappUrl =
+      `whatsapp://send?text=${encodeURIComponent(post.title + " " + postUrl)}`;
 
     if (!btn) {
       btn = document.createElement("a");
       btn.id = "whatsapp-float-btn";
       btn.target = "_blank";
-      btn.innerHTML = `<img src="https://i.ibb.co/qLnXkgVb/9d22c9bbafc5d6cde2858c982c3cb6e5.jpg" style="width:100%;height:100%;border-radius:30%;">`;
+      btn.innerHTML =
+        `<img src="https://i.ibb.co/qLnXkgVb/9d22c9bbafc5d6cde2858c982c3cb6e5.jpg"
+        style="width:100%;height:100%;border-radius:30%;">`;
 
       const size = window.innerWidth <= 768 ? 50 : 72;
       btn.style.cssText = `
-        position:fixed;
-        top:75%;
-        right:20px;
+        position:fixed; top:75%; right:20px;
         transform:translateY(-50%);
-        width:${size}px;
-        height:${size}px;
-        background:white;
-        border-radius:30%;
+        width:${size}px; height:${size}px;
+        background:white; border-radius:30%;
         box-shadow:0 4px 8px rgba(0,0,0,0.25);
-        z-index:9999;
-        display:flex;
-        align-items:center;
-        justify-content:center;
+        z-index:9999; display:flex;
+        align-items:center; justify-content:center;
       `;
       document.body.appendChild(btn);
     }
@@ -66,25 +63,21 @@ export default function DetailView({ post, onClose }) {
     btn.href = whatsappUrl;
     btn.style.display = "flex";
 
-    return () => {
-      if (btn) btn.style.display = "none";
-    };
+    return () => { if (btn) btn.style.display = "none"; };
   }, [post]);
 
-  // 🔹 Fetch related posts (same category, exclude current post, 8 latest)
+  // ðŸ”¥ Fetch related posts
   useEffect(() => {
     async function fetchRelated() {
-      try {
-        const snap = await getDocs(collection(db, post.category));
-        const data = snap.docs
-          .map(d => ({ id: d.id, ...d.data() }))
-          .filter(p => p.slug !== post.slug)
-          .sort((a, b) => new Date(b.date) - new Date(a.date))
-          .slice(0, 8);
-        setRelatedPosts(data);
-      } catch (err) {
-        console.error("Error fetching related posts:", err);
-      }
+      const snap = await getDocs(collection(db, post.category));
+
+      const data = snap.docs
+        .map(d => ({ id: d.id, ...d.data() }))
+        .filter(p => p.slug !== post.slug)
+        .sort((a, b) => new Date(b.date) - new Date(a.date))
+        .slice(0, 8);
+
+      setRelatedPosts(data);
     }
 
     fetchRelated();
@@ -113,16 +106,18 @@ export default function DetailView({ post, onClose }) {
         </p>
       </div>
 
-      {/* 🔥 RELATED POSTS with CSS applied */}
+      {/* ðŸ”¥ RELATED POSTS â€“ Screenshot style */}
       {relatedPosts.length > 0 && (
-        <div id="related-posts">
+        <div className="related-list">
           <h3>Related Posts</h3>
 
-          {relatedPosts.map((p) => (
+          {relatedPosts.map(p => (
             <div
               key={p.id}
-              className="related-title"
-              onClick={() => router.push(`/post/${encodeURIComponent(p.slug)}`)}
+              className="related-item"
+              onClick={() =>
+                router.push(`/post/${encodeURIComponent(p.slug)}`)
+              }
             >
               {p.title}
             </div>
