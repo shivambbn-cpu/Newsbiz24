@@ -5,19 +5,23 @@ export default function DetailView({ post, onClose }) {
 
   return (
     <div className="detail-view">
+      {/* Back button */}
       <button className="back-btn" onClick={onClose}>
-        â† Back
+        ← Back
       </button>
 
       <div className="blog-detail-card">
-        <img
-          src={post.image}
-          alt={post.title}
-          className="detail-img"
-        />
+        <img src={post.image} alt={post.title} className="detail-img" />
 
         <h1>{post.title}</h1>
 
+        {/* Content with <br> and <strong> support */}
+        <div
+          className="detail-content"
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        ></div>
+
+        {/* Date at the very end */}
         <p className="detail-date">
           <strong>
             Posted on :{" "}
@@ -28,10 +32,6 @@ export default function DetailView({ post, onClose }) {
             })}
           </strong>
         </p>
-
-        <div className="detail-content">
-          {post.content}
-        </div>
       </div>
     </div>
   );
