@@ -31,4 +31,4 @@ className="small-img"
 
 );
 }
-Iske jaise same rahe aur <br> and <strong> support kare code do
+
