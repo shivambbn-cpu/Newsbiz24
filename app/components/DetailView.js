@@ -5,30 +5,49 @@ import { useEffect } from "react";
 export default function DetailView({ post, onClose }) {
   if (!post) return null;
 
-  // 🔥 Scroll instantly to top when detail opens
+  // 🔹 Scroll instantly to top when detail opens
   useEffect(() => {
-    window.scrollTo(0, 0); // instant top
+    window.scrollTo(0, 0);
   }, [post]);
+
+  // 🔹 Handle mobile back button and Escape key
+  useEffect(() => {
+    // Push new state to history so back button can be detected
+    window.history.pushState(null, document.title);
+
+    const handlePopState = () => {
+      // Mobile back button pressed
+      if (onClose) onClose();
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        // Escape key pressed
+        if (onClose) onClose();
+      }
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   return (
     <div className="detail-view">
-      {/* Back button */}
-      <button className="back-btn" onClick={onClose}>
-        ← Back
-      </button>
-
       <div className="blog-detail-card">
         <img src={post.image} alt={post.title} className="detail-img" />
 
         <h1>{post.title}</h1>
 
-        {/* Content with <br> and <strong> support */}
         <div
           className="detail-content"
           dangerouslySetInnerHTML={{ __html: post.content }}
         ></div>
 
-        {/* Date at the very end */}
         <p className="detail-date">
           <strong>
             Posted on :{" "}
