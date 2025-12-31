@@ -1,20 +1,21 @@
 "use client";
 
-import PostCard from "./PostCard";
-
 export default function RelatedPosts({ posts = [] }) {
-  // 🛑 Safety check
-  if (!Array.isArray(posts) || posts.length === 0) return null;
+  if (!posts || posts.length === 0) return null;
 
   return (
-    <section className="related-section">
-      <h2 className="related-title">Related Posts</h2>
+    <div id="related-posts">
+      <h3>Related Posts</h3>
 
-      <div className="related-list">
-        {posts.slice(0, 8).map((p) => (
-          <PostCard key={p.id || p.slug} post={p} />
-        ))}
-      </div>
-    </section>
+      {posts.map((p) => (
+        <div
+          key={p.id}
+          className="related-title"
+          onClick={() => window.location.href = `/post/${p.slug}`}
+        >
+          {p.title}
+        </div>
+      ))}
+    </div>
   );
 }
