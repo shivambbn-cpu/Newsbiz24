@@ -239,10 +239,11 @@ h2 {
     margin-bottom: 15px;
     padding: 10px;
     display: flex;
+    align-items: center;
     cursor: pointer;
 }
 
-/* IMAGE NOT CLICKABLE */
+/* IMAGE */
 .post-img {
     width: 100px;
     height: 70px;
@@ -250,34 +251,37 @@ h2 {
     border-radius: 6px;
     margin-right: 15px;
     pointer-events: none;
+    flex-shrink: 0;
 }
 
-/* DETAILS LAYOUT */
+/* DETAILS */
 .post-details {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
 }
 
+/* TITLE */
 .post-details h3 {
     margin: 0 0 5px 0;
     font-size: 1em;
-    color: #333333;    /* Title color Dark charcoal */
+    color: #333333;
 }
 
+/* CONTENT */
 .post-details p {
     font-size: 0.9em;
-    color: #444444;     /* BEST professional content color Dark grey */
+    color: #444444;
     line-height: 1.5;
 }
 
-.post-details .post-date-info {
+/* DATE */
+.post-date-info {
     font-size: 0.75em;
-    color: #666666;    /* Date color Dark grey */
+    color: #666666;
     margin-top: 5px;
     font-weight: bold;
 }
-
 /* ===========================
 10-  BLOG DETAIL CARD
 =========================== */
