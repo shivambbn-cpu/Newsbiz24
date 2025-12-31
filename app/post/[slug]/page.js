@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { collection, getDocs, query, where } from "firebase/firestore";
-Import { db } from "@/lib/firebase"; 
-
-import Header from "@/app/components/Header";
-import RelatedPosts from "@/app/components/RelatedPosts";
+import { db } from "../../../lib/firebase";
+import Header from "../../components/Header";
+import RelatedPosts from "../../components/RelatedPosts";
 
 export default function BlogDetail({ params }) {
   const { slug } = params;
