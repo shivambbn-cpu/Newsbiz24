@@ -43,7 +43,7 @@ export default function DetailView({ post, onClose }) {
       const size = window.innerWidth <= 768 ? 50 : 72;
       btn.style.cssText = `
         position:fixed;
-        top:65%;
+        top:75%;
         right:20px;
         transform:translateY(-50%);
         width:${size}px;
