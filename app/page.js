@@ -1,8 +1,23 @@
-export default function Home() {
+"use client";
+
+import Header from "./components/Header";
+import SideMenu from "./components/SideMenu";
+import HomeView from "./components/HomeView";
+import DetailView from "./components/DetailView";
+import Footer from "./components/Footer";
+
+export default function HomePage() {
   return (
-    <div>
-      <h1>Newsbiz24 is Live!</h1>
-      <p>Welcome to our news portal.</p>
-    </div>
+    <>
+      <Header />
+      <SideMenu />
+
+      <div className="content-wrapper">
+        <HomeView />
+        <DetailView />
+      </div>
+
+      <Footer />
+    </>
   );
 }
