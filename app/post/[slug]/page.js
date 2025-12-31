@@ -22,13 +22,17 @@ export default function PostDetail({ params }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchPost() {
       let found = null;
 
+      // Loop through categories
       for (const category of categories) {
         try {
           const q = query(collection(db, category), where("slug", "==", slug));
           const snap = await getDocs(q);
+
           if (!snap.empty) {
             found = { id: snap.docs[0].id, ...snap.docs[0].data(), category };
             break;
@@ -38,11 +42,15 @@ export default function PostDetail({ params }) {
         }
       }
 
-      setPost(found);
-      setLoading(false);
+      if (isMounted) {
+        setPost(found);
+        setLoading(false);
+      }
     }
 
     fetchPost();
+
+    return () => { isMounted = false; };
   }, [slug]);
 
   if (loading) return <p>Loading...</p>;
