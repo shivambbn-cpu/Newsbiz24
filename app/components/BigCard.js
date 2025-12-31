@@ -1,7 +1,7 @@
 "use client";
 
 export default function BigPostCard({ post, onSelectPost }) {
-  if (!post) return <p>Loading big card...</p>;
+  if (!post) return null; // ✅ loading text removed
 
   return (
     <div className="big-card post-card" onClick={() => onSelectPost(post)}>
@@ -23,7 +23,6 @@ export default function BigPostCard({ post, onSelectPost }) {
         ></div>
 
         <small>
-          {/* Date with bold */}
           <strong>
             Posted on :{" "}
             {new Date(post.date).toLocaleDateString("en-IN", {
