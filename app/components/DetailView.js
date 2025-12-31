@@ -1,7 +1,14 @@
 "use client";
 
+import { useEffect } from "react";
+
 export default function DetailView({ post, onClose }) {
   if (!post) return null;
+
+  // 🔥 Scroll to top when detail opens
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [post]);
 
   return (
     <div className="detail-view">
