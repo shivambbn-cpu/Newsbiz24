@@ -6,15 +6,20 @@ import SideMenu from "./components/SideMenu";
 import HomeView from "./components/HomeView";
 import DetailView from "./components/DetailView";
 import Footer from "./components/Footer";
+import GlobalSearch from "@/components/GlobalSearch";
+import PostCard from "@/components/PostCard";
 import { db } from "../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
+import { getAllPostsForSearch } from "@/lib/globalSearch";
 
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [currentCategory, setCurrentCategory] = useState("astro"); // ✅ default
+  const [allPosts, setAllPosts] = useState([]); // for GlobalSearch
+  const [showCategory, setShowCategory] = useState("astro"); // search default
 
-  // 🔥 Firestore से posts fetch (category wise)
+  // 🔥 Firestore category wise fetch
   useEffect(() => {
     console.log("🔥 Fetching category:", currentCategory);
 
@@ -25,7 +30,7 @@ export default function HomePage() {
 
         console.log("📄 Docs count:", snapshot.size);
 
-        const data = snapshot.docs.map(doc => ({
+        const data = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
@@ -42,6 +47,11 @@ export default function HomePage() {
     fetchPosts();
   }, [currentCategory]);
 
+  // 🔥 Load all posts for GlobalSearch
+  useEffect(() => {
+    getAllPostsForSearch().then(setAllPosts);
+  }, []);
+
   const openDetail = (post) => setSelectedPost(post);
   const closeDetail = () => setSelectedPost(null);
 
@@ -49,12 +59,18 @@ export default function HomePage() {
   const bigCard = posts[0];
   const smallCards = posts.slice(1, 10);
 
+  // Filter posts for search category
+  const filteredPosts = allPosts.filter((p) => p.category === showCategory);
+
   return (
     <>
       <Header />
 
-      {/* ✅ category callback pass */}
+      {/* ✅ Category callback */}
       <SideMenu onCategorySelect={setCurrentCategory} />
+
+      {/* 🔍 Global Search */}
+      <GlobalSearch onClose={() => setShowCategory("astro")} />
 
       <div className="content-wrapper">
         {!selectedPost ? (
@@ -67,6 +83,15 @@ export default function HomePage() {
           <DetailView post={selectedPost} onClose={closeDetail} />
         )}
       </div>
+
+      {/* Search results below home content */}
+      {showCategory && (
+        <div className="posts-list">
+          {filteredPosts.map((post) => (
+            <PostCard key={post.id} post={post} />
+          ))}
+        </div>
+      )}
 
       <Footer />
     </>
