@@ -1,15 +1,15 @@
 "use client";
 
-import Link from "next/link";
-
-export default function SmallCard({ post }) {
+export default function SmallPostCard({ post, onSelectPost }) {
   return (
-    <Link href={`/post/${post.slug}`} className="small-card">
-      <img src={post.image} className="small-img" />
-      <div>
-        <h4>{post.title}</h4>
-        <p className="meta">{post.date}</p>
-      </div>
-    </Link>
+    <div className="small-card post-card" onClick={() => onSelectPost(post)}>
+      <img src={post.image} alt={post.title} className="small-img" />
+
+      <h4>{post.title}</h4>
+
+      <small>
+        {new Date(post.date).toLocaleDateString("en-IN")}
+      </small>
+    </div>
   );
-  }
+}
