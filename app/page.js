@@ -12,36 +12,49 @@ import { collection, getDocs } from "firebase/firestore";
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
-  const DEFAULT_CATEGORY = "astro";
+  const [currentCategory, setCurrentCategory] = useState("astro"); // ✅ default
 
-  // Firestore से posts fetch करना
+  // 🔥 Firestore से posts fetch (category wise)
   useEffect(() => {
+    console.log("🔥 Fetching category:", currentCategory);
+
     const fetchPosts = async () => {
       try {
-        const colRef = collection(db, DEFAULT_CATEGORY);
+        const colRef = collection(db, currentCategory);
         const snapshot = await getDocs(colRef);
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        data.sort((a, b) => new Date(b.date) - new Date(a.date)); // latest ऊपर
+
+        console.log("📄 Docs count:", snapshot.size);
+
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        data.sort((a, b) => new Date(b.date) - new Date(a.date)); // latest first
+
         setPosts(data);
+        setSelectedPost(null); // category change pe detail close
       } catch (err) {
-        console.error("Error loading posts:", err);
+        console.error("❌ Firestore Error:", err);
       }
     };
 
     fetchPosts();
-  }, []);
+  }, [currentCategory]);
 
   const openDetail = (post) => setSelectedPost(post);
   const closeDetail = () => setSelectedPost(null);
 
-  // BigCard और SmallCards split करना
+  // BigCard और SmallCards split
   const bigCard = posts[0];
-  const smallCards = posts.slice(1, 10); // next 9 posts
+  const smallCards = posts.slice(1, 10);
 
   return (
     <>
       <Header />
-      <SideMenu />
+
+      {/* ✅ category callback pass */}
+      <SideMenu onCategorySelect={setCurrentCategory} />
 
       <div className="content-wrapper">
         {!selectedPost ? (
