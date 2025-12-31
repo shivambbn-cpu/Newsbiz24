@@ -10,15 +10,20 @@ export default function BigPostCard({ post, onSelectPost }) {
       <div className="big-details">
         <h2>{post.title}</h2>
 
-        {/* Content with <br> support */}
+        {/* Content with <br> and <strong> support */}
         <div
           className="big-content"
           dangerouslySetInnerHTML={{
-            __html: (post.content || "").substring(0, 150) + "...",
+            __html:
+              ((post.content || "").substring(0, 150) + "...").replace(
+                /\n/g,
+                "<br>"
+              ),
           }}
         ></div>
 
         <small>
+          {/* Date with bold */}
           <strong>
             Posted on :{" "}
             {new Date(post.date).toLocaleDateString("en-IN", {
