@@ -6,7 +6,7 @@ import { db } from "@/lib/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
 export default function PostDetail({ params }) {
-  const slug = decodeURIComponent(params.slug); // Hindi / English safe
+  const slug = decodeURIComponent(params.slug.trim());
   const categories = [
     "astro",
     "health",
@@ -15,15 +15,15 @@ export default function PostDetail({ params }) {
     "weather",
     "trending",
     "lifestyles",
-    "business",
+    "business"
   ];
 
   const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadPost() {
       let found = null;
-
       for (const category of categories) {
         const q = query(collection(db, category), where("slug", "==", slug));
         const snap = await getDocs(q);
@@ -32,14 +32,14 @@ export default function PostDetail({ params }) {
           break;
         }
       }
-
       setPost(found);
+      setLoading(false);
     }
-
     loadPost();
   }, [slug]);
 
-  if (!post) return <p>Loading...</p>;
+  if (loading) return <p>Loading...</p>;
+  if (!post) return <p>Post not found</p>;
 
   return <DetailView post={post} onClose={() => {}} />;
 }
