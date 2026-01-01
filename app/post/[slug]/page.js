@@ -1,5 +1,5 @@
 import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db } from "../../lib/firebase";
 import HomeView from "@/components/HomeView";
 import Header from "@/components/Header";
 import SideMenu from "@/components/SideMenu";
