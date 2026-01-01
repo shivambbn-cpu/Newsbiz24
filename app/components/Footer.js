@@ -1,6 +1,6 @@
 "use client";
 
-export default function Footer() {
+export default function Footer({ openModal }) {
   return (
     <footer>
       <div className="footer-buttons">
@@ -15,4 +15,4 @@ export default function Footer() {
       </div>
     </footer>
   );
-    }
+}
