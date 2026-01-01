@@ -15,15 +15,14 @@ function BigPostCard({ post, onSelectPost }) {
     <div className="big-card post-card" onClick={handleClick}>
       {/* 🔥 Next.js Image = Turbopack optimized */}
       <Image
-        src={post.image}
-        alt={post.title}
-        width={800}
-        height={450}
-        priority // LCP improve
-        className="big-img"
-      />
-
-      <div className="big-details">
+  src={post.image ? post.image.trim() : ""}
+  alt={post.title}
+  width={800}
+  height={450}
+  priority // LCP improve
+  className="big-img"
+/>
+     <div className="big-details">
         <h2>{post.title}</h2>
 
         {/* ✅ <br> & <strong> supported content */}
