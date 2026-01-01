@@ -1,25 +1,39 @@
 "use client";
-import Link from "next/link";
 
-const categories = [
-  "astro",
-  "religious",
-  "health",
-  "business",
-  "news",
-  "trending",
-  "lifestyles",
-  "weather",
-];
+const CATEGORY_MAP = {
+  Religious: "religious",
+  Weather: "weather",
+  Trending: "trending",
+  Astro: "astro",
+  Business: "business",
+  Health: "health",
+  Lifestyles: "lifestyles",
+  News: "news",
+};
 
-export default function SideMenu() {
+export default function SideMenu({ onCategorySelect }) {
+
+  const closeMenu = () => {
+    document.getElementById("side-menu")?.classList.remove("active");
+    document.getElementById("menu-button")?.classList.remove("open");
+  };
+
+  const handleClick = (label) => {
+    const category = CATEGORY_MAP[label];
+    console.log("ðŸ“‚ Selected Category:", category); // ðŸ” DEBUG
+    onCategorySelect(category);
+    closeMenu();
+  };
+
   return (
-    <aside className="side-menu">
-      {categories.map(cat => (
-        <Link key={cat} href={`/category/${cat}`}>
-          {cat.toUpperCase()}
-        </Link>
-      ))}
-    </aside>
+    <div id="side-menu" className="side-menu">
+      <ul>
+        {Object.keys(CATEGORY_MAP).map((label) => (
+          <li key={label} onClick={() => handleClick(label)}>
+            {label}
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
