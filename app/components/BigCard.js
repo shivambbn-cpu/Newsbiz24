@@ -1,26 +1,41 @@
 "use client";
 
-export default function BigPostCard({ post, onSelectPost }) {
-  if (!post) return null; // ✅ loading text removed
+import Image from "next/image";
+import { memo, useCallback } from "react";
+
+function BigPostCard({ post, onSelectPost }) {
+  if (!post) return null; // ❌ no loading text
+
+  // 🚀 stable click handler (performance boost)
+  const handleClick = useCallback(() => {
+    onSelectPost(post);
+  }, [post, onSelectPost]);
 
   return (
-    <div className="big-card post-card" onClick={() => onSelectPost(post)}>
-      <img src={post.image} alt={post.title} className="big-img" />
+    <div className="big-card post-card" onClick={handleClick}>
+      {/* 🔥 Next.js Image = Turbopack optimized */}
+      <Image
+        src={post.image}
+        alt={post.title}
+        width={800}
+        height={450}
+        priority // LCP improve
+        className="big-img"
+      />
 
       <div className="big-details">
         <h2>{post.title}</h2>
 
-        {/* Content with <br> and <strong> support */}
+        {/* ✅ <br> & <strong> supported content */}
         <div
           className="big-content"
           dangerouslySetInnerHTML={{
             __html:
-              ((post.content || "").substring(0, 150) + "...").replace(
-                /\n/g,
-                "<br>"
-              ),
+              ((post.content || "")
+                .substring(0, 150)
+                .replace(/\n/g, "<br>")) + "...",
           }}
-        ></div>
+        />
 
         <small>
           <strong>
@@ -36,3 +51,9 @@ export default function BigPostCard({ post, onSelectPost }) {
     </div>
   );
 }
+
+/**
+ * 🔥 memo() = unnecessary re-render stop
+ * Turbopack + React 19 ready
+ */
+export default memo(BigPostCard);
