@@ -1,49 +1,72 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
-import Footer from "./components/Footer";
-import HomeView from "./components/HomeView";
 import SideMenu from "./components/SideMenu";
-
+import HomeView from "./components/HomeView";
+import DetailView from "./components/DetailView";
+import Footer from "./components/Footer";
 import { db } from "../lib/firebase";
-import {
-  collection,
-  getDocs,
-  query,
-  orderBy,
-  limit,
-} from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
-// 🔥 ADD 1: ISR cache (NO blank + ultra fast)
-export const revalidate = 60; // 60 sec me data auto update
+export default function HomePage() {
+  const [posts, setPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [currentCategory, setCurrentCategory] = useState("astro"); // ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ default
 
-// 🔥 SERVER COMPONENT (NO "use client")
-export default async function HomePage({ searchParams }) {
-  const category = searchParams?.cat || "astro";
+  // ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â¥ Firestore ÃƒÆ’ Ãƒâ€šÃ‚Â¤Ãƒâ€šÃ‚Â¸ÃƒÆ’ Ãƒâ€šÃ‚Â¥ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¡ posts fetch (category wise)
+  useEffect(() => {
+    console.log("ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â¥ Fetching category:", currentCategory);
 
-  const q = query(
-    collection(db, category),
-    orderBy("date", "desc"),
-    limit(10)
-  );
+    const fetchPosts = async () => {
+      try {
+        const colRef = collection(db, currentCategory);
+        const snapshot = await getDocs(colRef);
 
-  const snapshot = await getDocs(q);
+        console.log("ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾ Docs count:", snapshot.size);
 
-  const posts = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-  const bigCard = posts[0] ?? null;
-  const smallCards = posts.slice(1);
+        data.sort((a, b) => new Date(b.date) - new Date(a.date)); // latest first
+
+        setPosts(data);
+        setSelectedPost(null); // category change pe detail close
+      } catch (err) {
+        console.error("ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€¦Ã¢â‚¬â„¢ Firestore Error:", err);
+      }
+    };
+
+    fetchPosts();
+  }, [currentCategory]);
+
+  const openDetail = (post) => setSelectedPost(post);
+  const closeDetail = () => setSelectedPost(null);
+
+  // BigCard ÃƒÆ’ Ãƒâ€šÃ‚Â¤ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÆ’ Ãƒâ€šÃ‚Â¤Ãƒâ€šÃ‚Â° SmallCards split
+  const bigCard = posts[0];
+  const smallCards = posts.slice(1, 10);
 
   return (
     <>
       <Header />
 
-      {/* client component */}
-      <SideMenu currentCategory={category} />
+      {/* ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ category callback pass */}
+      <SideMenu onCategorySelect={setCurrentCategory} />
 
-      {/* 🔥 HTML server se hi ready */}
-      <HomeView bigCard={bigCard} smallCards={smallCards} />
+      <div className="content-wrapper">
+        {!selectedPost ? (
+          <HomeView
+            bigCard={bigCard}
+            smallCards={smallCards}
+            onSelectPost={openDetail}
+          />
+        ) : (
+          <DetailView post={selectedPost} onClose={closeDetail} />
+        )}
+      </div>
 
       <Footer />
     </>
