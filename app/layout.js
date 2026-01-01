@@ -1,3 +1,6 @@
+import "./globals.css";
+import Footer from "@/components/Footer";
+
 export const metadata = {
   title: "News Biz 24",
   description:
@@ -11,17 +14,22 @@ export const metadata = {
     url: "https://newsbiz24.in",
     images: ["about:blank"],
   },
+
   twitter: {
     card: "summary",
   },
 };
 
-import "./globals.css";
-
 export default function RootLayout({ children }) {
   return (
     <html lang="hi">
-      <body>{children}</body>
+      <body>
+        {/* PAGE CONTENT */}
+        {children}
+
+        {/* ALWAYS AT BOTTOM */}
+        <Footer />
+      </body>
     </html>
   );
 }
