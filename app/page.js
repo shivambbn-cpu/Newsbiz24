@@ -5,70 +5,78 @@ import Header from "./components/Header";
 import SideMenu from "./components/SideMenu";
 import HomeView from "./components/HomeView";
 import DetailView from "./components/DetailView";
-import Footer from "./components/Footer";
+import Footer from "./components/Footer"; 
 import { db } from "../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true); 
   const [selectedPost, setSelectedPost] = useState(null);
-  const [currentCategory, setCurrentCategory] = useState("astro"); // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ default
+  const [currentCategory, setCurrentCategory] = useState("astro");
 
-  // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¥ Firestore ÃƒÆ’Ã†â€™ ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¥ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ posts fetch (category wise)
   useEffect(() => {
-    console.log("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¥ Fetching category:", currentCategory);
-
     const fetchPosts = async () => {
+      setLoading(true);
       try {
         const colRef = collection(db, currentCategory);
         const snapshot = await getDocs(colRef);
-
-        console.log("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ Docs count:", snapshot.size);
-
-        const data = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        data.sort((a, b) => new Date(b.date) - new Date(a.date)); // latest first
-
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        data.sort((a, b) => new Date(b.date) - new Date(a.date));
         setPosts(data);
-        setSelectedPost(null); // category change pe detail close
       } catch (err) {
-        console.error("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Firestore Error:", err);
+        console.error("Firestore Error:", err);
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchPosts();
   }, [currentCategory]);
 
-  const openDetail = (post) => setSelectedPost(post);
-  const closeDetail = () => setSelectedPost(null);
-
-  // BigCard ÃƒÆ’Ã†â€™ ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™ ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° SmallCards split
-  const bigCard = posts[0];
-  const smallCards = posts.slice(1, 10);
-
   return (
-    <>
+    /* Yeh structure footer ko hamesha niche rakhega */
+    <div style={{ 
+      display: "grid", 
+      gridTemplateRows: "auto 1fr auto", 
+      minHeight: "100vh",
+      width: "100%" 
+    }}>
+      
+      {/* 1. TOP: Header */}
       <Header />
-
-      {/* ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ category callback pass */}
+      
       <SideMenu onCategorySelect={setCurrentCategory} />
 
-      <div className="content-wrapper">
-        {!selectedPost ? (
-          <HomeView
-            bigCard={bigCard}
-            smallCards={smallCards}
-            onSelectPost={openDetail}
-          />
+      {/* 2. MIDDLE: Content (Yeh area bachi hui sari jagah lega) */}
+      <main style={{ width: "100%" }}>
+        {loading ? (
+          <div style={{ 
+            height: "60vh", 
+            display: "flex", 
+            justifyContent: "center", 
+            alignItems: "center",
+            fontSize: "1.2rem" 
+          }}>
+            Loading posts...
+          </div>
         ) : (
-          <DetailView post={selectedPost} onClose={closeDetail} />
+          <div className="content-wrapper">
+            {!selectedPost ? (
+              <HomeView
+                bigCard={posts[0]}
+                smallCards={posts.slice(1, 10)}
+                onSelectPost={setSelectedPost}
+              />
+            ) : (
+              <DetailView post={selectedPost} onClose={() => setSelectedPost(null)} />
+            )}
+          </div>
         )}
-      </div>
+      </main>
 
-      <Footer />
-    </>
+      {/* 3. BOTTOM: Footer (Hamesha aakhir mein) */}
+      {!loading && <Footer />}
+      
+    </div>
   );
 }
