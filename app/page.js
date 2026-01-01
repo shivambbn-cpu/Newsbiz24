@@ -12,30 +12,30 @@ import { collection, getDocs } from "firebase/firestore";
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [currentCategory, setCurrentCategory] = useState("astro"); // ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ default
+  const [currentCategory, setCurrentCategory] = useState("astro");
 
-  // ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â¥ Firestore ÃƒÆ’ Ãƒâ€šÃ‚Â¤Ãƒâ€šÃ‚Â¸ÃƒÆ’ Ãƒâ€šÃ‚Â¥ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¡ posts fetch (category wise)
+  // 🔥 MODAL STATE ADDED
+  const [modalType, setModalType] = useState(null);
+  const openModal = (type) => setModalType(type);
+  const closeModal = () => setModalType(null);
+
   useEffect(() => {
-    console.log("ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒâ€šÃ‚Â¥ Fetching category:", currentCategory);
-
     const fetchPosts = async () => {
       try {
         const colRef = collection(db, currentCategory);
         const snapshot = await getDocs(colRef);
-
-        console.log("ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾ Docs count:", snapshot.size);
 
         const data = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data(),
         }));
 
-        data.sort((a, b) => new Date(b.date) - new Date(a.date)); // latest first
+        data.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         setPosts(data);
-        setSelectedPost(null); // category change pe detail close
+        setSelectedPost(null);
       } catch (err) {
-        console.error("ÃƒÆ’Ã‚Â¢Ãƒâ€šÃ‚ÂÃƒâ€¦Ã¢â‚¬â„¢ Firestore Error:", err);
+        console.error("Firestore Error:", err);
       }
     };
 
@@ -45,7 +45,6 @@ export default function HomePage() {
   const openDetail = (post) => setSelectedPost(post);
   const closeDetail = () => setSelectedPost(null);
 
-  // BigCard ÃƒÆ’ Ãƒâ€šÃ‚Â¤ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÆ’ Ãƒâ€šÃ‚Â¤Ãƒâ€šÃ‚Â° SmallCards split
   const bigCard = posts[0];
   const smallCards = posts.slice(1, 10);
 
@@ -53,7 +52,6 @@ export default function HomePage() {
     <>
       <Header />
 
-      {/* ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â¦ category callback pass */}
       <SideMenu onCategorySelect={setCurrentCategory} />
 
       <div className="content-wrapper">
@@ -68,7 +66,20 @@ export default function HomePage() {
         )}
       </div>
 
-      <Footer />
+      {/* 🔥 FIX — Footer receives openModal */}
+      <Footer openModal={openModal} />
+
+      {/* 🔥 FULLSCREEN MODAL */}
+      {modalType && (
+        <div className="modal-fullscreen">
+          <button className="modal-close" onClick={closeModal}>X</button>
+
+          {modalType === "about" && <div>About Us Content...</div>}
+          {modalType === "contact" && <div>Contact Us Content...</div>}
+          {modalType === "privacy" && <div>Privacy Policy Content...</div>}
+          {modalType === "terms" && <div>Terms & Conditions Content...</div>}
+        </div>
+      )}
     </>
   );
 }
