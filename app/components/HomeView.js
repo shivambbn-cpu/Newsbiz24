@@ -12,12 +12,7 @@ import SmallPostCard from "./SmallCard";
  * - Initial bundle super small rahega
  */
 const DetailView = dynamic(() => import("./DetailView"), {
-  loading: () => (
-    <div style={{ padding: 20, textAlign: "center" }}>
-      Loading...
-    </div>
-  ),
-  ssr: false, // DetailView client-only (modal / overlay ke liye best)
+  ssr: false, // client-only (modal / overlay ke liye best)
 });
 
 export default function HomeView({ bigCard, smallCards }) {
@@ -42,10 +37,6 @@ export default function HomeView({ bigCard, smallCards }) {
 
       {/* ⭐ Small Cards */}
       <div className="small-cards-container">
-        {(!smallCards || smallCards.length === 0) && (
-          <p>Loading posts...</p>
-        )}
-
         {smallCards?.map((post) => (
           <SmallPostCard
             key={post.id}
@@ -55,7 +46,7 @@ export default function HomeView({ bigCard, smallCards }) {
         ))}
       </div>
 
-      {/* 🔥 Dynamic Detail View (Turbopack friendly) */}
+      {/* 🔥 Dynamic Detail View (NO loading UI) */}
       {isOpen && selectedPost && (
         <DetailView
           post={selectedPost}
