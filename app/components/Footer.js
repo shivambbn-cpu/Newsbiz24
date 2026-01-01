@@ -1,13 +1,13 @@
 "use client";
 
-export default function Footer({ openModal }) {
+export default function Footer() {
   return (
     <footer>
       <div className="footer-buttons">
-        <button onClick={() => openModal("about")}>About Us</button>
-        <button onClick={() => openModal("contact")}>Contact Us</button>
-        <button onClick={() => openModal("privacy")}>Privacy Policy</button>
-        <button onClick={() => openModal("terms")}>Terms & Conditions</button>
+        <button>About Us</button>
+        <button>Contact Us</button>
+        <button>Privacy Policy</button>
+        <button>Terms & Conditions</button>
       </div>
 
       <div className="footer-copy">
