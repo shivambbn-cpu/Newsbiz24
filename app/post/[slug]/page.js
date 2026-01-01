@@ -1,38 +1,38 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import DetailView from "@/components/DetailView";
+import { collection, query, orderBy, limit, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import HomeView from "@/components/HomeView";
+import Header from "@/components/Header";
+import SideMenu from "@/components/SideMenu";
+import Footer from "@/components/Footer";
 
-export default function PostDetail({ params }) {
-  const slug = decodeURIComponent(params.slug.trim());
-  const categories = [
-    "astro","religious","health","business","news",
-    "trending","lifestyles","weather"
-  ];
+export const revalidate = 60;
+export const dynamic = "force-static";
 
-  const [post, setPost] = useState(null);
+export default async function CategoryPage({ params }) {
+  const category = params.slug;
 
-  useEffect(() => {
-    async function openBlogBySlug() {
-      for (const cat of categories) {
-        const q = query(collection(db, cat), where("slug","==",slug));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          const d = snap.docs[0];
-          setPost({ id: d.id, ...d.data(), category: cat });
-          return;
-        }
-      }
-      console.warn("No post found for slug:", slug);
-      // fallback: go to home
-      window.history.pushState({ page: "home" }, "", "/");
-      // showHomeView();  // tumhare previous function
-    }
-    openBlogBySlug();
-  }, [slug]);
+  const q = query(
+    collection(db, category),
+    orderBy("date", "desc"),
+    limit(12)
+  );
 
-  if (!post) return <p>Loading...</p>;
-  return <DetailView post={post} onClose={() => window.history.back()} />;
+  const snap = await getDocs(q);
+
+  const posts = snap.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  return (
+    <>
+      <Header />
+      <SideMenu />
+      <HomeView
+        bigCard={posts[0]}
+        smallCards={posts.slice(1)}
+      />
+      <Footer />
+    </>
+  );
 }
