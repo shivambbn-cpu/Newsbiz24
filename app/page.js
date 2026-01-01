@@ -5,7 +5,6 @@ import Header from "./components/Header";
 import SideMenu from "./components/SideMenu";
 import HomeView from "./components/HomeView";
 import DetailView from "./components/DetailView";
-import Footer from "./components/Footer";
 import { db } from "../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
@@ -14,7 +13,6 @@ export default function HomePage() {
   const [selectedPost, setSelectedPost] = useState(null);
   const [currentCategory, setCurrentCategory] = useState("astro");
 
-  // 🔥 MODAL STATE ADDED
   const [modalType, setModalType] = useState(null);
   const openModal = (type) => setModalType(type);
   const closeModal = () => setModalType(null);
@@ -31,7 +29,6 @@ export default function HomePage() {
         }));
 
         data.sort((a, b) => new Date(b.date) - new Date(a.date));
-
         setPosts(data);
         setSelectedPost(null);
       } catch (err) {
@@ -66,10 +63,9 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* 🔥 FIX — Footer receives openModal */}
-      <Footer openModal={openModal} />
+      {/* ❌ Footer removed from here */}
 
-      {/* 🔥 FULLSCREEN MODAL */}
+      {/* MODAL */}
       {modalType && (
         <div className="modal-fullscreen">
           <button className="modal-close" onClick={closeModal}>X</button>
