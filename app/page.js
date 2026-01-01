@@ -5,71 +5,70 @@ import Header from "./components/Header";
 import SideMenu from "./components/SideMenu";
 import HomeView from "./components/HomeView";
 import DetailView from "./components/DetailView";
-import Footer from "./components/Footer"; 
+import Footer from "./components/Footer";
 import { db } from "../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
-  const [loading, setLoading] = useState(true); 
   const [selectedPost, setSelectedPost] = useState(null);
-  const [currentCategory, setCurrentCategory] = useState("astro");
+  const [currentCategory, setCurrentCategory] = useState("astro"); // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ default
 
+  // ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¥ Firestore ÃƒÆ’Ã†â€™ ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã†â€™ ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¥ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¡ posts fetch (category wise)
   useEffect(() => {
+    console.log("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¥ Fetching category:", currentCategory);
+
     const fetchPosts = async () => {
-      setLoading(true); // Load shuru
       try {
         const colRef = collection(db, currentCategory);
         const snapshot = await getDocs(colRef);
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        console.log("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¾ Docs count:", snapshot.size);
+
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        data.sort((a, b) => new Date(b.date) - new Date(a.date)); // latest first
+
         setPosts(data);
-        setSelectedPost(null);
+        setSelectedPost(null); // category change pe detail close
       } catch (err) {
-        console.error("Firestore Error:", err);
-      } finally {
-        setLoading(false); // Load khatam
+        console.error("ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ Firestore Error:", err);
       }
     };
+
     fetchPosts();
   }, [currentCategory]);
 
   const openDetail = (post) => setSelectedPost(post);
   const closeDetail = () => setSelectedPost(null);
 
+  // BigCard ÃƒÆ’Ã†â€™ ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™ ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¤ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° SmallCards split
   const bigCard = posts[0];
   const smallCards = posts.slice(1, 10);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <>
       <Header />
+
+      {/* ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ category callback pass */}
       <SideMenu onCategorySelect={setCurrentCategory} />
 
-      {/* flex: 1 footer ko hamesha niche dhakelega */}
-      <main style={{ flex: "1", minHeight: "80vh" }}>
-        <div className="content-wrapper">
-          {loading ? (
-            <div style={{ padding: "50px", textAlign: "center", fontSize: "20px" }}>
-              Loading posts...
-            </div>
-          ) : (
-            <>
-              {!selectedPost ? (
-                <HomeView
-                  bigCard={bigCard}
-                  smallCards={smallCards}
-                  onSelectPost={openDetail}
-                />
-              ) : (
-                <DetailView post={selectedPost} onClose={closeDetail} />
-              )}
-            </>
-          )}
-        </div>
-      </main>
+      <div className="content-wrapper">
+        {!selectedPost ? (
+          <HomeView
+            bigCard={bigCard}
+            smallCards={smallCards}
+            onSelectPost={openDetail}
+          />
+        ) : (
+          <DetailView post={selectedPost} onClose={closeDetail} />
+        )}
+      </div>
 
-      {/* ✅ Solution: Footer tabhi dikhega jab loading khatam ho jayegi */}
-      {!loading && <Footer />}
-    </div>
+      <Footer />
+    </>
   );
 }
