@@ -1,6 +1,4 @@
-"use client";
-
-import { useState, useEffect, useMemo } from "react";
+// ❌ NO "use client" — This page is now SSR (fastest)
 import Image from "next/image";
 import Header from "./components/Header";
 import SideMenu from "./components/SideMenu";
@@ -10,13 +8,50 @@ import Footer from "./components/Footer";
 import { db } from "../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
-export default function HomePage() {
-  const [posts, setPosts] = useState([]);
+// ========================
+// 🔥 SSR FETCH (Runs on Server Before Page Loads)
+// ========================
+async function fetchInitialPosts() {
+  const colRef = collection(db, "astro"); // default category
+  const snapshot = await getDocs(colRef);
+
+  const data = snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+
+  data.sort((a, b) => new Date(b.date) - new Date(a.date));
+  return data;
+}
+
+export default async function HomePage() {
+  // =======================
+  // 🔥 Server Side Loaded Posts — Super Fast
+  // =======================
+  const initialPosts = await fetchInitialPosts();
+
+  return (
+    <>
+      <ClientPage initialPosts={initialPosts} />
+    </>
+  );
+}
+
+// =======================
+// 🔥 Client Component (UI logic here)
+// =======================
+"use client";
+import { useState, useEffect, useMemo } from "react";
+
+function ClientPage({ initialPosts }) {
+  const [posts, setPosts] = useState(initialPosts);
   const [selectedPost, setSelectedPost] = useState(null);
   const [currentCategory, setCurrentCategory] = useState("astro");
 
   // ================= Fetch Posts Category Wise =================
   useEffect(() => {
+    if (currentCategory === "astro") return; // Astro already loaded by SSR
+
     const fetchPosts = async () => {
       try {
         const colRef = collection(db, currentCategory);
@@ -29,7 +64,7 @@ export default function HomePage() {
 
         data.sort((a, b) => new Date(b.date) - new Date(a.date));
         setPosts(data);
-        setSelectedPost(null); // category change pe detail close
+        setSelectedPost(null);
       } catch (err) {
         console.error("Firestore Error:", err);
       }
@@ -41,7 +76,6 @@ export default function HomePage() {
   const openDetail = (post) => setSelectedPost(post);
   const closeDetail = () => setSelectedPost(null);
 
-  // ================= Memoization for LCP boost =================
   const bigCard = useMemo(() => posts[0], [posts]);
   const smallCards = useMemo(() => posts.slice(1, 10), [posts]);
 
@@ -55,7 +89,7 @@ export default function HomePage() {
 
       {/* ================= Content Wrapper ================= */}
       <main className="content-wrapper">
-        {/* ================= Hero Section (Ultra LCP) ================= */}
+        {/* ================= Hero Section (Instant LCP) ================= */}
         {bigCard && !selectedPost && (
           <section className="hero-section">
             <h1 className="hero-title">{bigCard.title}</h1>
@@ -65,9 +99,9 @@ export default function HomePage() {
               alt={bigCard.title}
               width={1200}
               height={600}
-              priority={true} // 🔥 LCP fast
+              priority={true} // Fastest LCP
               placeholder="blur"
-              blurDataURL={bigCard.image} // optional blur
+              blurDataURL={bigCard.image}
               style={{ maxWidth: "100%", height: "auto" }}
             />
           </section>
@@ -84,27 +118,24 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* ================= Footer ================= */}
+      {/* ================= Footer (Loads Instantly) ================= */}
       <Footer />
 
-      {/* ================= Critical CSS Inline ================= */}
+      {/* ================= Critical CSS ================= */}
       <style jsx>{`
         main.content-wrapper {
           padding: 20px;
           font-family: "Inter", sans-serif;
         }
-
         .hero-section {
           text-align: center;
           margin-bottom: 40px;
         }
-
         .hero-title {
           font-size: 3rem;
           font-weight: 800;
           margin-bottom: 15px;
         }
-
         @media (max-width: 768px) {
           .hero-title {
             font-size: 2rem;
@@ -112,7 +143,7 @@ export default function HomePage() {
         }
       `}</style>
 
-      {/* ================= Preload Fonts ================= */}
+      {/* ================= Preloads ================= */}
       <link
         rel="preload"
         href="/fonts/Inter-Regular.woff2"
@@ -127,11 +158,7 @@ export default function HomePage() {
         type="font/woff2"
         crossOrigin="anonymous"
       />
-
-      {/* ================= LCP Performance Tweaks ================= */}
       <link rel="preload" as="image" href={bigCard?.image || ""} />
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
     </>
   );
 }
