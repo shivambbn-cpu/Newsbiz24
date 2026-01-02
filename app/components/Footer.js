@@ -5,17 +5,14 @@ import { useState, useEffect } from "react";
 export default function Footer() {
   const [openModal, setOpenModal] = useState(null);
 
-  // Footer modal close
+  // Modal close
   const handleClose = () => setOpenModal(null);
 
-  // ESC key + mobile back button support
+  // Scroll lock + ESC + mobile back button support
   useEffect(() => {
     if (!openModal) return;
 
-    // Scroll lock
     document.body.style.overflow = "hidden";
-
-    // Back button support
     window.history.pushState(null, document.title);
 
     const handlePopState = () => handleClose();
