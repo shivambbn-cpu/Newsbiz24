@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import Header from "@/app/components/Header";
 import SideMenu from "@/app/components/SideMenu";
 import HomeView from "@/app/components/HomeView";
@@ -13,32 +17,44 @@ import {
   getDocs,
 } from "firebase/firestore";
 
-export const revalidate = 60;
-
-export async function generateMetadata({ params }) {
-  return {
-    title: `${params.slug} News | NewsBiz24`,
-    description: `${params.slug} category ki latest aur breaking news`,
-  };
-}
-
-export default async function CategoryPage({ params }) {
+export default function CategoryPage({ params }) {
   const category = params.slug;
 
-  const q = query(
-    collection(db, "posts"),
-    where("category", "==", category),
-    where("status", "==", "published"),
-    orderBy("date", "desc"),
-    limit(12)
-  );
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const snap = await getDocs(q);
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const q = query(
+          collection(db, "posts"),
+          where("category", "==", category),
+          where("status", "==", "published"),
+          orderBy("date", "desc"),
+          limit(12)
+        );
 
-  const posts = snap.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+        const snap = await getDocs(q);
+
+        const data = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setPosts(data);
+      } catch (err) {
+        console.error("Firestore error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [category]);
+
+  if (loading) {
+    return <div style={{ padding: 20 }}>Loading...</div>;
+  }
 
   return (
     <>
