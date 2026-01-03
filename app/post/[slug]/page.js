@@ -3,7 +3,7 @@ import SideMenu from "@/app/components/SideMenu";
 import HomeView from "@/app/components/HomeView";
 import Footer from "@/app/components/Footer";
 
-import { db } from "@/app/lib/firebase";
+import { db } from "@/app/lib/firebaseAdmin";
 import {
   collection,
   query,
