@@ -7,6 +7,19 @@ export default function Footer() {
 
   const closeModal = () => setOpenModal(null);
 
+  // 🔥 ERUDA MOBILE CONSOLE (ADD THIS)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (!window.eruda) {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/eruda";
+      script.onload = () => window.eruda.init();
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  // 🔁 MODAL + BACK BUTTON HANDLING
   useEffect(() => {
     if (!openModal) return;
 
@@ -67,7 +80,7 @@ export default function Footer() {
 
       {openModal && (
         <div className="footer-modal">
-          {/* ❌ CLOSE BUTTON (missing before) */}
+          {/* ❌ CLOSE BUTTON */}
           <button
             onClick={closeModal}
             style={{
@@ -79,6 +92,7 @@ export default function Footer() {
               border: "none",
               cursor: "pointer",
               zIndex: 100000,
+              color: "#000",
             }}
           >
             ✕
