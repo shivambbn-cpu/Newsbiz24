@@ -1,5 +1,5 @@
-import Header from "@/app/components/Header",
-import SideMenu from "@/app/components/SideMenu",
+import Header from "@/app/components/Header";
+import SideMenu from "@/app/components/SideMenu";
 import HomeView from "@/app/components/HomeView";
 import Footer from "@/app/components/Footer";
 
