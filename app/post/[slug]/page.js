@@ -3,7 +3,7 @@ import SideMenu from "@/app/components/SideMenu";
 import HomeView from "@/app/components/HomeView";
 import Footer from "@/app/components/Footer";
 
-import { db } from "@/lib/firebaseAdmin";
+import { db } from "@/lib/firebase";
 import {
   collection,
   query,
@@ -11,7 +11,7 @@ import {
   orderBy,
   limit,
   getDocs,
-} from "firebase-admin/firestore";
+} from "firebase/firestore";
 
 export const revalidate = 60;
 
