@@ -5,47 +5,61 @@ import { useState, useEffect } from "react";
 export default function Footer() {
   const [openModal, setOpenModal] = useState(null);
 
-  // Modal close
-  const handleClose = () => setOpenModal(null);
+  // Close modal
+  const closeModal = () => setOpenModal(null);
 
-  // Scroll lock + ESC + mobile back button support
+  // Scroll lock + ESC + Mobile back support
   useEffect(() => {
     if (!openModal) return;
 
     document.body.style.overflow = "hidden";
     window.history.pushState(null, document.title);
 
-    const handlePopState = () => handleClose();
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") handleClose();
-    };
+    const onBack = () => closeModal();
+    const onEsc = (e) => e.key === "Escape" && closeModal();
 
-    window.addEventListener("popstate", handlePopState);
-    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("popstate", onBack);
+    window.addEventListener("keydown", onEsc);
 
     return () => {
       document.body.style.overflow = "";
-      window.removeEventListener("popstate", handlePopState);
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("popstate", onBack);
+      window.removeEventListener("keydown", onEsc);
     };
   }, [openModal]);
 
-  // Footer modal content
-  const contentMap = {
-    about: "<h1>About Us</h1><p>NewsBiz24 is your trusted source for news...</p>",
-    contact: "<h1>Contact Us</h1><p>Email: contact@newsbiz24.in</p>",
-    privacy: "<h1>Privacy Policy</h1><p>Your privacy is important to us...</p>",
-    terms: "<h1>Terms & Conditions</h1><p>By using our website, you agree...</p>",
+  // Footer content
+  const content = {
+    about: `
+      <h1>About Us</h1>
+      <p>NewsBiz24.in is a trusted Hindi news platform covering
+      Religious, Astro, Business, Health, Lifestyle and Breaking News.</p>
+    `,
+    contact: `
+      <h1>Contact Us</h1>
+      <p>Email: contact@newsbiz24.in</p>
+    `,
+    privacy: `
+      <h1>Privacy Policy</h1>
+      <p>We respect your privacy and do not misuse user data.</p>
+    `,
+    terms: `
+      <h1>Terms & Conditions</h1>
+      <p>Using this website means you agree to our terms.</p>
+    `,
   };
 
   return (
     <>
+      {/* ================= FOOTER ================= */}
       <footer>
         <div className="footer-buttons">
           <button onClick={() => setOpenModal("about")}>About Us</button>
           <button onClick={() => setOpenModal("contact")}>Contact Us</button>
           <button onClick={() => setOpenModal("privacy")}>Privacy Policy</button>
-          <button onClick={() => setOpenModal("terms")}>Terms & Conditions</button>
+          <button onClick={() => setOpenModal("terms")}>
+            Terms & Conditions
+          </button>
         </div>
 
         <div className="footer-copy">
@@ -53,15 +67,12 @@ export default function Footer() {
         </div>
       </footer>
 
-      {/* Fullscreen Footer Modal */}
+      {/* ================= FULLSCREEN MODAL ================= */}
       {openModal && (
-        <div className="footer-modal-overlay">
-          <button className="modal-close" onClick={handleClose}>
-            ✕
-          </button>
+        <div className="footer-modal">
           <div
             className="footer-modal-content"
-            dangerouslySetInnerHTML={{ __html: contentMap[openModal] || "" }}
+            dangerouslySetInnerHTML={{ __html: content[openModal] }}
           />
         </div>
       )}
