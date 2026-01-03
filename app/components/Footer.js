@@ -5,15 +5,13 @@ import { useState, useEffect } from "react";
 export default function Footer() {
   const [openModal, setOpenModal] = useState(null);
 
-  // Close modal
   const closeModal = () => setOpenModal(null);
 
-  // Scroll lock + ESC + Mobile back support
   useEffect(() => {
     if (!openModal) return;
 
     document.body.style.overflow = "hidden";
-    window.history.pushState(null, document.title);
+    window.history.pushState({ footerModal: true }, "");
 
     const onBack = () => closeModal();
     const onEsc = (e) => e.key === "Escape" && closeModal();
@@ -28,12 +26,13 @@ export default function Footer() {
     };
   }, [openModal]);
 
-  // Footer content
   const content = {
     about: `
       <h1>About Us</h1>
-      <p>NewsBiz24.in is a trusted Hindi news platform covering
-      Religious, Astro, Business, Health, Lifestyle and Breaking News.</p>
+      <p>
+        NewsBiz24.in एक भरोसेमंद हिंदी न्यूज़ प्लेटफ़ॉर्म है जो
+        Religious, Astro, Business, Health, Lifestyle और Breaking News कवर करता है।
+      </p>
     `,
     contact: `
       <h1>Contact Us</h1>
@@ -41,17 +40,16 @@ export default function Footer() {
     `,
     privacy: `
       <h1>Privacy Policy</h1>
-      <p>We respect your privacy and do not misuse user data.</p>
+      <p>हम आपकी privacy का पूरा सम्मान करते हैं।</p>
     `,
     terms: `
       <h1>Terms & Conditions</h1>
-      <p>Using this website means you agree to our terms.</p>
+      <p>इस वेबसाइट का उपयोग करने पर आप हमारी शर्तों से सहमत होते हैं।</p>
     `,
   };
 
   return (
     <>
-      {/* ================= FOOTER ================= */}
       <footer>
         <div className="footer-buttons">
           <button onClick={() => setOpenModal("about")}>About Us</button>
@@ -67,9 +65,25 @@ export default function Footer() {
         </div>
       </footer>
 
-      {/* ================= FULLSCREEN MODAL ================= */}
       {openModal && (
         <div className="footer-modal">
+          {/* ❌ CLOSE BUTTON (missing before) */}
+          <button
+            onClick={closeModal}
+            style={{
+              position: "fixed",
+              top: "14px",
+              right: "16px",
+              fontSize: "26px",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              zIndex: 100000,
+            }}
+          >
+            ✕
+          </button>
+
           <div
             className="footer-modal-content"
             dangerouslySetInnerHTML={{ __html: content[openModal] }}
