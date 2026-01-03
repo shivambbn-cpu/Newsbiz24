@@ -1,7 +1,7 @@
-import Header from "@/components/Header";
-import SideMenu from "@/components/SideMenu";
-import HomeView from "@/components/HomeView";
-import Footer from "@/components/Footer";
+import Header from "@/app/components/Header",
+import SideMenu from "@/app/components/SideMenu",
+import HomeView from "@/app/components/HomeView";
+import Footer from "@/app/components/Footer";
 
 import { db } from "@/lib/firebaseAdmin";
 import {
