@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import "./Footer.css"; // ✅ IMPORTANT
 
 export default function Footer() {
   const [active, setActive] = useState(null);
@@ -15,7 +16,6 @@ export default function Footer() {
         </p>
       </>
     ),
-
     contact: (
       <>
         <h1>Contact Us</h1>
@@ -24,7 +24,6 @@ export default function Footer() {
         </p>
       </>
     ),
-
     privacy: (
       <>
         <h1>Privacy Policy</h1>
@@ -34,7 +33,6 @@ export default function Footer() {
         </p>
       </>
     ),
-
     terms: (
       <>
         <h1>Terms & Conditions</h1>
@@ -46,51 +44,45 @@ export default function Footer() {
     ),
   };
 
-  /* 🔙 Mobile back button + browser back */
+  /* 🔙 Mobile / Browser back */
   useEffect(() => {
     if (!active) return;
 
-    history.pushState({ modal: true }, "");
+    history.pushState({ footerModal: true }, "");
 
-    const handlePopState = () => {
-      setActive(null);
-    };
+    const onBack = () => setActive(null);
+    window.addEventListener("popstate", onBack);
 
-    window.addEventListener("popstate", handlePopState);
-
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
+    return () => window.removeEventListener("popstate", onBack);
   }, [active]);
 
-  /* ⎋ ESC key close (Laptop/Desktop) */
+  /* ⎋ ESC key close */
   useEffect(() => {
-    const handleKey = (e) => {
-      if (e.key === "Escape") {
-        setActive(null);
-      }
-    };
-
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
+    const esc = (e) => e.key === "Escape" && setActive(null);
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
   }, []);
 
   return (
     <>
-      {/* Footer */}
-      <footer className="site-footer">
-        <button onClick={() => setActive("about")}>About Us</button>
-        <button onClick={() => setActive("contact")}>Contact Us</button>
-        <button onClick={() => setActive("privacy")}>Privacy Policy</button>
-        <button onClick={() => setActive("terms")}>Terms & Conditions</button>
+      {/* FOOTER */}
+      <footer>
+        <div className="footer-buttons">
+          <button onClick={() => setActive("about")}>About Us</button>
+          <button onClick={() => setActive("contact")}>Contact Us</button>
+          <button onClick={() => setActive("privacy")}>Privacy Policy</button>
+          <button onClick={() => setActive("terms")}>Terms & Conditions</button>
+        </div>
 
-        <p>© 2026 newsbiz24.in</p>
+        <div className="footer-copy">© 2026 newsbiz24.in</div>
       </footer>
 
-      {/* Fullscreen Content */}
+      {/* FULLSCREEN MODAL */}
       {active && (
-        <div className="footer-overlay">
-          <div className="footer-modal">{content[active]}</div>
+        <div className="footer-modal">
+          <div className="footer-modal-content">
+            {content[active]}
+          </div>
         </div>
       )}
     </>
