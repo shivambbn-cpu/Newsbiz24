@@ -2,21 +2,18 @@
 
 import BigPostCard from "./BigCard";
 import SmallPostCard from "./SmallCard";
-import { useRouter } from "next/navigation";
 
-export default function HomeView({ bigCard, smallCards }) {
-  const router = useRouter();
-
-  const openPost = (slug) => {
-    router.push(`/news/${slug}`);
-  };
-
+export default function HomeView({
+  bigCard,
+  smallCards,
+  onSelectPost,
+}) {
   return (
     <div className="home-view">
       {bigCard && (
         <BigPostCard
           post={bigCard}
-          onSelectPost={() => openPost(bigCard.slug)}
+          onSelectPost={() => onSelectPost(bigCard)}
         />
       )}
 
@@ -25,7 +22,7 @@ export default function HomeView({ bigCard, smallCards }) {
           <SmallPostCard
             key={post.id}
             post={post}
-            onSelectPost={() => openPost(post.slug)}
+            onSelectPost={() => onSelectPost(post)}
           />
         ))}
       </div>
