@@ -4,28 +4,40 @@ import Image from "next/image";
 import { memo, useCallback } from "react";
 
 function BigPostCard({ post, onSelectPost }) {
-  if (!post) return null; // ❌ no loading text
+  if (!post) return null;
 
-  // 🚀 stable click handler (performance boost)
   const handleClick = useCallback(() => {
     onSelectPost(post);
   }, [post, onSelectPost]);
 
+  // ✅ Safe image url
+  const imageUrl =
+    typeof post.image === "string" && post.image.trim() !== ""
+      ? post.image.trim()
+      : null;
+
+  // ✅ Safe date (Firestore + normal)
+  const postDate = post.date?.toDate
+    ? post.date.toDate()
+    : new Date(post.date);
+
   return (
     <div className="big-card post-card" onClick={handleClick}>
-      {/* 🔥 Next.js Image = Turbopack optimized */}
-      <Image
-  src={post.image ? post.image.trim() : ""}
-  alt={post.title}
-  width={800}
-  height={450}
-  priority // LCP improve
-  className="big-img"
-/>
-     <div className="big-details">
+      {/* 🔥 Image */}
+      {imageUrl && (
+        <Image
+          src={imageUrl}
+          alt={post.title}
+          width={800}
+          height={450}
+          priority
+          className="big-img"
+        />
+      )}
+
+      <div className="big-details">
         <h2>{post.title}</h2>
 
-        {/* ✅ <br> & <strong> supported content */}
         <div
           className="big-content"
           dangerouslySetInnerHTML={{
@@ -36,23 +48,21 @@ function BigPostCard({ post, onSelectPost }) {
           }}
         />
 
-        <small>
-          <strong>
-            Posted on :{" "}
-            {new Date(post.date).toLocaleDateString("en-IN", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            })}
-          </strong>
-        </small>
+        {postDate && (
+          <small>
+            <strong>
+              Posted on :{" "}
+              {postDate.toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })}
+            </strong>
+          </small>
+        )}
       </div>
     </div>
   );
 }
 
-/**
- * 🔥 memo() = unnecessary re-render stop
- * Turbopack + React 19 ready
- */
 export default memo(BigPostCard);
