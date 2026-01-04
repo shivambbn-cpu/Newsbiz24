@@ -6,12 +6,12 @@ import Image from "next/image";
 export default function DetailView({ post, onClose }) {
   if (!post) return null;
 
-  // 🔹 Scroll to top
+  /* 🔝 Scroll to top when post opens */
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [post]);
 
-  // 🔹 Body scroll lock
+  /* 🔒 Lock body scroll */
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
@@ -19,7 +19,21 @@ export default function DetailView({ post, onClose }) {
     };
   }, []);
 
-  // 🔹 ESC key support (NO history push)
+  /* 🔙 Mobile / Browser BACK button support */
+  useEffect(() => {
+    history.pushState({ detail: true }, "");
+
+    const onBack = () => {
+      onClose?.();
+    };
+
+    window.addEventListener("popstate", onBack);
+    return () => {
+      window.removeEventListener("popstate", onBack);
+    };
+  }, [onClose]);
+
+  /* ⎋ ESC key support (Laptop/Desktop) */
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -35,11 +49,6 @@ export default function DetailView({ post, onClose }) {
 
   return (
     <div className="detail-overlay">
-      {/* Close button */}
-      <button className="detail-close" onClick={onClose}>
-        ✕
-      </button>
-
       <article className="detail-card">
         {post.image && (
           <Image
