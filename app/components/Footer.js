@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Footer() {
   const [active, setActive] = useState(null);
@@ -46,56 +46,53 @@ export default function Footer() {
     ),
   };
 
+  /* 🔙 Mobile back button + browser back */
+  useEffect(() => {
+    if (!active) return;
+
+    history.pushState({ modal: true }, "");
+
+    const handlePopState = () => {
+      setActive(null);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [active]);
+
+  /* ⎋ ESC key close (Laptop/Desktop) */
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "Escape") {
+        setActive(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, []);
+
   return (
     <>
-      {/* Footer Buttons */}
-      <footer style={styles.footer}>
+      {/* Footer */}
+      <footer className="site-footer">
         <button onClick={() => setActive("about")}>About Us</button>
         <button onClick={() => setActive("contact")}>Contact Us</button>
         <button onClick={() => setActive("privacy")}>Privacy Policy</button>
         <button onClick={() => setActive("terms")}>Terms & Conditions</button>
 
-        <p style={{ marginTop: 10 }}>© 2026 newsbiz24.in</p>
+        <p>© 2026 newsbiz24.in</p>
       </footer>
 
-      {/* Fullscreen Modal */}
+      {/* Fullscreen Content */}
       {active && (
-        <div style={styles.overlay} onClick={() => setActive(null)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <button style={styles.close} onClick={() => setActive(null)}>
-              ✕
-            </button>
-            {content[active]}
-          </div>
+        <div className="footer-overlay">
+          <div className="footer-modal">{content[active]}</div>
         </div>
       )}
     </>
   );
 }
-
-const styles = {
-  footer: {
-    background: "#a8d0a8",
-    padding: "15px",
-    textAlign: "center",
-  },
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.6)",
-    zIndex: 999,
-  },
-  modal: {
-    background: "#fff",
-    height: "100%",
-    padding: "20px",
-    overflowY: "auto",
-  },
-  close: {
-    float: "right",
-    fontSize: "18px",
-    border: "none",
-    background: "transparent",
-    cursor: "pointer",
-  },
-};
