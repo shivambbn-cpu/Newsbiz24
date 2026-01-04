@@ -1,98 +1,101 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function Footer() {
-const [openModal, setOpenModal] = useState(null);
+  const [active, setActive] = useState(null);
 
-const closeModal = () => setOpenModal(null);
+  const content = {
+    about: (
+      <>
+        <h1>About Us</h1>
+        <p>
+          Newsbiz24 ek digital news platform hai jo business, jobs, health,
+          lifestyle aur astrology se judi khabrein provide karta hai.
+        </p>
+      </>
+    ),
 
-// 🔥 ERUDA MOBILE CONSOLE (ADD THIS)
-useEffect(() => {
-if (typeof window === "undefined") return;
+    contact: (
+      <>
+        <h1>Contact Us</h1>
+        <p>
+          Email: <strong>contact@newsbiz24.in</strong>
+        </p>
+      </>
+    ),
 
-if (!window.eruda) {  
-  const script = document.createElement("script");  
-  script.src = "https://cdn.jsdelivr.net/npm/eruda";  
-  script.onload = () => window.eruda.init();  
-  document.body.appendChild(script);  
+    privacy: (
+      <>
+        <h1>Privacy Policy</h1>
+        <p>
+          Hum users ki privacy ka poora dhyan rakhte hain aur kisi bhi tarah ka
+          personal data bina permission ke share nahi karte.
+        </p>
+      </>
+    ),
+
+    terms: (
+      <>
+        <h1>Terms & Conditions</h1>
+        <p>
+          Is website ka use karke aap hamari sabhi terms & conditions se agree
+          karte hain.
+        </p>
+      </>
+    ),
+  };
+
+  return (
+    <>
+      {/* Footer Buttons */}
+      <footer style={styles.footer}>
+        <button onClick={() => setActive("about")}>About Us</button>
+        <button onClick={() => setActive("contact")}>Contact Us</button>
+        <button onClick={() => setActive("privacy")}>Privacy Policy</button>
+        <button onClick={() => setActive("terms")}>Terms & Conditions</button>
+
+        <p style={{ marginTop: 10 }}>© 2026 newsbiz24.in</p>
+      </footer>
+
+      {/* Fullscreen Modal */}
+      {active && (
+        <div style={styles.overlay} onClick={() => setActive(null)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <button style={styles.close} onClick={() => setActive(null)}>
+              ✕
+            </button>
+            {content[active]}
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
-}, []);
-
-// 🔁 MODAL + BACK BUTTON HANDLING
-useEffect(() => {
-if (!openModal) return;
-
-document.body.style.overflow = "hidden";  
-window.history.pushState({ footerModal: true }, "");  
-
-const onBack = () => closeModal();  
-const onEsc = (e) => e.key === "Escape" && closeModal();  
-
-window.addEventListener("popstate", onBack);  
-window.addEventListener("keydown", onEsc);  
-
-return () => {  
-  document.body.style.overflow = "";  
-  window.removeEventListener("popstate", onBack);  
-  window.removeEventListener("keydown", onEsc);  
+const styles = {
+  footer: {
+    background: "#a8d0a8",
+    padding: "15px",
+    textAlign: "center",
+  },
+  overlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.6)",
+    zIndex: 999,
+  },
+  modal: {
+    background: "#fff",
+    height: "100%",
+    padding: "20px",
+    overflowY: "auto",
+  },
+  close: {
+    float: "right",
+    fontSize: "18px",
+    border: "none",
+    background: "transparent",
+    cursor: "pointer",
+  },
 };
-
-}, [openModal]);
-
-const content = {
-about:   <h1>About Us</h1>   <p>   NewsBiz24.in एक भरोसेमंद हिंदी न्यूज़ प्लेटफ़ॉर्म है जो   Religious, Astro, Business, Health, Lifestyle और Breaking News कवर करता है।   </p>  ,
-contact:   <h1>Contact Us</h1>   <p>Email: contact@newsbiz24.in</p>  ,
-privacy:   <h1>Privacy Policy</h1>   <p>हम आपकी privacy का पूरा सम्मान करते हैं।</p>  ,
-terms:   <h1>Terms & Conditions</h1>   <p>इस वेबसाइट का उपयोग करने पर आप हमारी शर्तों से सहमत होते हैं।</p>  ,
-};
-
-return (
-<>
-<footer>
-<div className="footer-buttons">
-<button onClick={() => setOpenModal("about")}>About Us</button>
-<button onClick={() => setOpenModal("contact")}>Contact Us</button>
-<button onClick={() => setOpenModal("privacy")}>Privacy Policy</button>
-<button onClick={() => setOpenModal("terms")}>
-Terms & Conditions
-</button>
-</div>
-
-<div className="footer-copy">  
-      © {new Date().getFullYear()} newsbiz24.in All rights reserved.  
-    </div>  
-  </footer>  
-
-  {openModal && (  
-    <div className="footer-modal">  
-      {/* ❌ CLOSE BUTTON */}  
-      <button  
-        onClick={closeModal}  
-        style={{  
-          position: "fixed",  
-          top: "14px",  
-          right: "16px",  
-          fontSize: "26px",  
-          background: "transparent",  
-          border: "none",  
-          cursor: "pointer",  
-          zIndex: 100000,  
-          color: "#000",  
-        }}  
-      >  
-        ✕  
-      </button>  
-
-      <div  
-        className="footer-modal-content"  
-        dangerouslySetInnerHTML={{ __html: content[openModal] }}  
-      />  
-    </div>  
-  )}  
-</>
-
-);
-}
-
