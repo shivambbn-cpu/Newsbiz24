@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import "./Footer.css"; // ✅ IMPORTANT
 
 export default function Footer() {
   const [active, setActive] = useState(null);
@@ -44,7 +43,12 @@ export default function Footer() {
     ),
   };
 
-  /* 🔙 Mobile / Browser back */
+  /* 🔒 Body scroll lock */
+  useEffect(() => {
+    document.body.style.overflow = active ? "hidden" : "";
+  }, [active]);
+
+  /* 🔙 Mobile / browser back button */
   useEffect(() => {
     if (!active) return;
 
@@ -65,19 +69,21 @@ export default function Footer() {
 
   return (
     <>
-      {/* FOOTER */}
+      {/* ================= FOOTER ================= */}
       <footer>
         <div className="footer-buttons">
           <button onClick={() => setActive("about")}>About Us</button>
           <button onClick={() => setActive("contact")}>Contact Us</button>
           <button onClick={() => setActive("privacy")}>Privacy Policy</button>
-          <button onClick={() => setActive("terms")}>Terms & Conditions</button>
+          <button onClick={() => setActive("terms")}>
+            Terms & Conditions
+          </button>
         </div>
 
         <div className="footer-copy">© 2026 newsbiz24.in</div>
       </footer>
 
-      {/* FULLSCREEN MODAL */}
+      {/* ================= FULLSCREEN MODAL ================= */}
       {active && (
         <div className="footer-modal">
           <div className="footer-modal-content">
