@@ -6,7 +6,7 @@ import Image from "next/image";
 export default function DetailView({ post, onClose }) {
   if (!post) return null;
 
-  /* 🔝 Scroll to top when post opens */
+  /* 🔝 Scroll to top */
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [post]);
@@ -19,7 +19,7 @@ export default function DetailView({ post, onClose }) {
     };
   }, []);
 
-  /* 🔙 Mobile / Browser BACK button support */
+  /* 🔙 Back button support */
   useEffect(() => {
     history.pushState({ detail: true }, "");
 
@@ -33,7 +33,7 @@ export default function DetailView({ post, onClose }) {
     };
   }, [onClose]);
 
-  /* ⎋ ESC key support (Laptop/Desktop) */
+  /* ⎋ ESC key */
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -47,7 +47,7 @@ export default function DetailView({ post, onClose }) {
     };
   }, [onClose]);
 
-  /* 📲 WhatsApp Floating Share Button */
+  /* 📲 WhatsApp Share */
   useEffect(() => {
     if (!post?.slug) return;
 
@@ -102,7 +102,8 @@ export default function DetailView({ post, onClose }) {
 
   return (
     <div className="detail-overlay">
-      <article className="detail-card">
+      {/* ✅ CSS MATCH */}
+      <article className="blog-detail-card">
         {post.image && (
           <Image
             src={post.image}
@@ -114,25 +115,26 @@ export default function DetailView({ post, onClose }) {
           />
         )}
 
+        {/* TITLE */}
         <h1>{post.title}</h1>
 
+        {/* CONTENT */}
         <div
           className="detail-content"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 
+        {/* DATE */}
         {post.date && (
           <p className="detail-date">
-            <strong>
-              Posted on :{" "}
-              {new Date(
-                post.date?.toDate ? post.date.toDate() : post.date
-              ).toLocaleDateString("en-IN", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-              })}
-            </strong>
+            Posted on :{" "}
+            {new Date(
+              post.date?.toDate ? post.date.toDate() : post.date
+            ).toLocaleDateString("en-IN", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}
           </p>
         )}
       </article>
