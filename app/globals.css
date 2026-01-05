@@ -319,7 +319,7 @@ h2 {
 .blog-detail-card h3 {
     font-size: 28px;
     font-weight: 900;
-    color: red;    /* Title color Dark charcoal */
+    color: #333333;    /* Title color Dark charcoal */
     line-height: 1.3;
     margin-bottom: 10px;
 }
@@ -327,7 +327,7 @@ h2 {
 /* BLOG CONTENT */
 .blog-detail-card .detail-content {
     font-size: 17px;
-    color: red;     /* BEST professional content color Dark grey */
+    color: #444444;     /* BEST professional content color Dark grey */
     line-height: 1.7;
     margin-bottom: 15px;
 }
@@ -335,7 +335,7 @@ h2 {
 /* BLOG DATE */
 .blog-detail-card .detail-date {
     font-size: 14px;
-    color: red;     /* Date color Dark grey */
+    color: #666666;     /* Date color Dark grey */
     font-weight: bold;
     margin-bottom: 12px;
 }
