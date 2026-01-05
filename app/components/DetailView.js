@@ -47,6 +47,59 @@ export default function DetailView({ post, onClose }) {
     };
   }, [onClose]);
 
+  /* 📲 WhatsApp Floating Share Button */
+  useEffect(() => {
+    if (!post?.slug) return;
+
+    let btn = document.getElementById("whatsapp-float-btn");
+
+    const postUrl = `${window.location.origin}/post/${post.slug}`;
+    const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(
+      post.title + " " + postUrl
+    )}`;
+
+    if (!btn) {
+      btn = document.createElement("a");
+      btn.id = "whatsapp-float-btn";
+      btn.target = "_blank";
+      btn.rel = "noopener noreferrer";
+
+      btn.innerHTML = `
+        <img 
+          src="https://i.ibb.co/qLnXkgVb/9d22c9bbafc5d6cde2858c982c3cb6e5.jpg"
+          style="width:100%;height:100%;border-radius:30%;"
+        />
+      `;
+
+      const size = window.innerWidth <= 768 ? 50 : 72;
+
+      btn.style.cssText = `
+        position: fixed;
+        top: 75%;
+        right: 20px;
+        transform: translateY(-50%);
+        width: ${size}px;
+        height: ${size}px;
+        background: white;
+        border-radius: 30%;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+
+      document.body.appendChild(btn);
+    }
+
+    btn.href = whatsappUrl;
+    btn.style.display = "flex";
+
+    return () => {
+      if (btn) btn.style.display = "none";
+    };
+  }, [post]);
+
   return (
     <div className="detail-overlay">
       <article className="detail-card">
