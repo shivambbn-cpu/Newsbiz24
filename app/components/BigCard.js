@@ -10,16 +10,18 @@ function BigPostCard({ post, onSelectPost }) {
     onSelectPost(post);
   }, [post, onSelectPost]);
 
-  // ✅ Safe image url
+  // ✅ Safe image URL
   const imageUrl =
     typeof post.image === "string" && post.image.trim() !== ""
       ? post.image.trim()
       : null;
 
-  // ✅ Safe date (Firestore + normal)
-  const postDate = post.date?.toDate
+  // ✅ Safe date (Firestore + normal JS date)
+  const postDate = post?.date?.toDate
     ? post.date.toDate()
-    : new Date(post.date);
+    : post?.date
+    ? new Date(post.date)
+    : null;
 
   return (
     <div className="big-card post-card" onClick={handleClick}>
@@ -27,7 +29,7 @@ function BigPostCard({ post, onSelectPost }) {
       {imageUrl && (
         <Image
           src={imageUrl}
-          alt={post.title}
+          alt={post.title || "News image"}
           width={800}
           height={450}
           priority
@@ -36,28 +38,29 @@ function BigPostCard({ post, onSelectPost }) {
       )}
 
       <div className="big-details">
+        {/* ✅ Title */}
         <h2>{post.title}</h2>
 
+        {/* ✅ Content (CSS: .big-details .big-content) */}
         <div
           className="big-content"
           dangerouslySetInnerHTML={{
             __html:
               ((post.content || "")
                 .substring(0, 150)
-                .replace(/\n/g, "<br>")) + "...",
+                .replace(/\n/g, "<br />")) + "...",
           }}
         />
 
+        {/* ✅ Date */}
         {postDate && (
-          <small>
-            <strong>
-              Posted on :{" "}
-              {postDate.toLocaleDateString("en-IN", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-              })}
-            </strong>
+          <small className="post-date-info">
+            Posted on :{" "}
+            {postDate.toLocaleDateString("en-IN", {
+              day: "2-digit",
+              month: "long",
+              year: "numeric",
+            })}
           </small>
         )}
       </div>
