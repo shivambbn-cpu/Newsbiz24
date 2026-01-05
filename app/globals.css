@@ -213,7 +213,7 @@ h2 {
 }
 
 .big-details h3 {
-    color: #333333;   /* Title color Dark charcoal */
+    color: red;   /* Title color Dark charcoal */
     margin-bottom: 8px;
 }
 
@@ -225,7 +225,7 @@ h2 {
 
 .big-details .post-date-info {
     font-size: 0.8em;
-    color: #666666;  /* Date color Dark grey */
+    color: red;  /* Date color Dark grey */
     font-weight: bold;
 }
 
