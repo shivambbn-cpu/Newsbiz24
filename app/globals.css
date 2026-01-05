@@ -213,7 +213,7 @@ h2 {
 }
 
 .big-details h3 {
-    color: #333333   /* Title color Dark charcoal */
+    color: #333333;   /* Title color Dark charcoal */
     margin-bottom: 8px;
 }
 
@@ -318,7 +318,7 @@ h2 {
 .blog-detail-card h2,
 .blog-detail-card h3 {
     font-size: 28px;
-    font-weight: 700;
+    font-weight: 400;
     color: #333333;    /* Title color Dark charcoal */
     line-height: 1.3;
     margin-bottom: 10px;
