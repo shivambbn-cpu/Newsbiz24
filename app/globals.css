@@ -306,11 +306,10 @@ h2 {
 
 /* BLOG IMAGE */
 .detail-img {
-    width: 50%;
-    max-height: 230px;
+    width: 100% !important;
+    height: 230px !important;   /* FIXED HEIGHT */
     object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 15px;
+    display: block;
 }
 
 /* BLOG TITLE */
