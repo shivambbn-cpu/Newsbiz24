@@ -213,19 +213,19 @@ h2 {
 }
 
 .big-details h3 {
-    color: red;   /* Title color Dark charcoal */
+    color: #333333;   /* Title color Dark charcoal */
     margin-bottom: 8px;
 }
 
 .big-details p {
-    color: red;  /* BEST professional content color Dark grey */
+    color: #444444;  /* BEST professional content color Dark grey */
     font-size: 15px;
     line-height: 1.6;
 }
 
 .big-details .post-date-info {
     font-size: 0.8em;
-    color: red;  /* Date color Dark grey */
+    color: #666666;  /* Date color Dark grey */
     font-weight: bold;
 }
 
