@@ -218,7 +218,7 @@ h2 {
 }
 
 .big-details p {
-    color: #444444;  /* BEST professional content color Dark grey */
+    color: red;  /* BEST professional content color Dark grey */
     font-size: 15px;
     line-height: 1.6;
 }
