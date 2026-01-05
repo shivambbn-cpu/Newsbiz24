@@ -16,7 +16,7 @@ function BigPostCard({ post, onSelectPost }) {
       ? post.image.trim()
       : null;
 
-  // ✅ Safe date (Firestore + normal JS date)
+  // ✅ Safe date (Firestore + normal)
   const postDate = post?.date?.toDate
     ? post.date.toDate()
     : post?.date
@@ -25,11 +25,11 @@ function BigPostCard({ post, onSelectPost }) {
 
   return (
     <div className="big-card post-card" onClick={handleClick}>
-      {/* 🔥 Image */}
+      {/* Image */}
       {imageUrl && (
         <Image
           src={imageUrl}
-          alt={post.title || "News image"}
+          alt={post.title}
           width={800}
           height={450}
           priority
@@ -38,12 +38,11 @@ function BigPostCard({ post, onSelectPost }) {
       )}
 
       <div className="big-details">
-        {/* ✅ Title */}
-        <h2>{post.title}</h2>
+        {/* ✅ TITLE → h3 (CSS match) */}
+        <h3>{post.title}</h3>
 
-        {/* ✅ Content (CSS: .big-details .big-content) */}
-        <div
-          className="big-content"
+        {/* ✅ CONTENT → p (CSS match) */}
+        <p
           dangerouslySetInnerHTML={{
             __html:
               ((post.content || "")
@@ -52,7 +51,7 @@ function BigPostCard({ post, onSelectPost }) {
           }}
         />
 
-        {/* ✅ Date */}
+        {/* ✅ DATE → className match */}
         {postDate && (
           <small className="post-date-info">
             Posted on :{" "}
