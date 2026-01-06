@@ -1,76 +1,48 @@
-"use client";
+import { db } from "@/lib/firebase";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import Image from "next/image";
 
-import { useState, useEffect } from "react";
-import Header from "./components/Header";
-import SideMenu from "./components/SideMenu";
-import HomeView from "./components/HomeView";
-import DetailView from "./components/DetailView";
-import Footer from "./components/Footer";
-import { db } from "../lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+export default async function PostPage({ params }) {
+  const q = query(
+    collection(db, "posts"),
+    where("slug", "==", params.slug)
+  );
 
-export default function HomePage() {
-const [posts, setPosts] = useState([]);
-const [selectedPost, setSelectedPost] = useState(null);
-const [currentCategory, setCurrentCategory] = useState("astro"); // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ default
+  const snap = await getDocs(q);
+  if (snap.empty) return <h2>Post not found</h2>;
 
-// ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¥ Firestore Ãƒ Ã‚Â¤Ã‚Â¸Ãƒ Ã‚Â¥Ã¢â‚¬Â¡ posts fetch (category wise)
-useEffect(() => {
-console.log("ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¥ Fetching category:", currentCategory);
+  const post = snap.docs[0].data();
 
-const fetchPosts = async () => {  
-  try {  
-    const colRef = collection(db, currentCategory);  
-    const snapshot = await getDocs(colRef);  
+  return (
+    <article className="blog-detail-card">
 
-    console.log("ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã¢â‚¬Å¾ Docs count:", snapshot.size);  
+      {post.image && (
+        <div className="detail-image-wrapper">
+          <Image
+            src={post.image}
+            alt={post.title}
+            fill
+            priority
+            className="detail-img"
+          />
+        </div>
+      )}
 
-    const data = snapshot.docs.map(doc => ({  
-      id: doc.id,  
-      ...doc.data(),  
-    }));  
+      <h1>{post.title}</h1>
 
-    data.sort((a, b) => new Date(b.date) - new Date(a.date)); // latest first  
+      <div
+        className="detail-content"
+        dangerouslySetInnerHTML={{ __html: post.content }}
+      />
 
-    setPosts(data);  
-    setSelectedPost(null); // category change pe detail close  
-  } catch (err) {  
-    console.error("ÃƒÂ¢Ã‚ÂÃ…â€™ Firestore Error:", err);  
-  }  
-};  
-
-fetchPosts();
-
-}, [currentCategory]);
-
-const openDetail = (post) => setSelectedPost(post);
-const closeDetail = () => setSelectedPost(null);
-
-// BigCard Ãƒ Ã‚Â¤Ã¢â‚¬ÂÃƒ Ã‚Â¤Ã‚Â° SmallCards split
-const bigCard = posts[0];
-const smallCards = posts.slice(1, 10);
-
-return (
-<>
-<Header />
-
-{/* ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ category callback pass */}  
-  <SideMenu onCategorySelect={setCurrentCategory} />  
-
-  <div className="content-wrapper">  
-    {!selectedPost ? (  
-      <HomeView  
-        bigCard={bigCard}  
-        smallCards={smallCards}  
-        onSelectPost={openDetail}  
-      />  
-    ) : (  
-      <DetailView post={selectedPost} onClose={closeDetail} />  
-    )}  
-  </div>  
-
-  <Footer />  
-</>
-
-);
+      {post.date && (
+        <p className="detail-date">
+          Posted on{" "}
+          {new Date(
+            post.date?.toDate ? post.date.toDate() : post.date
+          ).toLocaleDateString("en-IN")}
+        </p>
+      )}
+    </article>
+  );
 }
