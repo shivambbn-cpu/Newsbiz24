@@ -362,7 +362,7 @@ h2 {
 
   /* Mobile Image Height */
   .detail-image-wrapper {
-    height: 140px;        /* 👈 MOBILE IMAGE HEIGHT */
+    height: 180px;        /* 👈 MOBILE IMAGE HEIGHT */
   }
 
   /* Mobile Title */
