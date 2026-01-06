@@ -109,7 +109,7 @@ export default function DetailView({ post, onClose }) {
             src={post.image}
             alt={post.title}
             width={800}
-            height={250}
+            height={450}
             priority
             className="detail-img"
           />
