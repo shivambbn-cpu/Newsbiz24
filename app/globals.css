@@ -305,7 +305,7 @@ h2 {
 }
 
 /* BLOG IMAGE */
-..detail-img {
+.detail-img {
 width: 100%;
 max-height: 230px;
 object-fit: cover;
