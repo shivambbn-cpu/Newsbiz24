@@ -27,7 +27,7 @@ export default function PostPage() {
   const slug = decodeURIComponent(params.slug);
 
   const [post, setPost] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [checked, setChecked] = useState(false); // 🔹 loading replacement
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -41,21 +41,33 @@ export default function PostPage() {
 
           if (found) {
             setPost({ id: found.id, ...found.data(), category: cat });
+            setChecked(true);
             return;
           }
         }
       } catch (e) {
         console.error(e);
       } finally {
-        setLoading(false);
+        setChecked(true);
       }
     };
 
     fetchPost();
   }, [slug]);
 
-  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
-  if (!post) return <div style={{ padding: 20 }}>Post not found</div>;
+  // ❌ No loading UI
+  if (!checked) return null;
+
+  if (!post) {
+    return (
+      <>
+        <Header />
+        <SideMenu />
+        <div style={{ padding: 20 }}>Post not found</div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
