@@ -27,7 +27,7 @@ export default function PostPage() {
   const slug = decodeURIComponent(params.slug);
 
   const [post, setPost] = useState(null);
-  const [checked, setChecked] = useState(false); // 🔹 loading replacement
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -55,26 +55,44 @@ export default function PostPage() {
     fetchPost();
   }, [slug]);
 
-  // ❌ No loading UI
-  if (!checked) return null;
-
-  if (!post) {
-    return (
-      <>
-        <Header />
-        <SideMenu />
-        <div style={{ padding: 20 }}>Post not found</div>
-        <Footer />
-      </>
-    );
-  }
-
   return (
     <>
       <Header />
       <SideMenu />
-      <DetailView post={post} />
+
+      {/* 🔄 ROUND LOADER */}
+      {!checked && (
+        <div style={loaderWrap}>
+          <div style={loader}></div>
+        </div>
+      )}
+
+      {/* ❌ Post not found */}
+      {checked && !post && (
+        <div style={{ padding: 20 }}>Post not found</div>
+      )}
+
+      {/* ✅ Post found */}
+      {checked && post && <DetailView post={post} />}
+
       <Footer />
     </>
   );
 }
+
+/* 🔵 Loader Styles */
+const loaderWrap = {
+  minHeight: "60vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const loader = {
+  width: "42px",
+  height: "42px",
+  border: "4px solid #ddd",
+  borderTop: "4px solid #16a34a", // green (change if needed)
+  borderRadius: "50%",
+  animation: "spin 1s linear infinite",
+};
