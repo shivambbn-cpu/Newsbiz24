@@ -1,23 +1,29 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import Header from "@/app/components/Header";
 import SideMenu from "@/app/components/SideMenu";
 import Footer from "@/app/components/Footer";
 import DetailView from "@/app/components/DetailView";
 
 import { db } from "@/lib/firebase";
-import {
-  collection,
-  query,
-  where,
-  limit,
-  getDocs,
-} from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
+
+const CATEGORIES = [
+  "astro",
+  "business",
+  "health",
+  "lifestyles",
+  "news",
+  "religious",
+  "trending",
+  "weather",
+];
+
+export const dynamic = "force-dynamic"; // ✅ VERY IMPORTANT
 
 export default function PostDetailPage({ params }) {
-  const slug = decodeURIComponent(params.slug); // ✅ VERY IMPORTANT
+  const slug = decodeURIComponent(params.slug);
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,20 +31,19 @@ export default function PostDetailPage({ params }) {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const q = query(
-          collection(db, "posts"),
-          where("slug", "==", slug),
-          where("status", "==", "published"),
-          limit(1)
-        );
+        for (const cat of CATEGORIES) {
+          const snap = await getDocs(collection(db, cat));
 
-        const snap = await getDocs(q);
+          const found = snap.docs.find(
+            (doc) =>
+              doc.data().slug === slug &&
+              doc.data().status === "published"
+          );
 
-        if (!snap.empty) {
-          setPost({
-            id: snap.docs[0].id,
-            ...snap.docs[0].data(),
-          });
+          if (found) {
+            setPost({ id: found.id, ...found.data(), category: cat });
+            break;
+          }
         }
       } catch (err) {
         console.error("Post fetch error:", err);
@@ -50,13 +55,8 @@ export default function PostDetailPage({ params }) {
     fetchPost();
   }, [slug]);
 
-  if (loading) {
-    return <div style={{ padding: 20 }}>Loading...</div>;
-  }
-
-  if (!post) {
-    return <div style={{ padding: 20 }}>Post not found</div>;
-  }
+  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
+  if (!post) return <div style={{ padding: 20 }}>Post not found</div>;
 
   return (
     <>
