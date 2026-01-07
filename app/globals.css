@@ -634,3 +634,21 @@ footer {
     opacity: 1;
   }
 }
+
+
+
+/* ============================= */
+/* Existing styles...            */
+/* ============================= */
+
+/* 🔄 Advanced Fast Spinner Animation */
+@keyframes spinFast {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+
