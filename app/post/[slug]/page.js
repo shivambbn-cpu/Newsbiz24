@@ -1,73 +1,82 @@
-"use client";
-
-import { useEffect, useState } from "react";
-import Header from "@/app/components/Header";
-import SideMenu from "@/app/components/SideMenu";
-import Footer from "@/app/components/Footer";
-import DetailView from "@/app/components/DetailView";
-
+import { notFound } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { collection, query, where, limit, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
-const CATEGORIES = [
-  "astro",
-  "business",
-  "health",
-  "lifestyles",
-  "news",
-  "religious",
-  "trending",
-  "weather",
-];
+async function getPostBySlug(rawSlug) {
+  // 🔥 DECODE URL SLUG
+  const slug = decodeURIComponent(rawSlug);
 
-export const dynamic = "force-dynamic";
+  const categories = [
+    "astro",
+    "business",
+    "health",
+    "lifestyles",
+    "news",
+    "religious",
+    "trending",
+    "weather",
+  ];
 
-export default function PostDetailPage({ params }) {
-  const slug = decodeURIComponent(params.slug);
+  for (const cat of categories) {
+    const snap = await getDocs(collection(db, cat));
 
-  const [post, setPost] = useState(null);
-  const [loading, setLoading] = useState(true);
+    for (const doc of snap.docs) {
+      const data = doc.data();
 
-  useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        for (const category of CATEGORIES) {
-          const q = query(
-            collection(db, category),
-            where("slug", "==", slug),
-            limit(1)
-          );
-
-          const snap = await getDocs(q);
-
-          if (!snap.empty) {
-            setPost({
-              id: snap.docs[0].id,
-              category,
-              ...snap.docs[0].data(),
-            });
-            break;
-          }
-        }
-      } catch (err) {
-        console.error("Post fetch error:", err);
-      } finally {
-        setLoading(false);
+      // ✅ ONLY slug check (status optional)
+      if (data.slug === slug) {
+        return {
+          id: doc.id,
+          category: cat,
+          ...data,
+        };
       }
-    };
+    }
+  }
 
-    fetchPost();
-  }, [slug]);
+  return null;
+}
 
-  if (loading) return <div style={{ padding: 20 }}>Loading...</div>;
-  if (!post) return <div style={{ padding: 20 }}>Post not found</div>;
+export async function generateMetadata({ params }) {
+  const post = await getPostBySlug(params.slug);
+
+  if (!post) {
+    return { title: "Post Not Found | NewsBiz24" };
+  }
+
+  return {
+    title: post.title,
+    description: post.title,
+  };
+}
+
+export default async function PostPage({ params }) {
+  const post = await getPostBySlug(params.slug);
+
+  if (!post) {
+    notFound();
+  }
 
   return (
-    <>
-      <Header />
-      <SideMenu />
-      <DetailView post={post} />
-      <Footer />
-    </>
+    <div style={{ maxWidth: "800px", margin: "auto", padding: "16px" }}>
+      <h1>{post.title}</h1>
+
+      {post.image && (
+        <img
+          src={post.image}
+          alt={post.title}
+          style={{ width: "100%", borderRadius: "8px" }}
+        />
+      )}
+
+      <p style={{ color: "#666", marginTop: "8px" }}>
+        {post.date} | {post.category}
+      </p>
+
+      <div
+        style={{ marginTop: "20px", lineHeight: "1.8" }}
+        dangerouslySetInnerHTML={{ __html: post.content }}
+      />
+    </div>
   );
 }
