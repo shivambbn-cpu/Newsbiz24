@@ -4,68 +4,65 @@ import { useEffect, useState } from "react";
 
 import Header from "@/app/components/Header";
 import SideMenu from "@/app/components/SideMenu";
-import HomeView from "@/app/components/HomeView";
 import Footer from "@/app/components/Footer";
+import DetailView from "@/app/components/DetailView";
 
 import { db } from "@/lib/firebase";
 import {
   collection,
   query,
   where,
-  orderBy,
   limit,
   getDocs,
 } from "firebase/firestore";
 
-export default function CategoryPage({ params }) {
-  const category = params.slug;
+export default function PostDetailPage({ params }) {
+  const slug = decodeURIComponent(params.slug); // ✅ VERY IMPORTANT
 
-  const [posts, setPosts] = useState([]);
+  const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const fetchPost = async () => {
       try {
         const q = query(
           collection(db, "posts"),
-          where("category", "==", category),
+          where("slug", "==", slug),
           where("status", "==", "published"),
-          orderBy("date", "desc"),
-          limit(12)
+          limit(1)
         );
 
         const snap = await getDocs(q);
 
-        const data = snap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setPosts(data);
+        if (!snap.empty) {
+          setPost({
+            id: snap.docs[0].id,
+            ...snap.docs[0].data(),
+          });
+        }
       } catch (err) {
-        console.error("Firestore error:", err);
+        console.error("Post fetch error:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPosts();
-  }, [category]);
+    fetchPost();
+  }, [slug]);
 
   if (loading) {
     return <div style={{ padding: 20 }}>Loading...</div>;
+  }
+
+  if (!post) {
+    return <div style={{ padding: 20 }}>Post not found</div>;
   }
 
   return (
     <>
       <Header />
       <SideMenu />
-
-      <HomeView
-        bigCard={posts[0] || null}
-        smallCards={posts.slice(1)}
-      />
-
+      <DetailView post={post} onClose={null} />
       <Footer />
     </>
   );
