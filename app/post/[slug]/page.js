@@ -60,7 +60,7 @@ export default function PostPage() {
       <Header />
       <SideMenu />
 
-      {/* 🔄 ROUND LOADER */}
+      {/* 🔄 ADVANCED FAST SPINNER */}
       {!checked && (
         <div style={loaderWrap}>
           <div style={loader}></div>
@@ -89,10 +89,11 @@ const loaderWrap = {
 };
 
 const loader = {
-  width: "42px",
-  height: "42px",
-  border: "4px solid #ddd",
-  borderTop: "4px solid #16a34a", // green (change if needed)
+  width: "46px",
+  height: "46px",
+  border: "4px solid rgba(22,163,74,0.2)",
+  borderTop: "4px solid #16a34a",
   borderRadius: "50%",
-  animation: "spin 1s linear infinite",
+  animation: "spinFast 0.6s linear infinite",
+  boxShadow: "0 0 12px rgba(22,163,74,0.35)",
 };
