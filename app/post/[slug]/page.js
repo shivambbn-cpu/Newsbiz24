@@ -7,7 +7,7 @@ import Footer from "@/app/components/Footer";
 import DetailView from "@/app/components/DetailView";
 
 import { db } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, query, where, limit, getDocs } from "firebase/firestore";
 
 const CATEGORIES = [
   "astro",
@@ -20,7 +20,7 @@ const CATEGORIES = [
   "weather",
 ];
 
-export const dynamic = "force-dynamic"; // ✅ VERY IMPORTANT
+export const dynamic = "force-dynamic";
 
 export default function PostDetailPage({ params }) {
   const slug = decodeURIComponent(params.slug);
@@ -31,17 +31,21 @@ export default function PostDetailPage({ params }) {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        for (const cat of CATEGORIES) {
-          const snap = await getDocs(collection(db, cat));
-
-          const found = snap.docs.find(
-            (doc) =>
-              doc.data().slug === slug &&
-              doc.data().status === "published"
+        for (const category of CATEGORIES) {
+          const q = query(
+            collection(db, category),
+            where("slug", "==", slug),
+            limit(1)
           );
 
-          if (found) {
-            setPost({ id: found.id, ...found.data(), category: cat });
+          const snap = await getDocs(q);
+
+          if (!snap.empty) {
+            setPost({
+              id: snap.docs[0].id,
+              category,
+              ...snap.docs[0].data(),
+            });
             break;
           }
         }
@@ -62,7 +66,7 @@ export default function PostDetailPage({ params }) {
     <>
       <Header />
       <SideMenu />
-      <DetailView post={post} onClose={null} />
+      <DetailView post={post} />
       <Footer />
     </>
   );
