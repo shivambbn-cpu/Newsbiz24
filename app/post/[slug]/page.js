@@ -1,3 +1,8 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+
 import Header from "@/app/components/Header";
 import SideMenu from "@/app/components/SideMenu";
 import Footer from "@/app/components/Footer";
@@ -17,63 +22,78 @@ const CATEGORIES = [
   "weather",
 ];
 
-/* 🔹 SERVER SIDE POST FETCH */
-async function getPostBySlug(slug) {
-  for (const cat of CATEGORIES) {
-    const snap = await getDocs(collection(db, cat));
-    const found = snap.docs.find(
-      (doc) => doc.data().slug === slug
-    );
-
-    if (found) {
-      return {
-        id: found.id,
-        ...found.data(),
-        category: cat,
-      };
-    }
-  }
-  return null;
-}
-
-/* 🔥 SEO METADATA (GOOGLE KE LIYE) */
-export async function generateMetadata({ params }) {
+export default function PostPage() {
+  const params = useParams();
   const slug = decodeURIComponent(params.slug);
-  const post = await getPostBySlug(slug);
 
-  if (!post) {
-    return {
-      title: "Post not found - NewsBiz24",
-      description: "This post does not exist",
+  const [post, setPost] = useState(null);
+  const [checked, setChecked] = useState(false);
+
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        for (const cat of CATEGORIES) {
+          const snap = await getDocs(collection(db, cat));
+
+          const found = snap.docs.find(
+            (doc) => doc.data().slug === slug
+          );
+
+          if (found) {
+            setPost({ id: found.id, ...found.data(), category: cat });
+            setChecked(true);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setChecked(true);
+      }
     };
-  }
 
-  return {
-    title: post.title,
-    description: post.content.replace(/<[^>]+>/g, "").slice(0, 150),
-    alternates: {
-      canonical: `https://www.newsbiz24.in/post/${post.slug}`,
-    },
-  };
-}
-
-/* 🔹 PAGE COMPONENT */
-export default async function PostPage({ params }) {
-  const slug = decodeURIComponent(params.slug);
-  const post = await getPostBySlug(slug);
+    fetchPost();
+  }, [slug]);
 
   return (
     <>
       <Header />
       <SideMenu />
 
-      {!post && (
+      {/* ðŸ”„ ADVANCED FAST SPINNER */}
+      {!checked && (
+        <div style={loaderWrap}>
+          <div style={loader}></div>
+        </div>
+      )}
+
+      {/* âŒ Post not found */}
+      {checked && !post && (
         <div style={{ padding: 20 }}>Post not found</div>
       )}
 
-      {post && <DetailView post={post} />}
+      {/* âœ… Post found */}
+      {checked && post && <DetailView post={post} />}
 
       <Footer />
     </>
   );
 }
+
+/* ðŸ”µ Loader Styles */
+const loaderWrap = {
+  minHeight: "60vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const loader = {
+  width: "46px",
+  height: "46px",
+  border: "4px solid rgba(22,163,74,0.2)",
+  borderTop: "4px solid #16a34a",
+  borderRadius: "50%",
+  animation: "spinFast 0.6s linear infinite",
+  boxShadow: "0 0 12px rgba(22,163,74,0.35)",
+};
