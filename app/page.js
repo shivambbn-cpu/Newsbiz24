@@ -90,7 +90,7 @@ export default function HomePage() {
               />
             ) : (
               <div style={noPostStyle}>
-                Sorry!! 😔😔 No matching post found!
+                Sorry.! 😔😔 No matching post found.!
               </div>
             )}
           </>
