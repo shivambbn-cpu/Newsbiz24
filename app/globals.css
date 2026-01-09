@@ -112,6 +112,17 @@ a.logo {
 
 
 
+/* ------------------ SHOP ICON STYLES ------------------ */
+.shop-icon {
+  font-size: 30px;       /* icon ko bada kiya */
+  margin-left: 12px;     /* search ke right me gap */
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.shop-icon:hover {
+  transform: scale(1.2); /* hover effect */
+}
 
 
 
