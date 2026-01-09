@@ -45,10 +45,19 @@ export default function Header({ onSearch }) {
           />
         </div>
 
+        {/* 🛍️ SHOP ICON */}
+        <div
+          className="shop-icon"
+          onClick={() => window.location.href = "/shop"}
+          title="Shop"
+        >
+          🛍️
+        </div>
+
       </div>
     </header>
   );
-}
+          }
 
 
-
+            
