@@ -6,71 +6,87 @@ import SideMenu from "./components/SideMenu";
 import HomeView from "./components/HomeView";
 import DetailView from "./components/DetailView";
 import Footer from "./components/Footer";
+
 import { db } from "../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 export default function HomePage() {
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [currentCategory, setCurrentCategory] = useState("astro"); // default
-  const [loading, setLoading] = useState(true); // spinner state
+  const [currentCategory, setCurrentCategory] = useState("astro");
+  const [loading, setLoading] = useState(true);
 
+  // 🔍 SEARCH STATE (HEADER SE CONNECTED)
+  const [searchText, setSearchText] = useState("");
+
+  // 🔥 Firestore data load
   useEffect(() => {
-    const fetchPosts = async () => {  
-      try {  
-        setLoading(true); // start spinner
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
 
-        const colRef = collection(db, currentCategory);  
-        const snapshot = await getDocs(colRef);  
+        const colRef = collection(db, currentCategory);
+        const snapshot = await getDocs(colRef);
 
-        const data = snapshot.docs.map(doc => ({  
-          id: doc.id,  
-          ...doc.data(),  
-        }));  
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-        data.sort((a, b) => new Date(b.date) - new Date(a.date)); // latest first  
+        data.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        setPosts(data);  
-        setSelectedPost(null); // category change pe detail close  
-      } catch (err) {  
-        console.error("Firestore Error:", err);  
+        setPosts(data);
+        setSelectedPost(null);
+        setSearchText(""); // 🔁 category change pe search reset
+      } catch (err) {
+        console.error("Firestore Error:", err);
       } finally {
-        setLoading(false); // stop spinner
-      }  
-    };  
+        setLoading(false);
+      }
+    };
 
     fetchPosts();
   }, [currentCategory]);
 
+  // 🔍 TITLE SEARCH LOGIC (FINAL)
+  const filteredPosts = posts.filter((post) => {
+    if (!searchText) return true;
+
+    return post?.title
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase());
+  });
+
   const openDetail = (post) => setSelectedPost(post);
   const closeDetail = () => setSelectedPost(null);
 
-  // BigCard & SmallCards split
-  const bigCard = posts[0];
-  const smallCards = posts.slice(1, 10);
+  // Cards filtered data se
+  const bigCard = filteredPosts[0];
+  const smallCards = filteredPosts.slice(1, 10);
 
   return (
     <>
-      <Header />
+      {/* 🔥 Header search ke saath */}
+      <Header
+        searchText={searchText}
+        onSearch={setSearchText}
+      />
 
-      {/* Category callback */}
       <SideMenu onCategorySelect={setCurrentCategory} />
 
       <div className="content-wrapper">
-
-        {/* ðŸ”„ Spinner */}
+        {/* 🔄 Loader */}
         {loading && (
           <div style={loaderWrap}>
             <div style={loader}></div>
           </div>
         )}
 
-        {/* HomeView or DetailView */}
         {!loading && !selectedPost && (
-          <HomeView  
-            bigCard={bigCard}  
-            smallCards={smallCards}  
-            onSelectPost={openDetail}  
+          <HomeView
+            bigCard={bigCard}
+            smallCards={smallCards}
+            onSelectPost={openDetail}
           />
         )}
 
@@ -84,7 +100,7 @@ export default function HomePage() {
   );
 }
 
-/* ðŸ”µ Loader Styles */
+/* 🔵 Loader Styles */
 const loaderWrap = {
   minHeight: "60vh",
   display: "flex",
@@ -101,3 +117,5 @@ const loader = {
   animation: "spinFast 0.6s linear infinite",
   boxShadow: "0 0 12px rgba(22,163,74,0.35)",
 };
+
+    
