@@ -37,7 +37,7 @@ export default function HomePage() {
 
         setPosts(data);
         setSelectedPost(null);
-        setSearchText(""); // 🔁 category change pe search reset
+        setSearchText(""); // category change pe search reset
       } catch (err) {
         console.error("Firestore Error:", err);
       } finally {
@@ -48,14 +48,10 @@ export default function HomePage() {
     fetchPosts();
   }, [currentCategory]);
 
-  // 🔍 TITLE SEARCH LOGIC (FINAL)
-  const filteredPosts = posts.filter((post) => {
-    if (!searchText) return true;
-
-    return post?.title
-      ?.toLowerCase()
-      .includes(searchText.toLowerCase());
-  });
+  // 🔍 TITLE SEARCH LOGIC
+  const filteredPosts = posts.filter((post) =>
+    post?.title?.toLowerCase().includes(searchText.toLowerCase())
+  );
 
   const openDetail = (post) => setSelectedPost(post);
   const closeDetail = () => setSelectedPost(null);
@@ -66,11 +62,7 @@ export default function HomePage() {
 
   return (
     <>
-      {/* 🔥 Header search ke saath */}
-      <Header
-        searchText={searchText}
-        onSearch={setSearchText}
-      />
+      <Header searchText={searchText} onSearch={setSearchText} />
 
       <SideMenu onCategorySelect={setCurrentCategory} />
 
@@ -82,16 +74,26 @@ export default function HomePage() {
           </div>
         )}
 
-        {!loading && !selectedPost && (
-          <HomeView
-            bigCard={bigCard}
-            smallCards={smallCards}
-            onSelectPost={openDetail}
-          />
-        )}
-
+        {/* DetailView */}
         {!loading && selectedPost && (
           <DetailView post={selectedPost} onClose={closeDetail} />
+        )}
+
+        {/* HomeView or No matching posts */}
+        {!loading && !selectedPost && (
+          <>
+            {filteredPosts.length > 0 ? (
+              <HomeView
+                bigCard={bigCard}
+                smallCards={smallCards}
+                onSelectPost={openDetail}
+              />
+            ) : (
+              <div style={noPostStyle}>
+                Sorry!! 😔😔 No matching post found!
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -117,5 +119,19 @@ const loader = {
   animation: "spinFast 0.6s linear infinite",
   boxShadow: "0 0 12px rgba(22,163,74,0.35)",
 };
+
+/* 🔹 No matching post style */
+const noPostStyle = {
+  minHeight: "40vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  fontSize: "1.5rem",
+  fontWeight: "600",
+  color: "#555",
+  textAlign: "center",
+};
+
+
 
     
