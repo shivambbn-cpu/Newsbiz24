@@ -115,7 +115,7 @@ a.logo {
 /* ------------------ SHOP ICON STYLES ------------------ */
 .shop-icon {
   font-size: 30px;       /* icon ko bada kiya */
-  margin-left: 12px;     /* search ke right me gap */
+  margin-left: 10px;     /* search ke right me gap */
   cursor: pointer;
   transition: transform 0.2s;
 }
