@@ -4,19 +4,11 @@ import { useState } from "react";
 
 export default function Header({ onSearch }) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [searchText, setSearchText] = useState("");
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
     const sideMenu = document.getElementById("side-menu");
     if (sideMenu) sideMenu.classList.toggle("active");
-  };
-
-  // 🔍 Search handler
-  const handleSearch = (e) => {
-    const value = e.target.value;
-    setSearchText(value);
-    onSearch(value); // 🔥 parent ko value bhej raha hai
   };
 
   return (
@@ -43,13 +35,13 @@ export default function Header({ onSearch }) {
           </span>
         </a>
 
-        {/* 🔍 SEARCH BAR */}
+        {/* 🔍 SEARCH */}
         <div className="search-container">
           <input
             type="text"
-            placeholder="Search news by title..."
-            value={searchText}
-            onChange={handleSearch}
+            id="search-input"
+            placeholder="Search..."
+            onChange={(e) => onSearch(e.target.value)}
           />
         </div>
 
@@ -57,3 +49,4 @@ export default function Header({ onSearch }) {
     </header>
   );
 }
+
