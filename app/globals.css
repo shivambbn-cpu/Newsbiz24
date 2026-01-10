@@ -669,3 +669,48 @@ footer {
 }
 
 
+
+.shop-page {
+padding: 16px;
+}
+
+.shop-title {
+text-align: center;
+margin-bottom: 20px;
+}
+
+.shop-grid {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+gap: 16px;
+}
+
+.shop-card {
+background: #fff;
+border-radius: 12px;
+padding: 12px;
+text-align: center;
+box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.shop-img {
+border-radius: 10px;
+object-fit: cover;
+}
+
+.price {
+font-weight: bold;
+margin: 8px 0;
+}
+
+.buy-btn {
+display: inline-block;
+background: #16a34a;
+color: #fff;
+padding: 8px 14px;
+border-radius: 8px;
+text-decoration: none;
+font-size: 14px;
+}
+
+}
