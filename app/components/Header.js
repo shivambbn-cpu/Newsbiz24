@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Header({ onSearch }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter(); // ✅ ADD THIS
 
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
@@ -45,10 +47,10 @@ export default function Header({ onSearch }) {
           />
         </div>
 
-        {/* 🛍️ SHOP ICON */}
+        {/* 🛍️ SHOP ICON (Next.js Navigation) */}
         <div
           className="shop-icon"
-          onClick={() => window.location.href = "/shop"}
+          onClick={() => router.push("/shop")} // ✅ UPDATED
           title="Shop"
         >
           🛍️
@@ -57,7 +59,5 @@ export default function Header({ onSearch }) {
       </div>
     </header>
   );
-          }
+    }
 
-
-            
