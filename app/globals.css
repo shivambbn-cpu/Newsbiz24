@@ -41,6 +41,7 @@ a.logo {
   text-decoration: none !important;
   color: inherit !important;
   margin: 0 auto;
+ margin-left: 12px;   /* ☰ menu se gap */
   text-align: center;
 }
 
