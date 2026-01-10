@@ -39,7 +39,7 @@ header {
 a.logo {
   display: flex;
   align-items: center;
-  margin-left: 23px;   /* ☰ menu se gap */
+  margin-left: 2px;   /* ☰ menu se gap */
   text-decoration: none !important;
   color: inherit !important;
   white-space: nowrap;
