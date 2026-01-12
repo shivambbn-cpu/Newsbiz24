@@ -1,18 +1,18 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 export default function RelatedPosts({ posts = [], currentPost }) {
   if (!currentPost || posts.length === 0) return null;
 
-  // 🔹 Filter related posts (same category, exclude current)
   const relatedPosts = posts
     .filter(
-      (p) =>
-        p.category === currentPost.category &&
-        p.slug !== currentPost.slug
+      (post) =>
+        post.category === currentPost.category &&
+        post.slug !== currentPost.slug
     )
-    .slice(0, 4); // max 4 posts
+    .slice(0, 3); // 3 related posts
 
   if (relatedPosts.length === 0) return null;
 
@@ -22,11 +22,32 @@ export default function RelatedPosts({ posts = [], currentPost }) {
 
       {relatedPosts.map((post) => (
         <Link
-          href={`/${post.slug}`}
           key={post.slug}
+          href={`/${post.slug}`}
           className="related-card"
         >
-          {post.title}
+          {/* 🔹 Image */}
+          {post.Image && (
+            <div className="related-img">
+              <Image
+                src={post.Image}
+                alt={post.title}
+                width={90}
+                height={70}
+                unoptimized
+              />
+            </div>
+          )}
+
+          {/* 🔹 Text */}
+          <div className="related-text">
+            <p className="related-post-title">{post.title}</p>
+            {post.Date && (
+              <span className="related-date">
+                Posted on : {post.Date}
+              </span>
+            )}
+          </div>
         </Link>
       ))}
     </div>
