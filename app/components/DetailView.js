@@ -1,23 +1,28 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 export default function DetailView({ post, onClose }) {
-  if (!post) return null;
+  const [loading, setLoading] = useState(true);
 
-  /* ðŸ” Scroll to top */
+  // 🔹 Scroll to top when post changes
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (post) {
+      window.scrollTo(0, 0);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
   }, [post]);
 
-  /* ðŸ”’ Lock body scroll */
+  // 🔹 Lock body scroll
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => (document.body.style.overflow = "");
   }, []);
 
-  /* ðŸ”™ Back button support */
+  // 🔹 Back button support
   useEffect(() => {
     history.pushState({ detail: true }, "");
     const onBack = () => onClose?.();
@@ -25,7 +30,7 @@ export default function DetailView({ post, onClose }) {
     return () => window.removeEventListener("popstate", onBack);
   }, [onClose]);
 
-  /* âŽ‹ ESC key */
+  // 🔹 ESC key
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") onClose?.();
@@ -34,7 +39,7 @@ export default function DetailView({ post, onClose }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  /* ðŸ“² WHATSAPP FLOAT BUTTON */
+  // 🔹 WhatsApp float button
   useEffect(() => {
     if (!post) return;
 
@@ -53,9 +58,7 @@ export default function DetailView({ post, onClose }) {
         <img src="https://i.ibb.co/qLnXkgVb/9d22c9bbafc5d6cde2858c982c3cb6e5.jpg"
         style="width:100%;height:100%;border-radius:30%;" />
       `;
-
       const size = window.innerWidth <= 768 ? 50 : 72;
-
       btn.style.cssText = `
         position:fixed;
         top:75%;
@@ -71,95 +74,83 @@ export default function DetailView({ post, onClose }) {
         align-items:center;
         justify-content:center;
       `;
-
       document.body.appendChild(btn);
     }
 
     btn.href = whatsappUrl;
     btn.style.display = "flex";
 
-    /* âŒ Remove on close */
     return () => {
       if (btn) btn.remove();
     };
   }, [post]);
 
+  // 🔹 Loader Styles
+  const loaderWrap = {
+    minHeight: "60vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  };
+
+  const loader = {
+    width: "46px",
+    height: "46px",
+    border: "4px solid rgba(22,163,74,0.2)",
+    borderTop: "4px solid #16a34a",
+    borderRadius: "50%",
+    animation: "spinFast 0.6s linear infinite",
+    boxShadow: "0 0 12px rgba(22,163,74,0.35)",
+  };
+
   return (
     <div className="detail-overlay">
-      <article className="blog-detail-card">
-
-        {/* IMAGE */}
-        {post.image && (
-          <div className="detail-image-wrapper">
-            <Image
-              src={post.image}
-              alt={post.title}
-              fill
-              priority
-              className="detail-img"
-            />
-          </div>
-        )}
-
-        {/* TITLE */}
-        <h1>{post.title}</h1>
-
-        {/* CONTENT */}
-        <div
-          className="detail-content"
-          dangerouslySetInnerHTML={{ __html: post.content }}
-        />
-
-        {/* DATE */}
-        {post.date && (
-          <p className="detail-date">
-            Posted on :{" "}
-            {new Date(
-              post.date?.toDate ? post.date.toDate() : post.date
-            ).toLocaleDateString("en-IN", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
-        )}
-      </article>
+      {loading || !post ? (
+        <div style={loaderWrap}>
+          <div style={loader}></div>
+        </div>
+      ) : (
+        <article className="blog-detail-card">
+          {post.image && (
+            <div className="detail-image-wrapper">
+              <Image
+                src={post.image}
+                alt={post.title}
+                fill
+                priority
+                className="detail-img"
+              />
+            </div>
+          )}
+          <h1>{post.title}</h1>
+          <div
+            className="detail-content"
+            dangerouslySetInnerHTML={{ __html: post.content }}
+          />
+          {post.date && (
+            <p className="detail-date">
+              Posted on :{" "}
+              {new Date(
+                post.date?.toDate ? post.date.toDate() : post.date
+              ).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          )}
+        </article>
+      )}
+      <style>
+        {`
+          @keyframes spinFast {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
     </div>
   );
 }
 
-
-
-
-    🔵 Loader Styles */
-const loaderWrap = {
-minHeight: "60vh",
-display: "flex",
-justifyContent: "center",
-alignItems: "center",
-};
-
-const loader = {
-width: "46px",
-height: "46px",
-border: "4px solid rgba(22,163,74,0.2)",
-borderTop: "4px solid #16a34a",
-borderRadius: "50%",
-animation: "spinFast 0.6s linear infinite",
-boxShadow: "0 0 12px rgba(22,163,74,0.35)",
-};
-
-/* 🔹 No matching post style */
-const noPostStyle = {
-minHeight: "40vh",
-display: "flex",
-justifyContent: "center",
-alignItems: "center",
-fontSize: "1.5rem",
-fontWeight: "600",
-color: "#555",
-textAlign: "center",
-};
-
-
-
+    
