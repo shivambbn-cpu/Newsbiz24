@@ -22,8 +22,8 @@ export default function ShopPage() {
         const snap = await getDocs(q);
 
         const data = snap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+          id: doc.id,        // Firestore document ID
+          ...doc.data(),      // name, price, image, description
         }));
 
         setProducts(data);
@@ -38,48 +38,51 @@ export default function ShopPage() {
   }, []);
 
   if (loading) {
-    return (
-      <p style={{ textAlign: "center", padding: 40 }}>
-        Loading shop...
-      </p>
-    );
+    return <p style={{ textAlign: "center", padding: 40 }}>Loading shop...</p>;
   }
 
   if (products.length === 0) {
-    return (
-      <p style={{ textAlign: "center", padding: 40 }}>
-        😔 No products available
-      </p>
-    );
+    return <p style={{ textAlign: "center", padding: 40 }}>😔 No products available</p>;
   }
 
   return (
-    <div className="shop-page">
-      <h1 className="shop-title">🛍️ Or Shop</h1>
+    <div className="shop-page" style={{ padding: 20 }}>
+      <h1 className="shop-title" style={{ textAlign: "center", marginBottom: 20 }}>
+        🛍️ Our Shop
+      </h1>
 
-      <div className="shop-grid">
+      <div className="shop-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
         {products.map((item) => (
-          <div className="shop-card" key={item.id}>
-
-            {/* 🔹 IMAGE CLICK → PRODUCT DETAIL */}
+          <div key={item.id} className="shop-card" style={{ border: "1px solid #ddd", borderRadius: 8, padding: 10, textAlign: "center" }}>
+            
+            {/* 🔹 Image click → Product Detail */}
             {item.image && (
               <Image
                 src={item.image}
                 alt={item.name}
                 width={300}
                 height={200}
-                className="shop-img"
-                style={{ cursor: "pointer" }}
+                style={{ cursor: "pointer", borderRadius: 8 }}
                 onClick={() => router.push(`/product/${item.id}`)}
               />
             )}
 
-            <h3>{item.name}</h3>
-            <p className="price">₹{item.price}</p>
+            <h3 style={{ margin: "10px 0" }}>{item.name}</h3>
+            <p style={{ color: "#4caf50", fontWeight: "bold" }}>₹{item.price}</p>
+            {item.description && <p style={{ fontSize: 14, color: "#555" }}>{item.description}</p>}
 
-            {/* 🔹 BUY NOW → ORDER PAGE (Cash on Delivery) */}
+            {/* 🔹 Buy Now → Order Page (Cash on Delivery) */}
             <button
-              className="buy-btn"
+              style={{
+                marginTop: 10,
+                padding: "10px 0",
+                width: "100%",
+                backgroundColor: "#4caf50",
+                color: "white",
+                border: "none",
+                borderRadius: 6,
+                cursor: "pointer"
+              }}
               onClick={() => router.push(`/order/${item.id}`)}
             >
               Buy Now (Cash on Delivery)
@@ -90,3 +93,5 @@ export default function ShopPage() {
     </div>
   );
 }
+
+          
