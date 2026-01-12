@@ -5,16 +5,23 @@ export default function RelatedPosts({ posts = [], currentPost }) {
 
   const related = posts
     .filter((p) => {
+      if (!p?.slug || !p?.category) return false;
       return (
         p.slug !== currentPost.slug &&
-        p.category?.toLowerCase() ===
+        p.category.toLowerCase() ===
           currentPost.category?.toLowerCase()
       );
     })
     .sort((a, b) => {
-      const dateA = a.publishedAt ? new Date(a.publishedAt) : 0;
-      const dateB = b.publishedAt ? new Date(b.publishedAt) : 0;
-      return dateB - dateA;
+      const getDate = (post) => {
+        if (post.publishedAt?.toDate)
+          return post.publishedAt.toDate();
+        if (post.date?.toDate) return post.date.toDate();
+        if (post.publishedAt) return new Date(post.publishedAt);
+        if (post.date) return new Date(post.date);
+        return new Date(0);
+      };
+      return getDate(b) - getDate(a);
     })
     .slice(0, 5);
 
@@ -36,3 +43,5 @@ export default function RelatedPosts({ posts = [], currentPost }) {
     </div>
   );
 }
+
+        
