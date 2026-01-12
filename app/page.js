@@ -16,10 +16,10 @@ export default function HomePage() {
   const [currentCategory, setCurrentCategory] = useState("astro");
   const [loading, setLoading] = useState(true);
 
-  // 🔍 SEARCH STATE (HEADER SE CONNECTED)
+  // ðŸ” SEARCH STATE (HEADER SE CONNECTED)
   const [searchText, setSearchText] = useState("");
 
-  // 🔥 Firestore data load
+  // ðŸ”¥ Firestore data load
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -48,7 +48,7 @@ export default function HomePage() {
     fetchPosts();
   }, [currentCategory]);
 
-  // 🔍 TITLE SEARCH LOGIC
+  // ðŸ” TITLE SEARCH LOGIC
   const filteredPosts = posts.filter((post) =>
     post?.title?.toLowerCase().includes(searchText.toLowerCase())
   );
@@ -67,7 +67,7 @@ export default function HomePage() {
       <SideMenu onCategorySelect={setCurrentCategory} />
 
       <div className="content-wrapper">
-        {/* 🔄 Loader */}
+        {/* ðŸ”„ Loader */}
         {loading && (
           <div style={loaderWrap}>
             <div style={loader}></div>
@@ -90,7 +90,7 @@ export default function HomePage() {
               />
             ) : (
               <div style={noPostStyle}>
-                Sorry.! 😔😔 No matching post found.!
+                Sorry.! ðŸ˜”ðŸ˜” No matching post found.!
               </div>
             )}
           </>
@@ -101,3 +101,37 @@ export default function HomePage() {
     </>
   );
 }
+
+/* ðŸ”µ Loader Styles */
+const loaderWrap = {
+  minHeight: "60vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const loader = {
+  width: "46px",
+  height: "46px",
+  border: "4px solid rgba(22,163,74,0.2)",
+  borderTop: "4px solid #16a34a",
+  borderRadius: "50%",
+  animation: "spinFast 0.6s linear infinite",
+  boxShadow: "0 0 12px rgba(22,163,74,0.35)",
+};
+
+/* ðŸ”¹ No matching post style */
+const noPostStyle = {
+  minHeight: "40vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  fontSize: "1.5rem",
+  fontWeight: "600",
+  color: "#555",
+  textAlign: "center",
+};
+
+
+
+    
