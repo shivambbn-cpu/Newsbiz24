@@ -34,7 +34,7 @@ export default function RelatedPosts({ posts = [], currentPost }) {
       {related.map((p) => (
         <div
           key={p.id || p.slug}
-          className="related-card"
+          className="related-title"   {/* ✅ CSS match */}
           onClick={() => (window.location.href = `/post/${p.slug}`)}
         >
           {p.title}
@@ -43,5 +43,3 @@ export default function RelatedPosts({ posts = [], currentPost }) {
     </div>
   );
 }
-
-        
