@@ -60,8 +60,7 @@ export default function ShopPage() {
       <div className="shop-grid">
         {products.map((item) => (
           <div className="shop-card" key={item.id}>
-
-            {/* 🔹 IMAGE CLICK → ORDER PAGE */}
+            {/* 🔹 IMAGE CLICK → PRODUCT DETAIL */}
             {item.image && (
               <Image
                 src={item.image}
@@ -69,7 +68,7 @@ export default function ShopPage() {
                 width={300}
                 height={200}
                 className="shop-img"
-                onClick={() => router.push(`/order/${item.id}`)}
+                onClick={() => router.push(`/product/${item.id}`)}
                 style={{ cursor: "pointer" }}
               />
             )}
@@ -77,7 +76,7 @@ export default function ShopPage() {
             <h3>{item.name}</h3>
             <p className="price">₹{item.price}</p>
 
-            {/* 🔥 CASH ON DELIVERY BUTTON */}
+            {/* 🔹 BUY NOW → ORDER PAGE */}
             <button
               className="buy-btn"
               onClick={() => router.push(`/order/${item.id}`)}
@@ -90,5 +89,3 @@ export default function ShopPage() {
     </div>
   );
 }
-
-            
