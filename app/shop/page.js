@@ -55,7 +55,7 @@ export default function ShopPage() {
 
   return (
     <div className="shop-page">
-      <h1 className="shop-title">🛍️ Our Shop</h1>
+      <h1 className="shop-title">🛍️ hOur Shop</h1>
 
       <div className="shop-grid">
         {products.map((item) => (
@@ -89,3 +89,6 @@ export default function ShopPage() {
     </div>
   );
 }
+
+
+
