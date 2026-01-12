@@ -1,11 +1,31 @@
 "use client";
 
-export default function RelatedPosts({ posts }) {
-  return (
-    <div style={{ padding: 20, background: "#e8f3ff" }}>
-      <h3>Related Posts TEST</h3>
+export default function RelatedPosts({ posts = [], currentPost }) {
+  if (!posts.length || !currentPost) return null;
 
-      <pre>{JSON.stringify(posts, null, 2)}</pre>
+  const related = posts
+    .filter(
+      p =>
+        p.slug !== currentPost.slug &&
+        p.category === currentPost.category
+    )
+    .slice(0, 5);
+
+  if (!related.length) return null;
+
+  return (
+    <div id="related-posts">
+      <h3>Related Posts</h3>
+
+      {related.map(p => (
+        <div
+          key={p.slug}
+          className="related-title"
+          onClick={() => window.location.href = `/post/${p.slug}`}
+        >
+          {p.title}
+        </div>
+      ))}
     </div>
   );
 }
