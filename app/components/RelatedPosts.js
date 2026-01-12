@@ -3,40 +3,50 @@
 import Link from "next/link";
 
 export default function RelatedPosts({ posts = [], currentPost }) {
-  if (!currentPost || !currentPost.category) return null;
+  // Agar data hi nahi hai toh return null
+  if (!currentPost || !currentPost.category || !posts.length) {
+    return null;
+  }
 
-  const currentCategory = currentPost.category.trim().toLowerCase();
+  const currentCategory = currentPost.category.toString().trim().toLowerCase();
 
   const relatedPosts = posts
     .filter((p) => {
-      if (!p.category) return false;
-
+      if (!p.category || !p.slug) return false;
+      
+      const postCategory = p.category.toString().trim().toLowerCase();
       return (
-        p.category.trim().toLowerCase() === currentCategory &&
+        postCategory === currentCategory && 
         p.slug !== currentPost.slug
       );
     })
     .slice(0, 4);
 
+  // Debugging ke liye:
+  console.log("Related Posts found:", relatedPosts.length);
+
   if (relatedPosts.length === 0) return null;
 
   return (
-    <div id="related-posts">
+    <section id="related-posts" style={{ marginTop: "2rem", borderTop: "1px solid #eee" }}>
       <h3>Related Posts</h3>
-
-      {relatedPosts.map((post) => (
-        <Link
-          key={post.slug}
-          href={`/${post.slug}`}
-          style={{ textDecoration: "none" }}
-        >
-          <div className="related-title">
-            {post.title}
-          </div>
-        </Link>
-      ))}
-    </div>
+      <div className="related-grid">
+        {relatedPosts.map((post) => (
+          <Link
+            key={post.slug}
+            href={`/${post.slug}`}
+            style={{ textDecoration: "none", display: "block", marginBottom: "10px" }}
+          >
+            <div className="related-title" style={{ color: "blue" }}>
+              {post.title}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 }
 
 
+
+                          
