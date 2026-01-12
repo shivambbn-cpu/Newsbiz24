@@ -102,36 +102,16 @@ export default function HomePage() {
   );
 }
 
-/* 🔵 Loader Styles */
-const loaderWrap = {
-  minHeight: "60vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-};
-
 const loader = {
-  width: "46px",
-  height: "46px",
-  border: "4px solid rgba(22,163,74,0.2)",
-  borderTop: "4px solid #16a34a",
+  width: "50px",
+  height: "50px",
   borderRadius: "50%",
-  animation: "spinFast 0.6s linear infinite",
-  boxShadow: "0 0 12px rgba(22,163,74,0.35)",
+  border: "6px solid transparent",
+  borderTop: "6px solid #16a34a",
+  borderRight: "6px solid #22c55e",
+  borderBottom: "6px solid #4ade80",
+  animation: "spinFast 0.8s linear infinite",
+  boxShadow: "0 0 15px rgba(22,163,74,0.4)",
 };
-
-/* 🔹 No matching post style */
-const noPostStyle = {
-  minHeight: "40vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  fontSize: "1.5rem",
-  fontWeight: "600",
-  color: "#555",
-  textAlign: "center",
-};
-
-
 
     
