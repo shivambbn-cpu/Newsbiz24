@@ -2,23 +2,22 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
-import RelatedPosts from "./RelatedPosts"; // ✅ ADD THIS
 
-export default function DetailView({ post, allPosts = [], onClose }) {
+export default function DetailView({ post, onClose }) {
   if (!post) return null;
 
-  /* 🔝 Scroll to top */
+  /* ðŸ” Scroll to top */
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [post]);
 
-  /* 🔒 Lock body scroll */
+  /* ðŸ”’ Lock body scroll */
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => (document.body.style.overflow = "");
   }, []);
 
-  /* 🔙 Back button support */
+  /* ðŸ”™ Back button support */
   useEffect(() => {
     history.pushState({ detail: true }, "");
     const onBack = () => onClose?.();
@@ -26,7 +25,7 @@ export default function DetailView({ post, allPosts = [], onClose }) {
     return () => window.removeEventListener("popstate", onBack);
   }, [onClose]);
 
-  /* ⎋ ESC key */
+  /* âŽ‹ ESC key */
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") onClose?.();
@@ -35,7 +34,7 @@ export default function DetailView({ post, allPosts = [], onClose }) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  /* 📲 WHATSAPP FLOAT BUTTON */
+  /* ðŸ“² WHATSAPP FLOAT BUTTON */
   useEffect(() => {
     if (!post) return;
 
@@ -79,6 +78,7 @@ export default function DetailView({ post, allPosts = [], onClose }) {
     btn.href = whatsappUrl;
     btn.style.display = "flex";
 
+    /* âŒ Remove on close */
     return () => {
       if (btn) btn.remove();
     };
@@ -123,16 +123,9 @@ export default function DetailView({ post, allPosts = [], onClose }) {
             })}
           </p>
         )}
-
-        {/* 🔥 RELATED POSTS (IMAGE JAISE) */}
-        <RelatedPosts
-          posts={allPosts}
-          currentPost={post}
-        />
-
       </article>
     </div>
   );
 }
 
-      
+                                            
