@@ -69,11 +69,7 @@ export default function ShopPage() {
                 height={200}
                 className="shop-img"
                 style={{ cursor: "pointer" }}
-                onClick={() =>
-                  router.push(`/product/${item.id}`, {
-                    state: { product: item }, // instant navigation
-                  })
-                }
+                onClick={() => router.push(`/product/${item.id}`)}
               />
             )}
 
@@ -83,11 +79,7 @@ export default function ShopPage() {
             {/* 🔹 BUY NOW → ORDER PAGE */}
             <button
               className="buy-btn"
-              onClick={() =>
-                router.push(`/order/${item.id}`, {
-                  state: { product: item }, // instant navigation
-                })
-              }
+              onClick={() => router.push(`/order/${item.id}`)}
             >
               Buy Now (Cash on Delivery)
             </button>
@@ -97,5 +89,3 @@ export default function ShopPage() {
     </div>
   );
 }
-
-            
