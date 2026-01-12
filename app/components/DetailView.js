@@ -2,8 +2,9 @@
 
 import { useEffect } from "react";
 import Image from "next/image";
+import RelatedPosts from "./RelatedPosts"; // ✅ ADD THIS
 
-export default function DetailView({ post, onClose }) {
+export default function DetailView({ post, allPosts = [], onClose }) {
   if (!post) return null;
 
   /* 🔝 Scroll to top */
@@ -78,7 +79,6 @@ export default function DetailView({ post, onClose }) {
     btn.href = whatsappUrl;
     btn.style.display = "flex";
 
-    /* ❌ Remove on close */
     return () => {
       if (btn) btn.remove();
     };
@@ -123,7 +123,16 @@ export default function DetailView({ post, onClose }) {
             })}
           </p>
         )}
+
+        {/* 🔥 RELATED POSTS (IMAGE JAISE) */}
+        <RelatedPosts
+          posts={allPosts}
+          currentPost={post}
+        />
+
       </article>
     </div>
   );
 }
+
+      
