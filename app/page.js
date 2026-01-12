@@ -102,16 +102,3 @@ export default function HomePage() {
   );
 }
 
-const loader = {
-  width: "50px",
-  height: "50px",
-  borderRadius: "50%",
-  border: "6px solid transparent",
-  borderTop: "6px solid #16a34a",
-  borderRight: "6px solid #22c55e",
-  borderBottom: "6px solid #4ade80",
-  animation: "spinFast 0.8s linear infinite",
-  boxShadow: "0 0 15px rgba(22,163,74,0.4)",
-};
-
-    
