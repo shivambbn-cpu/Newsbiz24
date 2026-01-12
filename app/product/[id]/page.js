@@ -7,8 +7,9 @@ import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 
 export default function ProductDetail({ params }) {
-  const { id } = params; // document id from URL
+  const { id } = params; // document ID from URL
   const router = useRouter();
+
   const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -35,7 +36,7 @@ export default function ProductDetail({ params }) {
   if (loading) return <p style={{ textAlign: "center", padding: 40 }}>Loading product...</p>;
   if (!product) return <p style={{ textAlign: "center", padding: 40 }}>Product not found</p>;
 
-  // Add to cart function
+  // Add to cart
   const addToCart = () => {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const existingIndex = cart.findIndex(item => item.id === id);
@@ -48,14 +49,15 @@ export default function ProductDetail({ params }) {
     alert("✅ Added to cart");
   };
 
-  // Buy now function → go to Cash on Delivery page
+  // Buy Now → go to order page
   const buyNow = () => {
     addToCart();
     router.push(`/order/${id}`);
   };
 
   return (
-    <div className="product-detail" style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
+    <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
+      {/* Product Image */}
       {product.image && (
         <Image
           src={product.image}
@@ -66,18 +68,21 @@ export default function ProductDetail({ params }) {
         />
       )}
 
+      {/* Product Name & Price */}
       <h1 style={{ marginTop: 20 }}>{product.name}</h1>
       <h2 style={{ color: "#4caf50", margin: "10px 0" }}>₹{product.price}</h2>
+
+      {/* Product Description */}
       {product.description && <p style={{ color: "#555" }}>{product.description}</p>}
 
-      {/* Quantity selector */}
+      {/* Quantity Selector */}
       <div style={{ display: "flex", alignItems: "center", margin: "20px 0" }}>
         <button onClick={() => setQty(qty > 1 ? qty - 1 : 1)} style={{ padding: "5px 10px" }}>-</button>
         <span style={{ margin: "0 10px" }}>{qty}</span>
         <button onClick={() => setQty(qty + 1)} style={{ padding: "5px 10px" }}>+</button>
       </div>
 
-      {/* Action buttons */}
+      {/* Action Buttons */}
       <div style={{ display: "flex", gap: 10 }}>
         <button
           onClick={addToCart}
@@ -112,5 +117,10 @@ export default function ProductDetail({ params }) {
     </div>
   );
 }
+
+
+
+
+  
 
   
