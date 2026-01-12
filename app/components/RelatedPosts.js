@@ -3,27 +3,21 @@
 import Link from "next/link";
 
 export default function RelatedPosts({ posts = [], currentPost }) {
-  // 🔍 DEBUG — यही add करो
-  console.log("CURRENT POST CATEGORY 👉", currentPost?.category);
-  console.log(
-    "ALL POSTS CATEGORIES 👉",
-    posts.map((p) => p.category)
-  );
-
-  if (!currentPost || posts.length === 0) return null;
+  if (!currentPost || !currentPost.category) return null;
 
   const relatedPosts = posts
     .filter(
-      (post) =>
-        post.category === currentPost.category &&
-        post.slug !== currentPost.slug
+      (item) =>
+        item.category === currentPost.category &&
+        item.slug !== currentPost.slug
     )
     .slice(0, 4);
 
   if (relatedPosts.length === 0) return null;
 
   return (
-    <div id="related-posts" style={{ marginTop: "20px" }}>
+    <div id="related-posts">
+
       <h3>Related Posts</h3>
 
       {relatedPosts.map((post) => (
@@ -32,9 +26,12 @@ export default function RelatedPosts({ posts = [], currentPost }) {
           href={`/${post.slug}`}
           style={{ textDecoration: "none" }}
         >
-          <div className="related-title">{post.title}</div>
+          <div className="related-title">
+            {post.title}
+          </div>
         </Link>
       ))}
+
     </div>
   );
 }
