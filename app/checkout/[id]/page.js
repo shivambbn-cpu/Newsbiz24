@@ -11,17 +11,9 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 
-/* 🔹 INDIA STATE → DISTRICT MAP (sample, extend later) */
-const STATE_DISTRICT = {
-  "Uttar Pradesh": ["Lucknow", "Varanasi", "Prayagraj", "Kanpur", "Noida"],
-  "Bihar": ["Patna", "Gaya", "Bhagalpur"],
-  "Delhi": ["New Delhi", "Dwarka", "Rohini"],
-  "Madhya Pradesh": ["Bhopal", "Indore", "Jabalpur"],
-  "Rajasthan": ["Jaipur", "Jodhpur", "Udaipur"]
-};
-
 export default function CheckoutPage() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id;
   const router = useRouter();
 
   const [product, setProduct] = useState(null);
@@ -31,56 +23,80 @@ export default function CheckoutPage() {
     name: "",
     mobile: "",
     address: "",
+    city: "",
     state: "",
-    district: "",
-    pincode: "",
-    country: "India"
+    pincode: ""
   });
 
-  /* 🔹 Fetch Product */
+  /* ðŸ”¹ Fetch Product */
   useEffect(() => {
     if (!id) return;
 
     const fetchProduct = async () => {
-      const snap = await getDoc(doc(db, "shop_products", id));
-      if (snap.exists()) {
-        setProduct({ id: snap.id, ...snap.data() });
+      try {
+        const ref = doc(db, "shop_products", id);
+        const snap = await getDoc(ref);
+
+        if (snap.exists()) {
+          setProduct({ id: snap.id, ...snap.data() });
+        } else {
+          alert("Product not found");
+        }
+      } catch (error) {
+        console.error("PRODUCT FETCH ERROR ðŸ‘‰", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchProduct();
   }, [id]);
 
-  /* 🔹 Place Order */
+  /* ðŸ”¹ Place Order */
   const placeOrder = async () => {
+    if (!product) {
+      alert("Product not loaded");
+      return;
+    }
+
     if (
       !form.name ||
       !form.mobile ||
       !form.address ||
+      !form.city ||
       !form.state ||
-      !form.district ||
       !form.pincode
     ) {
       alert("Please fill all fields");
       return;
     }
 
-    await addDoc(collection(db, "orders"), {
-      productId: product.id,
-      productName: product.name,
-      price: product.price,
-      customer: form,
-      paymentMethod: "Cash On Delivery",
-      status: "Pending",
-      createdAt: serverTimestamp()
-    });
+    try {
+      await addDoc(collection(db, "orders"), {
+        productId: product.id,
+        productName: product.name,
+        productImage: product.image,
+        price: product.price,
+        customer: form,
+        paymentMethod: "Cash On Delivery",
+        status: "Pending",
+        createdAt: serverTimestamp()
+      });
 
-    router.push("/order-success");
+      router.push("/order-success");
+    } catch (error) {
+      console.error("ORDER ERROR ðŸ‘‰", error);
+      alert("Order failed. Check console.");
+    }
   };
 
-  if (loading) return <p style={{ padding: 40 }}>Loading...</p>;
-  if (!product) return <p>Product not found</p>;
+  if (loading) {
+    return <p style={{ padding: 40 }}>Loading...</p>;
+  }
+
+  if (!product) {
+    return <p style={{ padding: 40 }}>Product not found</p>;
+  }
 
   return (
     <div style={{ padding: 20, maxWidth: 520, margin: "auto" }}>
@@ -92,7 +108,7 @@ export default function CheckoutPage() {
         style={{ width: "100%", borderRadius: 10 }}
       />
 
-      <h3 style={{ color: "green" }}>₹{product.price}</h3>
+      <h3 style={{ color: "green" }}>â‚¹{product.price}</h3>
 
       <input
         placeholder="Full Name"
@@ -115,41 +131,19 @@ export default function CheckoutPage() {
         style={input}
       />
 
-      {/* 🔽 STATE SELECT */}
-      <select
-        value={form.state}
-        onChange={e =>
-          setForm({
-            ...form,
-            state: e.target.value,
-            district: ""
-          })
-        }
+      <input
+        placeholder="City"
+        value={form.city}
+        onChange={e => setForm({ ...form, city: e.target.value })}
         style={input}
-      >
-        <option value="">Select State</option>
-        {Object.keys(STATE_DISTRICT).map(state => (
-          <option key={state} value={state}>
-            {state}
-          </option>
-        ))}
-      </select>
+      />
 
-      {/* 🔽 DISTRICT SELECT */}
-      <select
-        value={form.district}
-        onChange={e => setForm({ ...form, district: e.target.value })}
+      <input
+        placeholder="State"
+        value={form.state}
+        onChange={e => setForm({ ...form, state: e.target.value })}
         style={input}
-        disabled={!form.state}
-      >
-        <option value="">Select District</option>
-        {form.state &&
-          STATE_DISTRICT[form.state].map(dist => (
-            <option key={dist} value={dist}>
-              {dist}
-            </option>
-          ))}
-      </select>
+      />
 
       <input
         placeholder="Pincode"
@@ -158,9 +152,6 @@ export default function CheckoutPage() {
         style={input}
       />
 
-      {/* 🔒 COUNTRY FIXED */}
-      <input value="India" disabled style={input} />
-
       <button onClick={placeOrder} style={btn}>
         Place Order (COD)
       </button>
@@ -168,7 +159,7 @@ export default function CheckoutPage() {
   );
 }
 
-/* 🔹 Styles */
+/* ðŸ”¹ Styles */
 const input = {
   width: "100%",
   padding: 10,
