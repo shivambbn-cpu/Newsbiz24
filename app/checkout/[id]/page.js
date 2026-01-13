@@ -108,7 +108,7 @@ export default function CheckoutPage() {
         style={{ width: "100%", borderRadius: 10 }}
       />
 
-      <h3 style={{ color: "green" }}>â‚¹{product.price}</h3>
+      <h3 style={{ color: "green" }}>Rs{product.price}</h3>
 
       <input
         placeholder="Full Name"
