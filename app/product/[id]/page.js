@@ -1,45 +1,62 @@
-
-
 "use client";
 
 import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-export default function ProductPage({ params }) {
-  const { id } = params;
+export default function ProductPage() {
+  const params = useParams(); // ✅ IMPORTANT FIX
   const router = useRouter();
+  const { id } = params;
+
   const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      const snap = await getDoc(doc(db, "shop_products", id));
-      if (snap.exists()) setProduct({ id, ...snap.data() });
+    if (!id) return;
+
+    const loadProduct = async () => {
+      try {
+        const ref = doc(db, "shop_products", id);
+        const snap = await getDoc(ref);
+
+        if (snap.exists()) {
+          setProduct({ id, ...snap.data() });
+        } else {
+          console.log("❌ No such product");
+        }
+      } catch (err) {
+        console.error("🔥 Product load error:", err);
+      } finally {
+        setLoading(false);
+      }
     };
-    load();
+
+    loadProduct();
   }, [id]);
 
-  if (!product) return <p style={{ textAlign: "center" }}>Loading...</p>;
-
-  const addToCart = () => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    cart.push({ ...product, qty: 1 });
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert("✅ Added to cart");
-  };
+  if (loading) return <p style={{ padding: 40 }}>Loading product...</p>;
+  if (!product) return <p style={{ padding: 40 }}>Product not found</p>;
 
   return (
     <div style={{ padding: 20, maxWidth: 500, margin: "auto" }}>
-      <Image src={product.image} alt={product.name} width={400} height={250} />
+      <Image
+        src={product.image}
+        alt={product.name}
+        width={400}
+        height={250}
+      />
 
       <h2>{product.name}</h2>
-      <h3 style={{ color: "#4caf50" }}>₹{product.price}</h3>
-
+      <h3 style={{ color: "green" }}>₹{product.price}</h3>
       <p>{product.description}</p>
 
-      <button style={btn("#f0ad4e")} onClick={addToCart}>
+      <button
+        style={btn("#f0ad4e")}
+        onClick={() => alert("Added to cart")}
+      >
         Add to Cart
       </button>
 
@@ -62,11 +79,3 @@ const btn = (bg) => ({
   border: "none",
   borderRadius: 6,
 });
-
-
-               
-
-
-  
-
-  
