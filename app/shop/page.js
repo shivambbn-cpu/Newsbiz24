@@ -9,15 +9,20 @@ export default function ShopPage() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [openId, setOpenId] = useState(null);
 
-  /* 🔹 Fetch products from Firestore */
+  /* 🔹 Fetch products */
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const q = query(collection(db, "shop_products"), where("active", "==", true));
+        const q = query(
+          collection(db, "shop_products"),
+          where("active", "==", true)
+        );
         const snap = await getDocs(q);
-        const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const data = snap.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
         setProducts(data);
       } catch (err) {
         console.error("Firestore error:", err);
@@ -25,80 +30,72 @@ export default function ShopPage() {
         setLoading(false);
       }
     };
+
     fetchProducts();
   }, []);
 
-  /* 🔹 Add to Cart with quantity support */
-  const addToCart = (item, qty = 1) => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const index = cart.findIndex(p => p.id === item.id);
-
-    if (index >= 0) cart[index].qty += qty;
-    else cart.push({ ...item, qty });
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert(`✅ Added ${qty} item(s) to cart`);
-  };
-
-  /* 🔹 Buy Now */
-  const handleBuyNow = (item) => {
-    router.push(`/product/${item.id}`);
-  };
-
   if (loading) {
-    return <p style={{ padding: 40, textAlign: "center" }}>Loading shop...</p>;
+    return (
+      <p style={{ padding: 40, textAlign: "center" }}>
+        Loading shop...
+      </p>
+    );
   }
 
   return (
     <div style={{ padding: 20 }}>
-      <h1 style={{ textAlign: "center", marginBottom: 20 }}>🛍️ Our Shop</h1>
+      <h1 style={{ textAlign: "center", marginBottom: 20 }}>
+        🛍️ Our Shop
+      </h1>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", gap: 20 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+          gap: 20,
+        }}
+      >
         {products.map(item => (
-          <div key={item.id} style={{ border: "1px solid #ddd", borderRadius: 8, padding: 10, textAlign: "center" }}>
+          <div
+            key={item.id}
+            onClick={() => router.push(`/product/${item.id}`)}
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 10,
+              padding: 10,
+              cursor: "pointer",
+              transition: "0.2s",
+            }}
+          >
             {item.image && (
               <img
                 src={item.image}
                 alt={item.name}
-                style={{ width: "100%", borderRadius: 8, maxHeight: 180, objectFit: "cover" }}
+                style={{
+                  width: "100%",
+                  borderRadius: 8,
+                  maxHeight: 180,
+                  objectFit: "cover",
+                }}
               />
             )}
 
-            <h3 style={{ margin: "10px 0" }}>{item.name}</h3>
-            <p style={{ color: "#4caf50", fontWeight: "bold" }}>₹{item.price}</p>
+            <h3 style={{ margin: "10px 0" }}>
+              {item.name}
+            </h3>
 
-            {openId === item.id ? (
-              <>
-                {/* Add to Cart button with qty 1 */}
-                <button style={btnStyle("#f0ad4e")} onClick={() => addToCart(item, 1)}>
-                  Add to Cart
-                </button>
-
-                {/* Buy Now */}
-                <button style={btnStyle("#4caf50")} onClick={() => handleBuyNow(item)}>
-                  Buy Now
-                </button>
-              </>
-            ) : (
-              <button style={btnStyle("#2196f3")} onClick={() => setOpenId(item.id)}>
-                Add
-              </button>
-            )}
+            <p
+              style={{
+                color: "#4caf50",
+                fontWeight: "bold",
+                fontSize: 18,
+              }}
+            >
+              ₹{item.price}
+            </p>
           </div>
         ))}
       </div>
     </div>
   );
 }
-
-/* 🔹 Button style helper */
-const btnStyle = (bg) => ({
-  width: "100%",
-  padding: 10,
-  marginTop: 8,
-  backgroundColor: bg,
-  color: "#fff",
-  border: "none",
-  borderRadius: 6,
-  cursor: "pointer"
-});
