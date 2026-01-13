@@ -1,12 +1,12 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
-import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
-export default function ProductDetailPage() {
+export default function ProductPage() {
   const { id } = useParams();
   const router = useRouter();
 
@@ -16,67 +16,62 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (!id) return;
 
-    const fetchProduct = async () => {
+    const load = async () => {
       try {
-        const productRef = doc(db, "shop_products", id);
-        const snap = await getDoc(productRef);
+        const ref = doc(db, "shop_products", id);
+        const snap = await getDoc(ref);
 
         if (snap.exists()) {
-          const data = snap.data();
-
-          // 🔒 inactive product hide
-          if (!data.active) {
-            alert("Product not available");
-            router.push("/shop");
-            return;
-          }
-
-          setProduct({ id: snap.id, ...data });
-        } else {
-          alert("Product not found");
-          router.push("/shop");
+          setProduct({ id: snap.id, ...snap.data() });
         }
-      } catch (error) {
-        console.error(error);
+      } catch (e) {
+        console.error("Firestore error:", e);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProduct();
-  }, [id, router]);
+    load();
+  }, [id]);
 
-  if (loading) return <p style={{ padding: 20 }}>Loading...</p>;
-  if (!product) return null;
+  if (loading) {
+    return <p style={{ padding: 40, textAlign: "center" }}>Loading…</p>;
+  }
+
+  if (!product) {
+    return <p style={{ padding: 40, textAlign: "center" }}>❌ Product not found</p>;
+  }
 
   return (
-    <div style={{ maxWidth: 600, margin: "auto", padding: 16 }}>
-      <Image
-        src={product.image}
-        alt={product.name}
-        width={600}
-        height={400}
-        style={{ width: "100%", height: "auto", borderRadius: 12 }}
-      />
+    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
+      {product.image && (
+        <img
+          src={product.image}
+          alt={product.name}
+          style={{
+            width: "100%",
+            maxHeight: 350,
+            objectFit: "cover",
+            borderRadius: 10
+          }}
+        />
+      )}
 
-      <h1 style={{ marginTop: 16 }}>{product.name}</h1>
-      <h2 style={{ color: "#2e7d32" }}>₹{product.price}</h2>
+      <h1>{product.name}</h1>
+      <h2 style={{ color: "#4caf50" }}>₹{product.price}</h2>
 
-      <p style={{ marginTop: 10, lineHeight: 1.6 }}>
-        {product.description}
-      </p>
+      <p>{product.description}</p>
 
       <button
         onClick={() => router.push(`/checkout/${product.id}`)}
         style={{
           width: "100%",
-          marginTop: 20,
-          padding: 14,
-          background: "#ff5722",
+          padding: 12,
+          background: "#4caf50",
           color: "#fff",
-          fontSize: 16,
           border: "none",
           borderRadius: 8,
+          fontSize: 16
         }}
       >
         Buy Now
@@ -85,4 +80,4 @@ export default function ProductDetailPage() {
   );
 }
 
-        
+    
