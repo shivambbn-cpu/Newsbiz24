@@ -18,10 +18,9 @@ export default function OrderSuccess() {
 
     const pdf = new jsPDF();
 
-    /* 🔥 FIX START */
+    /* 🔥 FINAL FIX */
     pdf.setFont("helvetica", "normal");
     pdf.setCharSpace(0);
-    /* 🔥 FIX END */
 
     pdf.setFontSize(18);
     pdf.text("INVOICE", 105, 15, { align: "center" });
@@ -57,13 +56,13 @@ export default function OrderSuccess() {
 
     pdf.text(order.productName, 15, 138);
     pdf.text(String(order.qty), 120, 138);
-    pdf.text(`₹${Number(order.price)}`, 140, 138);
-    pdf.text(`₹${Number(order.total)}`, 165, 138);
+    pdf.text(`Rs. ${Number(order.price)}`, 140, 138);   // ✅ FIX
+    pdf.text(`Rs. ${Number(order.total)}`, 165, 138);   // ✅ FIX
 
     pdf.line(15, 150, 195, 150);
 
     pdf.setFontSize(14);
-    pdf.text(`Grand Total: ₹${Number(order.total)}`, 140, 162);
+    pdf.text(`Grand Total: Rs. ${Number(order.total)}`, 140, 162); // ✅ FIX
 
     pdf.setFontSize(10);
     pdf.text("Thank you for shopping with us!", 105, 180, {
@@ -87,7 +86,7 @@ export default function OrderSuccess() {
         <p><b>Order ID:</b> {order.orderId}</p>
         <p><b>Product:</b> {order.productName}</p>
         <p><b>Quantity:</b> {order.qty}</p>
-        <p><b>Total:</b> ₹{order.total}</p>
+        <p><b>Total:</b> Rs. {order.total}</p>
         <p><b>Payment:</b> Cash on Delivery</p>
       </div>
 
