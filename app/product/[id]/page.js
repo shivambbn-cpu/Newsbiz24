@@ -11,41 +11,67 @@ export default function ProductPage() {
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [qty, setQty] = useState(1); // 🔹 Quantity state
+  const [qty, setQty] = useState(1);
+  const [total, setTotal] = useState(0);
 
+  /* 🔹 Fetch product (FAST) */
   useEffect(() => {
     if (!id) return;
 
-    const fetchProduct = async () => {
+    (async () => {
       const ref = doc(db, "shop_products", id);
       const snap = await getDoc(ref);
 
-      if (snap.exists()) setProduct({ id: snap.id, ...snap.data() });
+      if (snap.exists()) {
+        const data = { id: snap.id, ...snap.data() };
+        setProduct(data);
+        setTotal(data.price); // initial total
+      }
       setLoading(false);
-    };
-
-    fetchProduct();
+    })();
   }, [id]);
 
-  /* 🔹 Add to Cart with quantity */
-  const addToCart = (item, qty) => {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const index = cart.findIndex(p => p.id === item.id);
+  /* 🔹 Auto calculate total */
+  useEffect(() => {
+    if (product) {
+      setTotal(product.price * qty);
+    }
+  }, [qty, product]);
 
-    if (index >= 0) cart[index].qty += qty;
-    else cart.push({ ...item, qty });
+  /* 🔹 Add to Cart */
+  const addToCart = () => {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const index = cart.findIndex(p => p.id === product.id);
+
+    if (index >= 0) {
+      cart[index].qty += qty;
+      cart[index].total += total;
+    } else {
+      cart.push({
+        ...product,
+        qty,
+        total,
+      });
+    }
 
     localStorage.setItem("cart", JSON.stringify(cart));
-    alert(`✅ Added ${qty} item(s) to cart`);
+    alert(`✅ Added ${qty} item(s)\nTotal ₹${total}`);
   };
 
-  /* 🔹 Buy Now with quantity */
-  const handleBuyNow = (item) => {
-    router.push(`/checkout/${item.id}?qty=${qty}`);
+  /* 🔹 Buy Now */
+  const handleBuyNow = () => {
+    router.push(
+      `/checkout/${product.id}?qty=${qty}&total=${total}`
+    );
   };
 
-  if (loading) return <p style={{ padding: 40 }}>Loading...</p>;
-  if (!product) return <p>❌ Product not found</p>;
+  if (loading) {
+    return <p style={{ padding: 40, textAlign: "center" }}>Loading...</p>;
+  }
+
+  if (!product) {
+    return <p style={{ padding: 40 }}>❌ Product not found</p>;
+  }
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
@@ -54,22 +80,34 @@ export default function ProductPage() {
       <img
         src={product.image}
         alt={product.name}
+        loading="lazy"   // 🔥 FAST
         style={{ width: "100%", borderRadius: 10 }}
       />
 
-      <h2 style={{ color: "green", marginTop: 10 }}>₹{product.price}</h2>
+      <h2 style={{ color: "green", marginTop: 10 }}>
+        ₹{product.price} / item
+      </h2>
 
       <p style={{ marginTop: 10 }}>{product.description}</p>
 
-      {/* 🔹 Quantity selector */}
-      <div style={{ marginTop: 15, display: "flex", alignItems: "center", gap: 10 }}>
+      {/* 🔹 Quantity */}
+      <div
+        style={{
+          marginTop: 15,
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+        }}
+      >
         <button
           onClick={() => setQty(q => Math.max(1, q - 1))}
           style={qtyBtn}
         >
           -
         </button>
-        <span>{qty}</span>
+
+        <span style={{ fontSize: 18 }}>{qty}</span>
+
         <button
           onClick={() => setQty(q => q + 1)}
           style={qtyBtn}
@@ -78,10 +116,18 @@ export default function ProductPage() {
         </button>
       </div>
 
+      {/* 🔹 Total */}
+      <h3 style={{ marginTop: 15 }}>
+        Total:{" "}
+        <span style={{ color: "#4caf50" }}>
+          ₹{total}
+        </span>
+      </h3>
+
       {/* 🔹 Add to Cart */}
       <button
         style={btnStyle("#f0ad4e")}
-        onClick={() => addToCart(product, qty)}
+        onClick={addToCart}
       >
         Add to Cart
       </button>
@@ -89,7 +135,7 @@ export default function ProductPage() {
       {/* 🔹 Buy Now */}
       <button
         style={btnStyle("#4caf50")}
-        onClick={() => handleBuyNow(product)}
+        onClick={handleBuyNow}
       >
         Buy Now
       </button>
@@ -107,18 +153,15 @@ const btnStyle = (bg) => ({
   border: "none",
   borderRadius: 8,
   fontSize: 16,
-  cursor: "pointer"
+  cursor: "pointer",
 });
 
 const qtyBtn = {
-  width: 30,
-  height: 30,
+  width: 32,
+  height: 32,
   borderRadius: 6,
   border: "1px solid #ccc",
   backgroundColor: "#f5f5f5",
   cursor: "pointer",
   fontSize: 18,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center"
 };
