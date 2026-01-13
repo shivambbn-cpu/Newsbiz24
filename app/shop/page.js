@@ -10,88 +10,111 @@ export default function ShopPage() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState(null); // 🔥 NEW
 
   useEffect(() => {
     const fetchProducts = async () => {
-      try {
-        const q = query(
-          collection(db, "shop_products"),
-          where("active", "==", true)
-        );
+      const q = query(
+        collection(db, "shop_products"),
+        where("active", "==", true)
+      );
 
-        const snap = await getDocs(q);
+      const snap = await getDocs(q);
+      const data = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-        const data = snap.docs.map((doc) => ({
-          id: doc.id,        // Firestore document ID
-          ...doc.data(),      // name, price, image, description
-        }));
-
-        setProducts(data);
-      } catch (err) {
-        console.error("Shop load error:", err);
-      } finally {
-        setLoading(false);
-      }
+      setProducts(data);
+      setLoading(false);
     };
 
     fetchProducts();
   }, []);
 
-  if (loading) {
-    return <p style={{ textAlign: "center", padding: 40 }}>Loading shop...</p>;
-  }
-
-  if (products.length === 0) {
-    return <p style={{ textAlign: "center", padding: 40 }}>😔 No products available</p>;
-  }
+  if (loading) return <p style={{ textAlign: "center", padding: 40 }}>Loading shop...</p>;
 
   return (
-    <div className="shop-page" style={{ padding: 20 }}>
-      <h1 className="shop-title" style={{ textAlign: "center", marginBottom: 20 }}>
-        🛍️ Our Shop
-      </h1>
+    <div style={{ padding: 20 }}>
+      <h1 style={{ textAlign: "center", marginBottom: 20 }}>🛍️ Our Shop</h1>
 
-      <div className="shop-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 20 }}>
-        {products.map((item) => (
-          <div key={item.id} className="shop-card" style={{ border: "1px solid #ddd", borderRadius: 8, padding: 10, textAlign: "center" }}>
-            
-            {/* 🔹 Image click → Product Detail */}
-            {item.image && (
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 20 }}>
+        {products.map((item) => {
+
+          // 🔹 IF SELECTED → ONLY IMAGE + TITLE
+          if (selectedId === item.id) {
+            return (
+              <div
+                key={item.id}
+                style={{
+                  border: "2px solid #4caf50",
+                  padding: 15,
+                  borderRadius: 8,
+                  textAlign: "center",
+                  cursor: "pointer"
+                }}
+                onClick={() => router.push(`/product/${item.id}`)}
+              >
+                <Image
+                  src={item.image}
+                  alt={item.name}
+                  width={280}
+                  height={180}
+                  style={{ borderRadius: 8 }}
+                />
+                <h3 style={{ marginTop: 10 }}>{item.name}</h3>
+                <p style={{ fontSize: 13, color: "#777" }}>
+                  Click to view details →
+                </p>
+              </div>
+            );
+          }
+
+          // 🔹 NORMAL CARD
+          return (
+            <div
+              key={item.id}
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: 8,
+                padding: 10,
+                textAlign: "center",
+              }}
+            >
               <Image
                 src={item.image}
                 alt={item.name}
                 width={300}
                 height={200}
-                style={{ cursor: "pointer", borderRadius: 8 }}
-                onClick={() => router.push(`/product/${item.id}`)}
+                style={{ borderRadius: 8 }}
               />
-            )}
 
-            <h3 style={{ margin: "10px 0" }}>{item.name}</h3>
-            <p style={{ color: "#4caf50", fontWeight: "bold" }}>₹{item.price}</p>
-            {item.description && <p style={{ fontSize: 14, color: "#555" }}>{item.description}</p>}
+              <h3 style={{ margin: "10px 0" }}>{item.name}</h3>
+              <p style={{ color: "#4caf50", fontWeight: "bold" }}>
+                ₹{item.price}
+              </p>
 
-            {/* 🔹 Buy Now → Order Page (Cash on Delivery) */}
-            <button
-              style={{
-                marginTop: 10,
-                padding: "10px 0",
-                width: "100%",
-                backgroundColor: "#4caf50",
-                color: "white",
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer"
-              }}
-              onClick={() => router.push(`/order/${item.id}`)}
-            >
-              Buy Now (Cash on Delivery)
-            </button>
-          </div>
-        ))}
+              <button
+                style={{
+                  marginTop: 10,
+                  padding: "10px 0",
+                  width: "100%",
+                  backgroundColor: "#2196f3",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 6,
+                  cursor: "pointer",
+                }}
+                onClick={() => setSelectedId(item.id)} // 🔥 ONLY IMAGE + TITLE MODE
+              >
+                Add
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-          
+    
