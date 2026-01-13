@@ -69,6 +69,7 @@ export default function CheckoutPage() {
     }
 
     try {
+      /* 🧾 SAVE ORDER TO FIRESTORE */
       await addDoc(collection(db, "orders"), {
         productId: product.id,
         productName: product.name,
@@ -82,7 +83,22 @@ export default function CheckoutPage() {
         createdAt: serverTimestamp()
       });
 
+      /* 📄 SAVE DATA FOR PDF RECEIPT */
+      const orderData = {
+        orderId: Date.now(),
+        productName: product.name,
+        price: product.price,
+        qty,
+        total,
+        customer: form,
+        paymentMethod: "Cash On Delivery"
+      };
+
+      localStorage.setItem("lastOrder", JSON.stringify(orderData));
+
+      /* ✅ REDIRECT */
       router.push("/order-success");
+
     } catch (err) {
       console.error("ORDER ERROR", err);
       alert("Order failed");
@@ -105,7 +121,7 @@ export default function CheckoutPage() {
       <p>Price: ₹{product.price}</p>
       <p>Quantity: <b>{qty}</b></p>
 
-      <h3 style={{ color: "green" }}>
+      <h3 style={{ color: "#16a34a" }}>
         Grand Total: ₹{total}
       </h3>
 
@@ -118,7 +134,9 @@ export default function CheckoutPage() {
       <input placeholder="Pincode" onChange={e => setForm({ ...form, pincode: e.target.value })} style={input} />
 
       {/* 💰 COD */}
-      <p style={{ marginTop: 10 }}>Payment: <b>Cash on Delivery</b></p>
+      <p style={{ marginTop: 10 }}>
+        Payment Method: <b>Cash on Delivery</b>
+      </p>
 
       <button onClick={placeOrder} style={btn}>
         Place Order (₹{total})
@@ -127,7 +145,7 @@ export default function CheckoutPage() {
   );
 }
 
-/* styles */
+/* 🎨 Styles */
 const input = {
   width: "100%",
   padding: 10,
