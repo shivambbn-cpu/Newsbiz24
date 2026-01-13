@@ -10,7 +10,7 @@ export default function ShopPage() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedId, setSelectedId] = useState(null); // 🔥 NEW
+  const [openId, setOpenId] = useState(null); // 🔥 selected product
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -18,19 +18,30 @@ export default function ShopPage() {
         collection(db, "shop_products"),
         where("active", "==", true)
       );
-
       const snap = await getDocs(q);
       const data = snap.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
-
       setProducts(data);
       setLoading(false);
     };
-
     fetchProducts();
   }, []);
+
+  const addToCart = (item) => {
+    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const index = cart.findIndex(p => p.id === item.id);
+
+    if (index >= 0) {
+      cart[index].qty += 1;
+    } else {
+      cart.push({ ...item, qty: 1 });
+    }
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+    alert("✅ Added to cart");
+  };
 
   if (loading) return <p style={{ textAlign: "center", padding: 40 }}>Loading shop...</p>;
 
@@ -38,83 +49,74 @@ export default function ShopPage() {
     <div style={{ padding: 20 }}>
       <h1 style={{ textAlign: "center", marginBottom: 20 }}>🛍️ Our Shop</h1>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 20 }}>
-        {products.map((item) => {
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
+        gap: 20
+      }}>
+        {products.map(item => (
+          <div
+            key={item.id}
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: 8,
+              padding: 10,
+              textAlign: "center"
+            }}
+          >
+            <Image
+              src={item.image}
+              alt={item.name}
+              width={280}
+              height={180}
+              style={{ borderRadius: 8 }}
+            />
 
-          // 🔹 IF SELECTED → ONLY IMAGE + TITLE
-          if (selectedId === item.id) {
-            return (
-              <div
-                key={item.id}
-                style={{
-                  border: "2px solid #4caf50",
-                  padding: 15,
-                  borderRadius: 8,
-                  textAlign: "center",
-                  cursor: "pointer"
-                }}
-                onClick={() => router.push(`/product/${item.id}`)}
-              >
-                <Image
-                  src={item.image}
-                  alt={item.name}
-                  width={280}
-                  height={180}
-                  style={{ borderRadius: 8 }}
-                />
-                <h3 style={{ marginTop: 10 }}>{item.name}</h3>
-                <p style={{ fontSize: 13, color: "#777" }}>
-                  Click to view details →
-                </p>
-              </div>
-            );
-          }
+            <h3 style={{ margin: "10px 0" }}>{item.name}</h3>
+            <p style={{ color: "#4caf50", fontWeight: "bold" }}>
+              ₹{item.price}
+            </p>
 
-          // 🔹 NORMAL CARD
-          return (
-            <div
-              key={item.id}
-              style={{
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                padding: 10,
-                textAlign: "center",
-              }}
-            >
-              <Image
-                src={item.image}
-                alt={item.name}
-                width={300}
-                height={200}
-                style={{ borderRadius: 8 }}
-              />
+            {/* 🔹 AFTER CLICK */}
+            {openId === item.id ? (
+              <>
+                <button
+                  style={btnStyle("#f0ad4e")}
+                  onClick={() => addToCart(item)}
+                >
+                  Add to Cart
+                </button>
 
-              <h3 style={{ margin: "10px 0" }}>{item.name}</h3>
-              <p style={{ color: "#4caf50", fontWeight: "bold" }}>
-                ₹{item.price}
-              </p>
-
+                <button
+                  style={btnStyle("#4caf50")}
+                  onClick={() => router.push(`/product/${item.id}`)}
+                >
+                  Buy Now
+                </button>
+              </>
+            ) : (
               <button
-                style={{
-                  marginTop: 10,
-                  padding: "10px 0",
-                  width: "100%",
-                  backgroundColor: "#2196f3",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                }}
-                onClick={() => setSelectedId(item.id)} // 🔥 ONLY IMAGE + TITLE MODE
+                style={btnStyle("#2196f3")}
+                onClick={() => setOpenId(item.id)}
               >
                 Add
               </button>
-            </div>
-          );
-        })}
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
-    
+const btnStyle = (bg) => ({
+  width: "100%",
+  padding: "10px 0",
+  marginTop: 8,
+  backgroundColor: bg,
+  color: "white",
+  border: "none",
+  borderRadius: 6,
+  cursor: "pointer"
+});
+              
