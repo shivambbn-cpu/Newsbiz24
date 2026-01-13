@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { db } from "@/lib/firebase";
 import {
   doc,
@@ -12,11 +12,14 @@ import {
 } from "firebase/firestore";
 
 export default function CheckoutPage() {
-  const params = useParams();
-  const id = params?.id;
+  const { id } = useParams();
+  const searchParams = useSearchParams();
   const router = useRouter();
 
+  const qty = Number(searchParams.get("qty")) || 1;
+
   const [product, setProduct] = useState(null);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const [form, setForm] = useState({
@@ -28,36 +31,31 @@ export default function CheckoutPage() {
     pincode: ""
   });
 
-  /* ðŸ”¹ Fetch Product */
+  /* 🔹 Fetch Product */
   useEffect(() => {
     if (!id) return;
 
-    const fetchProduct = async () => {
+    (async () => {
       try {
         const ref = doc(db, "shop_products", id);
         const snap = await getDoc(ref);
 
         if (snap.exists()) {
-          setProduct({ id: snap.id, ...snap.data() });
-        } else {
-          alert("Product not found");
+          const data = { id: snap.id, ...snap.data() };
+          setProduct(data);
+          setTotal(data.price * qty); // ✅ grand total
         }
-      } catch (error) {
-        console.error("PRODUCT FETCH ERROR ðŸ‘‰", error);
+      } catch (err) {
+        console.error("PRODUCT ERROR", err);
       } finally {
         setLoading(false);
       }
-    };
+    })();
+  }, [id, qty]);
 
-    fetchProduct();
-  }, [id]);
-
-  /* ðŸ”¹ Place Order */
+  /* 🔹 Place Order */
   const placeOrder = async () => {
-    if (!product) {
-      alert("Product not loaded");
-      return;
-    }
+    if (!product) return alert("Product not loaded");
 
     if (
       !form.name ||
@@ -67,8 +65,7 @@ export default function CheckoutPage() {
       !form.state ||
       !form.pincode
     ) {
-      alert("Please fill all fields");
-      return;
+      return alert("❌ Please fill all address fields");
     }
 
     try {
@@ -77,26 +74,23 @@ export default function CheckoutPage() {
         productName: product.name,
         productImage: product.image,
         price: product.price,
-        customer: form,
+        qty,
+        total,
         paymentMethod: "Cash On Delivery",
+        customer: form,
         status: "Pending",
         createdAt: serverTimestamp()
       });
 
       router.push("/order-success");
-    } catch (error) {
-      console.error("ORDER ERROR ðŸ‘‰", error);
-      alert("Order failed. Check console.");
+    } catch (err) {
+      console.error("ORDER ERROR", err);
+      alert("Order failed");
     }
   };
 
-  if (loading) {
-    return <p style={{ padding: 40 }}>Loading...</p>;
-  }
-
-  if (!product) {
-    return <p style={{ padding: 40 }}>Product not found</p>;
-  }
+  if (loading) return <p style={{ padding: 40 }}>Loading...</p>;
+  if (!product) return <p style={{ padding: 40 }}>Product not found</p>;
 
   return (
     <div style={{ padding: 20, maxWidth: 520, margin: "auto" }}>
@@ -108,58 +102,32 @@ export default function CheckoutPage() {
         style={{ width: "100%", borderRadius: 10 }}
       />
 
-      <h3 style={{ color: "green" }}>Rs{product.price}</h3>
+      <p>Price: ₹{product.price}</p>
+      <p>Quantity: <b>{qty}</b></p>
 
-      <input
-        placeholder="Full Name"
-        value={form.name}
-        onChange={e => setForm({ ...form, name: e.target.value })}
-        style={input}
-      />
+      <h3 style={{ color: "green" }}>
+        Grand Total: ₹{total}
+      </h3>
 
-      <input
-        placeholder="Mobile Number"
-        value={form.mobile}
-        onChange={e => setForm({ ...form, mobile: e.target.value })}
-        style={input}
-      />
+      {/* 🏠 Address */}
+      <input placeholder="Full Name" onChange={e => setForm({ ...form, name: e.target.value })} style={input} />
+      <input placeholder="Mobile Number" onChange={e => setForm({ ...form, mobile: e.target.value })} style={input} />
+      <textarea placeholder="Full Address" onChange={e => setForm({ ...form, address: e.target.value })} style={input} />
+      <input placeholder="City" onChange={e => setForm({ ...form, city: e.target.value })} style={input} />
+      <input placeholder="State" onChange={e => setForm({ ...form, state: e.target.value })} style={input} />
+      <input placeholder="Pincode" onChange={e => setForm({ ...form, pincode: e.target.value })} style={input} />
 
-      <textarea
-        placeholder="Full Address"
-        value={form.address}
-        onChange={e => setForm({ ...form, address: e.target.value })}
-        style={input}
-      />
-
-      <input
-        placeholder="City"
-        value={form.city}
-        onChange={e => setForm({ ...form, city: e.target.value })}
-        style={input}
-      />
-
-      <input
-        placeholder="State"
-        value={form.state}
-        onChange={e => setForm({ ...form, state: e.target.value })}
-        style={input}
-      />
-
-      <input
-        placeholder="Pincode"
-        value={form.pincode}
-        onChange={e => setForm({ ...form, pincode: e.target.value })}
-        style={input}
-      />
+      {/* 💰 COD */}
+      <p style={{ marginTop: 10 }}>Payment: <b>Cash on Delivery</b></p>
 
       <button onClick={placeOrder} style={btn}>
-        Place Order (COD)
+        Place Order (₹{total})
       </button>
     </div>
   );
 }
 
-/* ðŸ”¹ Styles */
+/* styles */
 const input = {
   width: "100%",
   padding: 10,
@@ -171,7 +139,7 @@ const input = {
 const btn = {
   width: "100%",
   padding: 14,
-  background: "#4caf50",
+  background: "#16a34a",
   color: "#fff",
   border: "none",
   borderRadius: 10,
