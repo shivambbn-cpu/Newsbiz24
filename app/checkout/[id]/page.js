@@ -31,7 +31,7 @@ export default function CheckoutPage() {
     pincode: ""
   });
 
-  /* 🔹 Fetch Product */
+  /* ðŸ”¹ Fetch Product */
   useEffect(() => {
     if (!id) return;
 
@@ -43,7 +43,7 @@ export default function CheckoutPage() {
         if (snap.exists()) {
           const data = { id: snap.id, ...snap.data() };
           setProduct(data);
-          setTotal(data.price * qty);
+          setTotal(data.price * qty); // âœ… grand total
         }
       } catch (err) {
         console.error("PRODUCT ERROR", err);
@@ -53,7 +53,7 @@ export default function CheckoutPage() {
     })();
   }, [id, qty]);
 
-  /* 🔹 Place Order */
+  /* ðŸ”¹ Place Order */
   const placeOrder = async () => {
     if (!product) return alert("Product not loaded");
 
@@ -65,11 +65,11 @@ export default function CheckoutPage() {
       !form.state ||
       !form.pincode
     ) {
-      return alert("❌ Please fill all address fields");
+      return alert("âŒ Please fill all address fields");
     }
 
     try {
-      /* 🧾 SAVE ORDER TO FIRESTORE */
+      /* ðŸ§¾ SAVE ORDER TO FIRESTORE */
       await addDoc(collection(db, "orders"), {
         productId: product.id,
         productName: product.name,
@@ -83,18 +83,12 @@ export default function CheckoutPage() {
         createdAt: serverTimestamp()
       });
 
-      /* 📄 SAVE CLEAN DATA FOR PDF RECEIPT */
+      /* ðŸ“„ SAVE DATA FOR PDF RECEIPT */
       const orderData = {
         orderId: Date.now(),
-        items: [
-          {
-            name: product.name,
-            qty: qty,
-            price: product.price,
-            subtotal: product.price * qty,
-            display: `${qty} x ${product.price} = ${product.price * qty}` // ✅ Clean text
-          }
-        ],
+        productName: product.name,
+        price: product.price,
+        qty,
         total,
         customer: form,
         paymentMethod: "Cash On Delivery"
@@ -102,7 +96,7 @@ export default function CheckoutPage() {
 
       localStorage.setItem("lastOrder", JSON.stringify(orderData));
 
-      /* ✅ REDIRECT */
+      /* âœ… REDIRECT */
       router.push("/order-success");
 
     } catch (err) {
@@ -128,10 +122,10 @@ export default function CheckoutPage() {
       <p>Quantity: <b>{qty}</b></p>
 
       <h3 style={{ color: "#16a34a" }}>
-        Grand Total: ₹{total}
+        Grand Total: â‚¹{total}
       </h3>
 
-      {/* 🏠 Address */}
+      {/* ðŸ  Address */}
       <input placeholder="Full Name" onChange={e => setForm({ ...form, name: e.target.value })} style={input} />
       <input placeholder="Mobile Number" onChange={e => setForm({ ...form, mobile: e.target.value })} style={input} />
       <textarea placeholder="Full Address" onChange={e => setForm({ ...form, address: e.target.value })} style={input} />
@@ -139,19 +133,19 @@ export default function CheckoutPage() {
       <input placeholder="State" onChange={e => setForm({ ...form, state: e.target.value })} style={input} />
       <input placeholder="Pincode" onChange={e => setForm({ ...form, pincode: e.target.value })} style={input} />
 
-      {/* 💰 COD */}
+      {/* ðŸ’° COD */}
       <p style={{ marginTop: 10 }}>
         Payment Method: <b>Cash on Delivery</b>
       </p>
 
       <button onClick={placeOrder} style={btn}>
-        Place Order (₹{total})
+        Place Order (â‚¹{total})
       </button>
     </div>
   );
 }
 
-/* 🎨 Styles */
+/* ðŸŽ¨ Styles */
 const input = {
   width: "100%",
   padding: 10,
