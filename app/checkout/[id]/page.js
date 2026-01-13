@@ -43,7 +43,7 @@ export default function CheckoutPage() {
         if (snap.exists()) {
           const data = { id: snap.id, ...snap.data() };
           setProduct(data);
-          setTotal(data.price * qty); // ✅ grand total
+          setTotal(data.price * qty);
         }
       } catch (err) {
         console.error("PRODUCT ERROR", err);
@@ -83,12 +83,18 @@ export default function CheckoutPage() {
         createdAt: serverTimestamp()
       });
 
-      /* 📄 SAVE DATA FOR PDF RECEIPT */
+      /* 📄 SAVE CLEAN DATA FOR PDF RECEIPT */
       const orderData = {
         orderId: Date.now(),
-        productName: product.name,
-        price: product.price,
-        qty,
+        items: [
+          {
+            name: product.name,
+            qty: qty,
+            price: product.price,
+            subtotal: product.price * qty,
+            display: `${qty} x ${product.price} = ${product.price * qty}` // ✅ Clean text
+          }
+        ],
         total,
         customer: form,
         paymentMethod: "Cash On Delivery"
