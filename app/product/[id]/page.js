@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 export default function ProductPage() {
   const { id } = useParams();
+  const router = useRouter(); // 🔥 ADD THIS
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -45,7 +47,9 @@ export default function ProductPage() {
 
       <p style={{ marginTop: 10 }}>{product.description}</p>
 
+      {/* 🔥 BUY NOW BUTTON FIXED */}
       <button
+        onClick={() => router.push(`/checkout/${product.id}`)}
         style={{
           width: "100%",
           padding: 12,
@@ -54,7 +58,8 @@ export default function ProductPage() {
           color: "#fff",
           border: "none",
           borderRadius: 8,
-          fontSize: 16
+          fontSize: 16,
+          cursor: "pointer"
         }}
       >
         Buy Now
@@ -62,4 +67,3 @@ export default function ProductPage() {
     </div>
   );
 }
-
