@@ -118,7 +118,7 @@ export default function CheckoutPage() {
         style={{ width: "100%", borderRadius: 10 }}
       />
 
-      <p>Price: ₹{product.price}</p>
+      <p>Price: {product.price}</p>
       <p>Quantity: <b>{qty}</b></p>
 
       <h3 style={{ color: "#16a34a" }}>
