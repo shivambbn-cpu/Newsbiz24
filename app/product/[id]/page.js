@@ -2,47 +2,73 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Image from "next/image";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 export default function ProductDetail() {
   const { id } = useParams();
   const router = useRouter();
+
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      const ref = doc(db, "shop_products", id);
-      const snap = await getDoc(ref);
+    if (!id) return;
 
-      if (snap.exists()) {
-        setProduct({ id: snap.id, ...snap.data() });
+    const fetchProduct = async () => {
+      try {
+        const ref = doc(db, "shop_products", id);
+        const snap = await getDoc(ref);
+
+        if (snap.exists()) {
+          setProduct({ id: snap.id, ...snap.data() });
+        } else {
+          setProduct(null);
+        }
+      } catch (err) {
+        console.error("Product fetch error:", err);
+        setProduct(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchProduct();
   }, [id]);
 
-  if (loading) return <p style={{ padding: 40 }}>Loading...</p>;
-  if (!product) return <p>Product not found</p>;
+  if (loading) {
+    return <p style={{ padding: 40, textAlign: "center" }}>Loading...</p>;
+  }
+
+  if (!product) {
+    return <p style={{ padding: 40, textAlign: "center" }}>❌ Product not found</p>;
+  }
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
-      <Image
-        src={product.image}
-        alt={product.name}
-        width={600}
-        height={350}
-        style={{ borderRadius: 10 }}
-      />
+      {/* ✅ SAFE IMAGE */}
+      {product.image && (
+        <img
+          src={product.image}
+          alt={product.name}
+          style={{
+            width: "100%",
+            maxHeight: 350,
+            objectFit: "cover",
+            borderRadius: 10
+          }}
+        />
+      )}
 
-      <h1>{product.name}</h1>
-      <h2 style={{ color: "#4caf50" }}>₹{product.price}</h2>
+      <h1 style={{ marginTop: 15 }}>{product.name}</h1>
 
-      <p>{product.description}</p>
+      <h2 style={{ color: "#4caf50", margin: "10px 0" }}>
+        ₹{product.price}
+      </h2>
+
+      {product.description && (
+        <p style={{ lineHeight: 1.6 }}>{product.description}</p>
+      )}
 
       <button
         style={btnStyle("#4caf50")}
@@ -62,10 +88,6 @@ const btnStyle = (bg) => ({
   color: "#fff",
   border: "none",
   borderRadius: 8,
-  fontSize: 16
+  fontSize: 16,
+  cursor: "pointer"
 });
-
-
-
-
-    
