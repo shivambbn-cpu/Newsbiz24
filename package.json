@@ -13,6 +13,7 @@
     "react": "latest",
     "react-dom": "latest",
     "firebase": "^9.22.0",
-    "firebase-admin": "latest"
+    "firebase-admin": "latest",
+    "jspdf": "^2.5.1"
   }
 }
