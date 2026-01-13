@@ -1,124 +1,70 @@
+
+
 "use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
 
-export default function ProductDetail({ params }) {
-  const { id } = params; // document ID from URL
+export default function ProductPage({ params }) {
+  const { id } = params;
   const router = useRouter();
-
   const [product, setProduct] = useState(null);
-  const [qty, setQty] = useState(1);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadProduct = async () => {
-      try {
-        const snap = await getDoc(doc(db, "shop_products", id));
-        if (snap.exists()) {
-          setProduct(snap.data());
-        } else {
-          setProduct(null);
-        }
-      } catch (err) {
-        console.error("Product load error:", err);
-        setProduct(null);
-      } finally {
-        setLoading(false);
-      }
+    const load = async () => {
+      const snap = await getDoc(doc(db, "shop_products", id));
+      if (snap.exists()) setProduct({ id, ...snap.data() });
     };
-    loadProduct();
+    load();
   }, [id]);
 
-  if (loading) return <p style={{ textAlign: "center", padding: 40 }}>Loading product...</p>;
-  if (!product) return <p style={{ textAlign: "center", padding: 40 }}>Product not found</p>;
+  if (!product) return <p style={{ textAlign: "center" }}>Loading...</p>;
 
-  // Add to cart
   const addToCart = () => {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const existingIndex = cart.findIndex(item => item.id === id);
-    if (existingIndex >= 0) {
-      cart[existingIndex].qty += qty;
-    } else {
-      cart.push({ ...product, id, qty });
-    }
+    cart.push({ ...product, qty: 1 });
     localStorage.setItem("cart", JSON.stringify(cart));
     alert("✅ Added to cart");
   };
 
-  // Buy Now → go to order page
-  const buyNow = () => {
-    addToCart();
-    router.push(`/order/${id}`);
-  };
-
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "0 auto" }}>
-      {/* Product Image */}
-      {product.image && (
-        <Image
-          src={product.image}
-          alt={product.name}
-          width={400}
-          height={300}
-          style={{ borderRadius: 8 }}
-        />
-      )}
+    <div style={{ padding: 20, maxWidth: 500, margin: "auto" }}>
+      <Image src={product.image} alt={product.name} width={400} height={250} />
 
-      {/* Product Name & Price */}
-      <h1 style={{ marginTop: 20 }}>{product.name}</h1>
-      <h2 style={{ color: "#4caf50", margin: "10px 0" }}>₹{product.price}</h2>
+      <h2>{product.name}</h2>
+      <h3 style={{ color: "#4caf50" }}>₹{product.price}</h3>
 
-      {/* Product Description */}
-      {product.description && <p style={{ color: "#555" }}>{product.description}</p>}
+      <p>{product.description}</p>
 
-      {/* Quantity Selector */}
-      <div style={{ display: "flex", alignItems: "center", margin: "20px 0" }}>
-        <button onClick={() => setQty(qty > 1 ? qty - 1 : 1)} style={{ padding: "5px 10px" }}>-</button>
-        <span style={{ margin: "0 10px" }}>{qty}</span>
-        <button onClick={() => setQty(qty + 1)} style={{ padding: "5px 10px" }}>+</button>
-      </div>
+      <button style={btn("#f0ad4e")} onClick={addToCart}>
+        Add to Cart
+      </button>
 
-      {/* Action Buttons */}
-      <div style={{ display: "flex", gap: 10 }}>
-        <button
-          onClick={addToCart}
-          style={{
-            flex: 1,
-            padding: "10px 0",
-            backgroundColor: "#f0ad4e",
-            color: "white",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer"
-          }}
-        >
-          Add to Cart
-        </button>
-
-        <button
-          onClick={buyNow}
-          style={{
-            flex: 1,
-            padding: "10px 0",
-            backgroundColor: "#4caf50",
-            color: "white",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer"
-          }}
-        >
-          Buy Now
-        </button>
-      </div>
+      <button
+        style={btn("#4caf50")}
+        onClick={() => router.push(`/checkout/${id}`)}
+      >
+        Buy Now
+      </button>
     </div>
   );
 }
 
+const btn = (bg) => ({
+  width: "100%",
+  padding: 12,
+  marginTop: 10,
+  background: bg,
+  color: "#fff",
+  border: "none",
+  borderRadius: 6,
+});
 
+
+               
 
 
   
