@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
-export default function OrderSuccessPage() {
+export default function OrderSuccess() {
+  const router = useRouter();
   const [order, setOrder] = useState(null);
 
   useEffect(() => {
@@ -12,119 +13,129 @@ export default function OrderSuccessPage() {
     if (data) setOrder(JSON.parse(data));
   }, []);
 
-  const downloadPDF = async () => {
-    const invoice = document.getElementById("invoice");
+  const downloadPDF = () => {
+    if (!order) return;
 
-    const canvas = await html2canvas(invoice, {
-      scale: 2,
-      useCORS: true
+    const pdf = new jsPDF();
+
+    /* 🔥 FIX START */
+    pdf.setFont("helvetica", "normal");
+    pdf.setCharSpace(0);
+    /* 🔥 FIX END */
+
+    pdf.setFontSize(18);
+    pdf.text("INVOICE", 105, 15, { align: "center" });
+
+    pdf.setFontSize(12);
+    pdf.text("Your Shop Name", 15, 25);
+    pdf.text("India", 15, 32);
+    pdf.text("Payment: Cash on Delivery", 15, 39);
+
+    pdf.line(15, 42, 195, 42);
+
+    pdf.text(`Order ID: ${order.orderId}`, 15, 50);
+    pdf.text(`Date: ${new Date().toLocaleDateString()}`, 15, 58);
+
+    pdf.text("Bill To:", 15, 70);
+    pdf.text(order.customer.name, 15, 78);
+    pdf.text(order.customer.mobile, 15, 86);
+    pdf.text(
+      `${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}`,
+      15,
+      94,
+      { maxWidth: 180 }
+    );
+
+    pdf.line(15, 115, 195, 115);
+
+    pdf.text("Product", 15, 125);
+    pdf.text("Qty", 120, 125);
+    pdf.text("Price", 140, 125);
+    pdf.text("Total", 165, 125);
+
+    pdf.line(15, 128, 195, 128);
+
+    pdf.text(order.productName, 15, 138);
+    pdf.text(String(order.qty), 120, 138);
+    pdf.text(`₹${Number(order.price)}`, 140, 138);
+    pdf.text(`₹${Number(order.total)}`, 165, 138);
+
+    pdf.line(15, 150, 195, 150);
+
+    pdf.setFontSize(14);
+    pdf.text(`Grand Total: ₹${Number(order.total)}`, 140, 162);
+
+    pdf.setFontSize(10);
+    pdf.text("Thank you for shopping with us!", 105, 180, {
+      align: "center",
     });
 
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "mm", "a4");
-
-    const width = pdf.internal.pageSize.getWidth();
-    const height = (canvas.height * width) / canvas.width;
-
-    pdf.addImage(imgData, "PNG", 0, 0, width, height);
     pdf.save(`Invoice-${order.orderId}.pdf`);
   };
 
-  if (!order) return <p style={{ padding: 40 }}>No order found</p>;
+  if (!order) {
+    return <p style={{ padding: 40, textAlign: "center" }}>No Order Found</p>;
+  }
 
   return (
-    <div style={{ padding: 20 }}>
-      {/* ================= INVOICE ================= */}
-      <div
-        id="invoice"
-        style={{
-          background: "#fff",
-          padding: 20,
-          maxWidth: 600,
-          margin: "auto",
-          fontFamily: "Arial, sans-serif",
-          letterSpacing: "0",
-          wordSpacing: "0"
-        }}
-      >
-        {/* 🔥 ONLY FIX ADDED HERE */}
-        <style>{`
-          * {
-            letter-spacing: 0 !important;
-            word-spacing: 0 !important;
-          }
+    <div style={wrap}>
+      <h1 style={{ color: "green" }}>✅ Order Placed Successfully</h1>
+      <p>Your order has been confirmed.</p>
 
-          table, td, th, p, span {
-            font-family: Arial, sans-serif !important;
-            letter-spacing: normal !important;
-            word-spacing: normal !important;
-            text-align: left;
-          }
-        `}</style>
-
-        {/* ===== REST IS 100% SAME ===== */}
-        <h2 style={{ textAlign: "center" }}>INVOICE</h2>
-
+      <div style={card}>
+        <h3>📦 Order Summary</h3>
         <p><b>Order ID:</b> {order.orderId}</p>
-        <p><b>Payment:</b> {order.paymentMethod}</p>
-
-        <hr />
-
-        <p><b>Name:</b> {order.customer.name}</p>
-        <p><b>Mobile:</b> {order.customer.mobile}</p>
-        <p>
-          <b>Address:</b> {order.customer.address},{" "}
-          {order.customer.city}, {order.customer.state} -{" "}
-          {order.customer.pincode}
-        </p>
-
-        <hr />
-
-        <table width="100%" border="1" cellPadding="8" style={{ borderCollapse: "collapse" }}>
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Qty</th>
-              <th>Price</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{order.productName}</td>
-              <td>{order.qty}</td>
-              <td>₹{order.price}</td>
-              <td>₹{order.total}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h3 style={{ textAlign: "right", marginTop: 10 }}>
-          Grand Total: ₹{order.total}
-        </h3>
-
-        <p style={{ textAlign: "center", marginTop: 20 }}>
-          Thank you for shopping with us!
-        </p>
+        <p><b>Product:</b> {order.productName}</p>
+        <p><b>Quantity:</b> {order.qty}</p>
+        <p><b>Total:</b> ₹{order.total}</p>
+        <p><b>Payment:</b> Cash on Delivery</p>
       </div>
 
-      {/* ===== BUTTON SAME ===== */}
-      <div style={{ textAlign: "center", marginTop: 20 }}>
-        <button
-          onClick={downloadPDF}
-          style={{
-            padding: "12px 20px",
-            background: "#16a34a",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            cursor: "pointer",
-            fontSize: 16
-          }}
-        >
-          Download Invoice PDF
-        </button>
-      </div>
+      <button onClick={downloadPDF} style={pdfBtn}>
+        📄 Download Invoice PDF
+      </button>
+
+      <button onClick={() => router.push("/shop")} style={shopBtn}>
+        Continue Shopping
+      </button>
     </div>
   );
-    }
+}
+
+/* styles unchanged */
+const wrap = {
+  padding: 30,
+  maxWidth: 600,
+  margin: "auto",
+  textAlign: "center",
+};
+
+const card = {
+  marginTop: 20,
+  padding: 20,
+  border: "1px solid #ddd",
+  borderRadius: 10,
+  textAlign: "left",
+};
+
+const pdfBtn = {
+  width: "100%",
+  padding: 14,
+  marginTop: 15,
+  background: "#16a34a",
+  color: "#fff",
+  border: "none",
+  borderRadius: 8,
+  fontSize: 16,
+};
+
+const shopBtn = {
+  width: "100%",
+  padding: 14,
+  marginTop: 10,
+  background: "#4caf50",
+  color: "#fff",
+  border: "none",
+  borderRadius: 8,
+  fontSize: 16,
+};
