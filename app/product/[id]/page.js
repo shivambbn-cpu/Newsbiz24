@@ -5,6 +5,16 @@ import { useParams, useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
+/* 🎨 Professional Colors */
+const COLORS = {
+  primary: "#16a34a",   // Buy / Total
+  secondary: "#f59e0b", // Add to cart
+  text: "#111827",
+  muted: "#6b7280",
+  bg: "#f9fafb",
+  border: "#e5e7eb",
+};
+
 export default function ProductPage() {
   const { id } = useParams();
   const router = useRouter();
@@ -14,7 +24,7 @@ export default function ProductPage() {
   const [qty, setQty] = useState(1);
   const [total, setTotal] = useState(0);
 
-  /* 🔹 Fetch product (FAST) */
+  /* 🚀 Fetch product (FAST) */
   useEffect(() => {
     if (!id) return;
 
@@ -25,20 +35,20 @@ export default function ProductPage() {
       if (snap.exists()) {
         const data = { id: snap.id, ...snap.data() };
         setProduct(data);
-        setTotal(data.price); // initial total
+        setTotal(data.price);
       }
       setLoading(false);
     })();
   }, [id]);
 
-  /* 🔹 Auto calculate total */
+  /* 🔢 Auto total calc */
   useEffect(() => {
     if (product) {
       setTotal(product.price * qty);
     }
   }, [qty, product]);
 
-  /* 🔹 Add to Cart */
+  /* 🛒 Add to Cart */
   const addToCart = () => {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const index = cart.findIndex(p => p.id === product.id);
@@ -47,26 +57,24 @@ export default function ProductPage() {
       cart[index].qty += qty;
       cart[index].total += total;
     } else {
-      cart.push({
-        ...product,
-        qty,
-        total,
-      });
+      cart.push({ ...product, qty, total });
     }
 
     localStorage.setItem("cart", JSON.stringify(cart));
     alert(`✅ Added ${qty} item(s)\nTotal ₹${total}`);
   };
 
-  /* 🔹 Buy Now */
+  /* 🧾 Buy Now */
   const handleBuyNow = () => {
-    router.push(
-      `/checkout/${product.id}?qty=${qty}&total=${total}`
-    );
+    router.push(`/checkout/${product.id}?qty=${qty}&total=${total}`);
   };
 
   if (loading) {
-    return <p style={{ padding: 40, textAlign: "center" }}>Loading...</p>;
+    return (
+      <p style={{ padding: 40, textAlign: "center", color: COLORS.muted }}>
+        Loading product...
+      </p>
+    );
   }
 
   if (!product) {
@@ -74,36 +82,50 @@ export default function ProductPage() {
   }
 
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
-      <h1>{product.name}</h1>
+    <div
+      style={{
+        padding: 20,
+        maxWidth: 600,
+        margin: "auto",
+        background: COLORS.bg,
+        color: COLORS.text,
+      }}
+    >
+      <h1 style={{ fontSize: 22 }}>{product.name}</h1>
 
       <img
         src={product.image}
         alt={product.name}
-        loading="lazy"   // 🔥 FAST
-        style={{ width: "100%", borderRadius: 10 }}
+        loading="lazy" // 🚀 FAST
+        style={{
+          width: "100%",
+          borderRadius: 12,
+          marginTop: 10,
+        }}
       />
 
-      <h2 style={{ color: "green", marginTop: 10 }}>
+      <h2 style={{ color: COLORS.primary, marginTop: 12 }}>
         ₹{product.price} / item
       </h2>
 
-      <p style={{ marginTop: 10 }}>{product.description}</p>
+      <p style={{ marginTop: 8, color: COLORS.muted }}>
+        {product.description}
+      </p>
 
-      {/* 🔹 Quantity */}
+      {/* 🔢 Quantity */}
       <div
         style={{
-          marginTop: 15,
+          marginTop: 16,
           display: "flex",
           alignItems: "center",
-          gap: 10,
+          gap: 12,
         }}
       >
         <button
           onClick={() => setQty(q => Math.max(1, q - 1))}
           style={qtyBtn}
         >
-          -
+          −
         </button>
 
         <span style={{ fontSize: 18 }}>{qty}</span>
@@ -116,25 +138,25 @@ export default function ProductPage() {
         </button>
       </div>
 
-      {/* 🔹 Total */}
-      <h3 style={{ marginTop: 15 }}>
-        Total:{" "}
-        <span style={{ color: "#4caf50" }}>
+      {/* 💰 Total */}
+      <h3 style={{ marginTop: 16 }}>
+        Total:&nbsp;
+        <span style={{ color: COLORS.primary }}>
           ₹{total}
         </span>
       </h3>
 
-      {/* 🔹 Add to Cart */}
+      {/* 🛒 Add to Cart */}
       <button
-        style={btnStyle("#f0ad4e")}
+        style={btnStyle(COLORS.secondary)}
         onClick={addToCart}
       >
         Add to Cart
       </button>
 
-      {/* 🔹 Buy Now */}
+      {/* 🟢 Buy Now */}
       <button
-        style={btnStyle("#4caf50")}
+        style={btnStyle(COLORS.primary)}
         onClick={handleBuyNow}
       >
         Buy Now
@@ -143,25 +165,25 @@ export default function ProductPage() {
   );
 }
 
-/* 🔹 Styles */
+/* 🎨 Styles */
 const btnStyle = (bg) => ({
   width: "100%",
-  padding: 12,
+  padding: 14,
   marginTop: 12,
   backgroundColor: bg,
   color: "#fff",
   border: "none",
-  borderRadius: 8,
+  borderRadius: 10,
   fontSize: 16,
   cursor: "pointer",
 });
 
 const qtyBtn = {
-  width: 32,
-  height: 32,
-  borderRadius: 6,
-  border: "1px solid #ccc",
-  backgroundColor: "#f5f5f5",
+  width: 36,
+  height: 36,
+  borderRadius: 8,
+  border: "1px solid #e5e7eb",
+  backgroundColor: "#ffffff",
   cursor: "pointer",
-  fontSize: 18,
+  fontSize: 20,
 };
