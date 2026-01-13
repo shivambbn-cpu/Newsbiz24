@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { db } from "@/lib/firebase";
+import Image from "next/image";
 import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
-export default function ProductDetail() {
+export default function ProductDetailPage() {
   const { id } = useParams();
   const router = useRouter();
 
@@ -17,97 +18,71 @@ export default function ProductDetail() {
 
     const fetchProduct = async () => {
       try {
-        const ref = doc(db, "shop_products", id);
-        const snap = await getDoc(ref);
+        const productRef = doc(db, "shop_products", id);
+        const snap = await getDoc(productRef);
 
         if (snap.exists()) {
-          setProduct({ id: snap.id, ...snap.data() });
+          const data = snap.data();
+
+          // 🔒 inactive product hide
+          if (!data.active) {
+            alert("Product not available");
+            router.push("/shop");
+            return;
+          }
+
+          setProduct({ id: snap.id, ...data });
         } else {
-          setProduct(null);
+          alert("Product not found");
+          router.push("/shop");
         }
-      } catch (err) {
-        console.error("Product fetch error:", err);
-        setProduct(null);
+      } catch (error) {
+        console.error(error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchProduct();
-  }, [id]);
+  }, [id, router]);
 
-  if (loading) {
-    return (
-      <p style={{ padding: 40, textAlign: "center" }}>
-        Loading product...
-      </p>
-    );
-  }
-
-  if (!product) {
-    return (
-      <p style={{ padding: 40, textAlign: "center" }}>
-        ❌ Product not found
-      </p>
-    );
-  }
+  if (loading) return <p style={{ padding: 20 }}>Loading...</p>;
+  if (!product) return null;
 
   return (
-    <div
-      style={{
-        padding: 20,
-        maxWidth: 600,
-        margin: "auto"
-      }}
-    >
-      {/* Product Image */}
-      {product.image && (
-        <img
-          src={product.image}
-          alt={product.name}
-          style={{
-            width: "100%",
-            maxHeight: 350,
-            objectFit: "cover",
-            borderRadius: 10
-          }}
-        />
-      )}
+    <div style={{ maxWidth: 600, margin: "auto", padding: 16 }}>
+      <Image
+        src={product.image}
+        alt={product.name}
+        width={600}
+        height={400}
+        style={{ width: "100%", height: "auto", borderRadius: 12 }}
+      />
 
-      {/* Product Info */}
-      <h1 style={{ marginTop: 15 }}>{product.name}</h1>
+      <h1 style={{ marginTop: 16 }}>{product.name}</h1>
+      <h2 style={{ color: "#2e7d32" }}>₹{product.price}</h2>
 
-      <h2 style={{ color: "#4caf50", margin: "10px 0" }}>
-        ₹{product.price}
-      </h2>
+      <p style={{ marginTop: 10, lineHeight: 1.6 }}>
+        {product.description}
+      </p>
 
-      {product.description && (
-        <p style={{ lineHeight: 1.6 }}>
-          {product.description}
-        </p>
-      )}
-
-      {/* Buy Now */}
       <button
-        style={btnStyle("#4caf50")}
         onClick={() => router.push(`/checkout/${product.id}`)}
+        style={{
+          width: "100%",
+          marginTop: 20,
+          padding: 14,
+          background: "#ff5722",
+          color: "#fff",
+          fontSize: 16,
+          border: "none",
+          borderRadius: 8,
+        }}
       >
         Buy Now
       </button>
     </div>
   );
 }
-
-const btnStyle = (bg) => ({
-  width: "100%",
-  padding: 12,
-  marginTop: 20,
-  backgroundColor: bg,
-  color: "#fff",
-  border: "none",
-  borderRadius: 8,
-  fontSize: 16,
-  cursor: "pointer"
-});
 
         
