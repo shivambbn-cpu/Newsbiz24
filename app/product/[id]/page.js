@@ -37,16 +37,30 @@ export default function ProductDetail() {
   }, [id]);
 
   if (loading) {
-    return <p style={{ padding: 40, textAlign: "center" }}>Loading...</p>;
+    return (
+      <p style={{ padding: 40, textAlign: "center" }}>
+        Loading product...
+      </p>
+    );
   }
 
   if (!product) {
-    return <p style={{ padding: 40, textAlign: "center" }}>❌ Product not found</p>;
+    return (
+      <p style={{ padding: 40, textAlign: "center" }}>
+        ❌ Product not found
+      </p>
+    );
   }
 
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
-      {/* ✅ SAFE IMAGE */}
+    <div
+      style={{
+        padding: 20,
+        maxWidth: 600,
+        margin: "auto"
+      }}
+    >
+      {/* Product Image */}
       {product.image && (
         <img
           src={product.image}
@@ -60,6 +74,7 @@ export default function ProductDetail() {
         />
       )}
 
+      {/* Product Info */}
       <h1 style={{ marginTop: 15 }}>{product.name}</h1>
 
       <h2 style={{ color: "#4caf50", margin: "10px 0" }}>
@@ -67,9 +82,12 @@ export default function ProductDetail() {
       </h2>
 
       {product.description && (
-        <p style={{ lineHeight: 1.6 }}>{product.description}</p>
+        <p style={{ lineHeight: 1.6 }}>
+          {product.description}
+        </p>
       )}
 
+      {/* Buy Now */}
       <button
         style={btnStyle("#4caf50")}
         onClick={() => router.push(`/checkout/${product.id}`)}
@@ -91,3 +109,5 @@ const btnStyle = (bg) => ({
   fontSize: 16,
   cursor: "pointer"
 });
+
+        
