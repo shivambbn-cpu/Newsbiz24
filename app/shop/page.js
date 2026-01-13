@@ -9,28 +9,23 @@ export default function ShopPage() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [openId, setOpenId] = useState(null);
+  const [openId, setOpenId] = useState(null); // 👈 opened product
 
   useEffect(() => {
     const fetchProducts = async () => {
-      try {
-        const q = query(
-          collection(db, "shop_products"),
-          where("active", "==", true)
-        );
+      const q = query(
+        collection(db, "shop_products"),
+        where("active", "==", true)
+      );
 
-        const snap = await getDocs(q);
-        const data = snap.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+      const snap = await getDocs(q);
+      const data = snap.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
-        setProducts(data);
-      } catch (err) {
-        console.error("Firestore error:", err);
-      } finally {
-        setLoading(false);
-      }
+      setProducts(data);
+      setLoading(false);
     };
 
     fetchProducts();
@@ -40,27 +35,15 @@ export default function ShopPage() {
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const index = cart.findIndex(p => p.id === item.id);
 
-    if (index >= 0) {
-      cart[index].qty += 1;
-    } else {
-      cart.push({ ...item, qty: 1 });
-    }
+    if (index >= 0) cart[index].qty += 1;
+    else cart.push({ ...item, qty: 1 });
 
     localStorage.setItem("cart", JSON.stringify(cart));
     alert("✅ Added to cart");
   };
 
-  const handleBuyNow = (item) => {
-    // 🔥 SAFE navigation
-    router.push(`/product/${item.id}`);
-  };
-
   if (loading) {
-    return (
-      <p style={{ padding: 40, textAlign: "center" }}>
-        Loading shop...
-      </p>
-    );
+    return <p style={{ padding: 40, textAlign: "center" }}>Loading shop...</p>;
   }
 
   return (
@@ -76,17 +59,21 @@ export default function ShopPage() {
           gap: 20
         }}
       >
-        {products.map(item => (
-          <div
-            key={item.id}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: 8,
-              padding: 10,
-              textAlign: "center"
-            }}
-          >
-            {item.image && (
+        {products.map(item => {
+          const isOpen = openId === item.id;
+
+          return (
+            <div
+              key={item.id}
+              onClick={() => !isOpen && setOpenId(item.id)}
+              style={{
+                border: "1px solid #ddd",
+                borderRadius: 10,
+                padding: 10,
+                textAlign: "center",
+                cursor: !isOpen ? "pointer" : "default"
+              }}
+            >
               <img
                 src={item.image}
                 alt={item.name}
@@ -97,40 +84,40 @@ export default function ShopPage() {
                   objectFit: "cover"
                 }}
               />
-            )}
 
-            <h3 style={{ margin: "10px 0" }}>{item.name}</h3>
+              <h3 style={{ margin: "10px 0" }}>{item.name}</h3>
 
-            <p style={{ color: "#4caf50", fontWeight: "bold" }}>
-              ₹{item.price}
-            </p>
+              <p style={{ color: "#4caf50", fontWeight: "bold" }}>
+                ₹{item.price}
+              </p>
 
-            {openId === item.id ? (
-              <>
-                <button
-                  style={btnStyle("#f0ad4e")}
-                  onClick={() => addToCart(item)}
-                >
-                  Add to Cart
-                </button>
+              {/* 👇 BUTTONS ONLY WHEN OPEN */}
+              {isOpen && (
+                <>
+                  <button
+                    style={btnStyle("#f0ad4e")}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      addToCart(item);
+                    }}
+                  >
+                    Add to Cart
+                  </button>
 
-                <button
-                  style={btnStyle("#4caf50")}
-                  onClick={() => handleBuyNow(item)}
-                >
-                  Buy Now
-                </button>
-              </>
-            ) : (
-              <button
-                style={btnStyle("#2196f3")}
-                onClick={() => setOpenId(item.id)}
-              >
-                Add
-              </button>
-            )}
-          </div>
-        ))}
+                  <button
+                    style={btnStyle("#4caf50")}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      router.push(`/product/${item.id}`);
+                    }}
+                  >
+                    Buy Now
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -138,11 +125,15 @@ export default function ShopPage() {
 
 const btnStyle = (bg) => ({
   width: "100%",
-  padding: 10,
+  padding: 12,
   marginTop: 8,
   backgroundColor: bg,
   color: "#fff",
   border: "none",
-  borderRadius: 6,
+  borderRadius: 8,
+  fontSize: 16,
   cursor: "pointer"
 });
+
+
+    
