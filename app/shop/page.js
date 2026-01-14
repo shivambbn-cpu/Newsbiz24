@@ -11,61 +11,65 @@ export default function ShopPage() {
   const [products, setProducts] = useState([]);
   const [qtyMap, setQtyMap] = useState({});
   const [cartCount, setCartCount] = useState(0);
-  const [activeProduct, setActiveProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  /* 🔹 Fetch Products */
+  /* 🔹 Fetch products */
   useEffect(() => {
-    (async () => {
+    const fetchProducts = async () => {
       const q = query(
         collection(db, "shop_products"),
         where("active", "==", true)
       );
-      const snap = await getDocs(q);
 
+      const snap = await getDocs(q);
       const data = snap.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
 
-      const qtyObj = {};
-      data.forEach(p => (qtyObj[p.id] = 1));
-
       setProducts(data);
-      setQtyMap(qtyObj);
-      updateCartCount();
+
+      // default qty = 1
+      const qObj = {};
+      data.forEach(p => (qObj[p.id] = 1));
+      setQtyMap(qObj);
+
       setLoading(false);
-    })();
+      updateCartCount();
+    };
+
+    fetchProducts();
   }, []);
 
-  /* 🧮 Cart Count (unique products) */
+  /* ✅ TOTAL QUANTITY cart count */
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCartCount(cart.length);
+    const totalQty = cart.reduce(
+      (sum, item) => sum + Number(item.qty || 0),
+      0
+    );
+    setCartCount(totalQty);
   };
 
-  /* 🛒 ADD TO CART (✅ FIXED) */
+  /* 🛒 Add to Cart */
   const addToCart = (product) => {
-    const qty = Number(qtyMap[product.id] || 1);
-    const price = Number(product.price);
+    const qty = qtyMap[product.id] || 1;
+    const total = Number(product.price) * qty;
 
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
     const index = cart.findIndex(p => p.id === product.id);
 
-    if (index !== -1) {
-      // ✅ product already in cart → qty increase
+    if (index >= 0) {
       cart[index].qty += qty;
-      cart[index].total = cart[index].qty * price;
+      cart[index].total += total;
     } else {
-      // ✅ new product
       cart.push({
         id: product.id,
         name: product.name,
         image: product.image,
-        price,
+        price: Number(product.price),
         qty,
-        total: price * qty,
+        total,
       });
     }
 
@@ -87,110 +91,93 @@ export default function ShopPage() {
 
   return (
     <>
-      {/* 🔝 Header */}
+      {/* 🔝 HEADER */}
       <header style={headerStyle}>
-        <b style={{ color: "#16a34a" }}>TULSIMALASTORE</b>
-        <div style={{ position: "relative" }}>
+        <span style={{ fontWeight: "bold", color: "#16a34a" }}>
+          TULSIMALASTORE
+        </span>
+
+        <div style={{ position: "relative", fontSize: 22 }}>
           🛒
-          {cartCount > 0 && <span style={cartBadge}>{cartCount}</span>}
+          {cartCount > 0 && (
+            <span style={cartBadge}>{cartCount}</span>
+          )}
         </div>
       </header>
 
+      {/* 🛍️ PRODUCTS */}
       <div style={{ padding: 16 }}>
-        <h2 style={{ textAlign: "center" }}>🛍️ Our Shop</h2>
+        <h2 style={{ textAlign: "center", marginBottom: 20 }}>
+          🌿 Our Spiritual Products
+        </h2>
 
         <div style={grid}>
-          {products.map(item => {
-            const isActive = activeProduct === item.id;
+          {products.map(item => (
+            <div key={item.id} style={card}>
+              <img src={item.image} alt={item.name} style={img} />
 
-            return (
-              <div key={item.id} style={card}>
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  style={img}
+              <h3>{item.name}</h3>
+              <p style={{ color: "#16a34a", fontWeight: "bold" }}>
+                ₹{item.price}
+              </p>
+
+              {/* Quantity */}
+              <div style={qtyRow}>
+                <button
+                  style={qtyBtn}
                   onClick={() =>
-                    setActiveProduct(isActive ? null : item.id)
+                    setQtyMap(q => ({
+                      ...q,
+                      [item.id]: Math.max(1, q[item.id] - 1),
+                    }))
                   }
-                />
+                >
+                  −
+                </button>
 
-                <h3>{item.name}</h3>
-                <p style={{ color: "#16a34a", fontWeight: "bold" }}>
-                  ₹{item.price}
-                </p>
+                <span>{qtyMap[item.id]}</span>
 
-                {/* SIMPLE VIEW */}
-                {!isActive && (
-                  <button
-                    style={simpleBtn}
-                    onClick={() => setActiveProduct(item.id)}
-                  >
-                    Add
-                  </button>
-                )}
-
-                {/* FULL VIEW */}
-                {isActive && (
-                  <>
-                    {/* Qty */}
-                    <div style={qtyRow}>
-                      <button
-                        style={qtyBtn}
-                        onClick={() =>
-                          setQtyMap(q => ({
-                            ...q,
-                            [item.id]: Math.max(1, q[item.id] - 1),
-                          }))
-                        }
-                      >
-                        −
-                      </button>
-
-                      <span>{qtyMap[item.id]}</span>
-
-                      <button
-                        style={qtyBtn}
-                        onClick={() =>
-                          setQtyMap(q => ({
-                            ...q,
-                            [item.id]: q[item.id] + 1,
-                          }))
-                        }
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    <button
-                      style={addBtn}
-                      onClick={() => addToCart(item)}
-                    >
-                      🛒 Add to Cart
-                    </button>
-
-                    <button
-                      style={buyBtn}
-                      onClick={() => buyNow(item)}
-                    >
-                      ⚡ Buy Now
-                    </button>
-                  </>
-                )}
+                <button
+                  style={qtyBtn}
+                  onClick={() =>
+                    setQtyMap(q => ({
+                      ...q,
+                      [item.id]: q[item.id] + 1,
+                    }))
+                  }
+                >
+                  +
+                </button>
               </div>
-            );
-          })}
+
+              <button
+                style={addBtn}
+                onClick={() => addToCart(item)}
+              >
+                🛒 Add to Cart
+              </button>
+
+              <button
+                style={buyBtn}
+                onClick={() => buyNow(item)}
+              >
+                ⚡ Buy Now
+              </button>
+            </div>
+          ))}
         </div>
       </div>
     </>
   );
 }
 
-/* 🎨 Styles */
+/* 🎨 STYLES */
 const headerStyle = {
   display: "flex",
   justifyContent: "space-between",
+  alignItems: "center",
   padding: "12px 16px",
-  borderBottom: "1px solid #eee",
+  borderBottom: "1px solid #e5e7eb",
   position: "sticky",
   top: 0,
   background: "#fff",
@@ -216,32 +203,22 @@ const grid = {
 
 const card = {
   border: "1px solid #e5e7eb",
-  borderRadius: 16,
-  padding: 14,
+  borderRadius: 14,
+  padding: 12,
   background: "#fff",
 };
 
 const img = {
   width: "100%",
-  height: 200,
+  height: 180,
   objectFit: "cover",
-  borderRadius: 14,
-  cursor: "pointer",
-};
-
-const simpleBtn = {
-  width: "100%",
-  padding: 12,
-  background: "#3b82f6",
-  color: "#fff",
-  border: "none",
-  borderRadius: 10,
+  borderRadius: 12,
 };
 
 const qtyRow = {
   display: "flex",
-  gap: 10,
   alignItems: "center",
+  gap: 10,
   marginTop: 8,
 };
 
@@ -249,14 +226,14 @@ const qtyBtn = {
   width: 34,
   height: 34,
   borderRadius: 8,
-  border: "1px solid #ddd",
+  border: "1px solid #e5e7eb",
   background: "#fff",
   fontSize: 18,
 };
 
 const addBtn = {
   width: "100%",
-  marginTop: 10,
+  marginTop: 12,
   padding: 12,
   background: "#f59e0b",
   color: "#fff",
