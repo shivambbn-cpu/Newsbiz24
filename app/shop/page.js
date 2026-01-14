@@ -9,6 +9,7 @@ export default function ShopPage() {
   const router = useRouter();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   /* 🔹 Fetch products */
   useEffect(() => {
@@ -35,68 +36,74 @@ export default function ShopPage() {
   }, []);
 
   if (loading) {
-    return (
-      <p style={{ padding: 50, textAlign: "center", fontSize: 18 }}>
-        🙏 Loading spiritual products...
-      </p>
-    );
+    return <p style={{ padding: 40, textAlign: "center" }}>Loading shop...</p>;
   }
 
   return (
-    <div style={pageWrap}>
-      {/* 🔶 Top Notice */}
-      <div style={noticeBar}>
-        🇮🇳 Free delivery on prepaid orders above ₹300
+    <div>
+
+      {/* 🔶 TOP NOTICE BAR */}
+      <div style={topBar}>
+        🚚 Cash on Delivery • Free Shipping Available
       </div>
 
-      {/* 🔶 Header */}
+      {/* 🔶 HEADER */}
       <header style={header}>
-        <span style={menu}>☰</span>
-        <h1 style={logo}>NEWSBIZ24.in</h1>
+        <span style={menuIcon} onClick={() => setMenuOpen(true)}>☰</span>
+        <h1 style={logo}>TULSIMALASTORE</h1>
         <span style={cart}>🛒</span>
       </header>
 
-      {/* 🔶 Category Icons */}
-      <div style={categoryWrap}>
-        {categories.map(c => (
-          <div key={c.title} style={catItem}>
-            <div style={catCircle}>{c.icon}</div>
-            <span>{c.title}</span>
+      {/* 🔶 SIDE MENU */}
+      {menuOpen && (
+        <div style={overlay} onClick={() => setMenuOpen(false)}>
+          <div style={sideMenu} onClick={e => e.stopPropagation()}>
+            <div style={sideHeader}>
+              <span onClick={() => setMenuOpen(false)}>✕</span>
+              <b>TULSIMALASTORE</b>
+            </div>
+
+            <ul style={menuList}>
+              <li onClick={() => router.push("/")}>Home</li>
+              <li>Kanthi Mala</li>
+              <li>Japa Mala</li>
+              <li>Black & Brown Mala</li>
+              <li>Hand Bracelet Tulsi</li>
+              <li>Japa Bag</li>
+              <li>Tulsi Locket Mala</li>
+            </ul>
+
+            <hr />
+
+            <ul style={menuList}>
+              <li>📦 DTDC Tracking</li>
+              <li>📦 Xpressbees Tracking</li>
+              <li>📦 Indian Post Tracking</li>
+            </ul>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
-      {/* 🔶 Banner */}
-      <div style={banner}>
-        <h2>Hand-Crafted With Devotion</h2>
-        <p>Purity & Tradition in Every Product</p>
-      </div>
+      {/* 🔶 SHOP GRID */}
+      <div style={container}>
+        <h2 style={title}>🌿 Our Spiritual Products</h2>
 
-      {/* 🔶 Product Grid */}
-      <h2 style={sectionTitle}>Our Sacred Collection</h2>
+        <div style={grid}>
+          {products.map(item => (
+            <div
+              key={item.id}
+              style={card}
+              onClick={() => router.push(`/product/${item.id}`)}
+            >
+              {item.image && (
+                <img src={item.image} alt={item.name} style={image} />
+              )}
 
-      <div style={grid}>
-        {products.map(item => (
-          <div
-            key={item.id}
-            onClick={() => router.push(`/product/${item.id}`)}
-            style={card}
-          >
-            {item.image && (
-              <img
-                src={item.image}
-                alt={item.name}
-                style={image}
-              />
-            )}
-
-            <h3 style={productName}>{item.name}</h3>
-
-            <p style={price}>₹{item.price}</p>
-
-            <button style={buyBtn}>View Product</button>
-          </div>
-        ))}
+              <h3 style={productName}>{item.name}</h3>
+              <p style={price}>₹{item.price}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -104,129 +111,87 @@ export default function ShopPage() {
 
 /* ================= STYLES ================= */
 
-const pageWrap = {
-  fontFamily: "Arial, sans-serif",
-  background: "#f9faf7",
-  minHeight: "100vh",
-};
-
-const noticeBar = {
-  background: "#c89b2c",
+const topBar = {
+  background: "#b8860b",
   color: "#fff",
-  textAlign: "center",
-  padding: "8px 10px",
+  padding: 8,
   fontSize: 14,
+  textAlign: "center",
 };
 
 const header = {
   display: "flex",
   alignItems: "center",
   justifyContent: "space-between",
-  padding: "15px 18px",
-  background: "#fff",
+  padding: "12px 16px",
   borderBottom: "1px solid #eee",
-};
-
-const logo = {
-  color: "#1b5e20",
-  fontWeight: "bold",
-  fontSize: 20,
-};
-
-const menu = { fontSize: 22 };
-const cart = { fontSize: 22 };
-
-const categoryWrap = {
-  display: "flex",
-  gap: 18,
-  padding: 15,
-  overflowX: "auto",
   background: "#fff",
+  position: "sticky",
+  top: 0,
+  zIndex: 10,
 };
 
-const catItem = {
-  textAlign: "center",
-  minWidth: 90,
-  fontSize: 14,
+const menuIcon = { fontSize: 24, cursor: "pointer" };
+const cart = { fontSize: 22 };
+const logo = { fontSize: 18, color: "#1f7a3f", fontWeight: "bold" };
+
+const overlay = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  background: "rgba(0,0,0,0.4)",
+  zIndex: 100,
 };
 
-const catCircle = {
-  width: 70,
-  height: 70,
-  borderRadius: "50%",
-  background: "#e8f5e9",
+const sideMenu = {
+  width: 280,
+  height: "100%",
+  background: "#fff",
+  padding: 20,
+  overflowY: "auto",
+};
+
+const sideHeader = {
   display: "flex",
+  gap: 15,
   alignItems: "center",
-  justifyContent: "center",
-  fontSize: 30,
-  margin: "0 auto 6px",
+  fontSize: 18,
+  marginBottom: 20,
 };
 
-const banner = {
-  margin: 20,
-  padding: 25,
-  borderRadius: 16,
-  textAlign: "center",
-  background:
-    "linear-gradient(135deg,#e8f5e9,#fffde7)",
+const menuList = {
+  listStyle: "none",
+  padding: 0,
+  fontSize: 16,
+  lineHeight: "2.2em",
 };
 
-const sectionTitle = {
-  textAlign: "center",
-  margin: "25px 0 10px",
-  color: "#2e7d32",
-};
+const container = { padding: 20 };
+const title = { textAlign: "center", marginBottom: 20 };
 
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
-  gap: 18,
-  padding: 20,
+  gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))",
+  gap: 16,
 };
 
 const card = {
-  background: "#fff",
-  borderRadius: 14,
-  padding: 12,
-  boxShadow: "0 6px 16px rgba(0,0,0,0.08)",
+  border: "1px solid #eee",
+  borderRadius: 12,
+  padding: 10,
+  textAlign: "center",
   cursor: "pointer",
-  transition: "0.2s",
+  background: "#fff",
 };
 
 const image = {
   width: "100%",
-  height: 180,
+  height: 150,
   objectFit: "cover",
   borderRadius: 10,
 };
 
-const productName = {
-  margin: "10px 0 4px",
-  fontSize: 16,
-};
-
-const price = {
-  color: "#2e7d32",
-  fontWeight: "bold",
-  fontSize: 18,
-};
-
-const buyBtn = {
-  marginTop: 8,
-  width: "100%",
-  padding: 10,
-  background: "#2e7d32",
-  color: "#fff",
-  border: "none",
-  borderRadius: 8,
-  fontSize: 14,
-};
-
-/* ================= DATA ================= */
-
-const categories = [
-  { title: "Bhakti", icon: "🕉️" },
-  { title: "Japa Bag", icon: "🎒" },
-  { title: "Tulsi Mala", icon: "📿" },
-  { title: "Bracelet", icon: "🧿" },
-];
+const productName = { margin: "10px 0 5px" };
+const price = { color: "#1f7a3f", fontWeight: "bold", fontSize: 18 };
