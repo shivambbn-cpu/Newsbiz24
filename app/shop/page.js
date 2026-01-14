@@ -40,7 +40,7 @@ export default function ShopPage() {
     fetchProducts();
   }, []);
 
-  /* 🧮 TOTAL QTY cart count */
+  /* 🧮 Cart total quantity */
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
     const totalQty = cart.reduce(
@@ -53,7 +53,8 @@ export default function ShopPage() {
   /* 🛒 Add to Cart */
   const addToCart = (product) => {
     const qty = qtyMap[product.id] || 1;
-    const total = Number(product.price) * qty;
+    const price = Number(product.price);
+    const total = price * qty;
 
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     const index = cart.findIndex(p => p.id === product.id);
@@ -66,7 +67,7 @@ export default function ShopPage() {
         id: product.id,
         name: product.name,
         image: product.image,
-        price: Number(product.price),
+        price,
         qty,
         total,
       });
@@ -96,10 +97,10 @@ export default function ShopPage() {
           TULSIMALASTORE
         </span>
 
-        {/* 🛒 CART ICON (CLICKABLE) */}
+        {/* 🛒 CART ICON (FIXED & CLICKABLE) */}
         <div
           style={{ position: "relative", fontSize: 22, cursor: "pointer" }}
-          onClick={() => router.push("/checkout/cart")}
+          onClick={() => router.push("/cart")}
         >
           🛒
           {cartCount > 0 && (
@@ -253,4 +254,3 @@ const buyBtn = {
   border: "none",
   borderRadius: 10,
 };
-
