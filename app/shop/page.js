@@ -1,10 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 
 export default function ShopPage() {
+  const router = useRouter();
+
   const [products, setProducts] = useState([]);
   const [qtyMap, setQtyMap] = useState({});
   const [cartCount, setCartCount] = useState(0);
@@ -26,7 +29,6 @@ export default function ShopPage() {
 
       setProducts(data);
 
-      // default qty = 1
       const qObj = {};
       data.forEach(p => (qObj[p.id] = 1));
       setQtyMap(qObj);
@@ -38,10 +40,10 @@ export default function ShopPage() {
     updateCartCount();
   }, []);
 
-  /* 🧮 Cart count (UNIQUE products only) */
+  /* 🧮 Cart count */
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCartCount(cart.length); // ✅ FIX (no 47 / 48 bug)
+    setCartCount(cart.length);
   };
 
   /* 🛒 Add to Cart */
@@ -63,13 +65,27 @@ export default function ShopPage() {
     updateCartCount();
   };
 
+  /* ⚡ Buy Now */
+  const buyNow = (product) => {
+    const qty = qtyMap[product.id] || 1;
+    const total = product.price * qty;
+
+    // cart overwrite for direct checkout
+    localStorage.setItem(
+      "cart",
+      JSON.stringify([{ ...product, qty, total }])
+    );
+
+    router.push("/checkout");
+  };
+
   if (loading) {
     return <p style={{ padding: 40, textAlign: "center" }}>Loading…</p>;
   }
 
   return (
     <>
-      {/* 🔝 HEADER (same as before, only count fixed) */}
+      {/* 🔝 HEADER */}
       <header style={headerStyle}>
         <span style={{ fontWeight: "bold", color: "#16a34a" }}>
           TULSIMALASTORE
@@ -128,8 +144,20 @@ export default function ShopPage() {
                 </button>
               </div>
 
-              <button style={addBtn} onClick={() => addToCart(item)}>
+              {/* 🛒 Add to Cart */}
+              <button
+                style={addBtn}
+                onClick={() => addToCart(item)}
+              >
                 🛒 Add to Cart
+              </button>
+
+              {/* ⚡ Buy Now */}
+              <button
+                style={buyBtn}
+                onClick={() => buyNow(item)}
+              >
+                ⚡ Buy Now
               </button>
             </div>
           ))}
@@ -204,6 +232,16 @@ const addBtn = {
   marginTop: 12,
   padding: 12,
   background: "#f59e0b",
+  color: "#fff",
+  border: "none",
+  borderRadius: 10,
+};
+
+const buyBtn = {
+  width: "100%",
+  marginTop: 8,
+  padding: 12,
+  background: "#16a34a",
   color: "#fff",
   border: "none",
   borderRadius: 10,
