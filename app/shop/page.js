@@ -52,7 +52,7 @@ export default function ShopPage() {
       {/* 🔶 Header */}
       <header style={header}>
         <span style={menu}>☰</span>
-        <h1 style={logo}>TULSIMALASTORE</h1>
+        <h1 style={logo}>NEWSBIZ24.in</h1>
         <span style={cart}>🛒</span>
       </header>
 
