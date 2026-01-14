@@ -1,19 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 
 export default function ShopPage() {
-  const router = useRouter();
   const [products, setProducts] = useState([]);
+  const [qtyMap, setQtyMap] = useState({});
+  const [cartCount, setCartCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // 🔢 quantity per product
-  const [qtyMap, setQtyMap] = useState({});
-
-  /* 🔹 Fetch products */
+  /* 🔹 Products fetch */
   useEffect(() => {
     const fetchProducts = async () => {
       const q = query(
@@ -38,7 +35,14 @@ export default function ShopPage() {
     };
 
     fetchProducts();
+    updateCartCount();
   }, []);
+
+  /* 🧮 Cart count (UNIQUE products only) */
+  const updateCartCount = () => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    setCartCount(cart.length); // ✅ FIX (no 47 / 48 bug)
+  };
 
   /* 🛒 Add to Cart */
   const addToCart = (product) => {
@@ -56,114 +60,136 @@ export default function ShopPage() {
     }
 
     localStorage.setItem("cart", JSON.stringify(cart));
-    alert(`✅ Added ${qty} item(s)`);
+    updateCartCount();
   };
 
   if (loading) {
-    return <p style={{ padding: 40, textAlign: "center" }}>Loading shop…</p>;
+    return <p style={{ padding: 40, textAlign: "center" }}>Loading…</p>;
   }
 
   return (
-    <div style={{ padding: 16 }}>
-      <h1 style={{ textAlign: "center", marginBottom: 20 }}>
-        🛍️ Our Spiritual Products
-      </h1>
+    <>
+      {/* 🔝 HEADER (same as before, only count fixed) */}
+      <header style={headerStyle}>
+        <span style={{ fontWeight: "bold", color: "#16a34a" }}>
+          TULSIMALASTORE
+        </span>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-          gap: 20,
-        }}
-      >
-        {products.map(item => (
-          <div
-            key={item.id}
-            style={{
-              border: "1px solid #e5e7eb",
-              borderRadius: 14,
-              padding: 12,
-              background: "#fff",
-            }}
-          >
-            <img
-              src={item.image}
-              alt={item.name}
-              style={{
-                width: "100%",
-                borderRadius: 12,
-                maxHeight: 180,
-                objectFit: "cover",
-              }}
-            />
+        <div style={{ position: "relative" }}>
+          🛒
+          {cartCount > 0 && (
+            <span style={cartBadge}>{cartCount}</span>
+          )}
+        </div>
+      </header>
 
-            <h3 style={{ marginTop: 10 }}>{item.name}</h3>
+      {/* 🛍️ PRODUCTS */}
+      <div style={{ padding: 16 }}>
+        <h2 style={{ textAlign: "center", marginBottom: 20 }}>
+          🌿 Our Spiritual Products
+        </h2>
 
-            <p style={{ color: "#16a34a", fontSize: 18, fontWeight: "bold" }}>
-              ₹{item.price}
-            </p>
+        <div style={grid}>
+          {products.map(item => (
+            <div key={item.id} style={card}>
+              <img src={item.image} alt={item.name} style={img} />
 
-            {/* 🔢 Quantity */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                marginTop: 8,
-              }}
-            >
-              <button
-                onClick={() =>
-                  setQtyMap(q => ({
-                    ...q,
-                    [item.id]: Math.max(1, q[item.id] - 1),
-                  }))
-                }
-                style={qtyBtn}
-              >
-                −
-              </button>
+              <h3>{item.name}</h3>
+              <p style={{ color: "#16a34a", fontWeight: "bold" }}>
+                ₹{item.price}
+              </p>
 
-              <span>{qtyMap[item.id]}</span>
+              {/* Quantity */}
+              <div style={qtyRow}>
+                <button
+                  style={qtyBtn}
+                  onClick={() =>
+                    setQtyMap(q => ({
+                      ...q,
+                      [item.id]: Math.max(1, q[item.id] - 1),
+                    }))
+                  }
+                >
+                  −
+                </button>
 
-              <button
-                onClick={() =>
-                  setQtyMap(q => ({
-                    ...q,
-                    [item.id]: q[item.id] + 1,
-                  }))
-                }
-                style={qtyBtn}
-              >
-                +
+                <span>{qtyMap[item.id]}</span>
+
+                <button
+                  style={qtyBtn}
+                  onClick={() =>
+                    setQtyMap(q => ({
+                      ...q,
+                      [item.id]: q[item.id] + 1,
+                    }))
+                  }
+                >
+                  +
+                </button>
+              </div>
+
+              <button style={addBtn} onClick={() => addToCart(item)}>
+                🛒 Add to Cart
               </button>
             </div>
-
-            {/* 🛒 Add to cart */}
-            <button
-              onClick={() => addToCart(item)}
-              style={{
-                width: "100%",
-                marginTop: 12,
-                padding: 12,
-                background: "#f59e0b",
-                color: "#fff",
-                border: "none",
-                borderRadius: 10,
-                fontSize: 15,
-                cursor: "pointer",
-              }}
-            >
-              🛒 Add to Cart
-            </button>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
-/* styles */
+/* 🎨 styles */
+const headerStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "12px 16px",
+  borderBottom: "1px solid #e5e7eb",
+  position: "sticky",
+  top: 0,
+  background: "#fff",
+  zIndex: 10,
+};
+
+const cartBadge = {
+  position: "absolute",
+  top: -6,
+  right: -10,
+  background: "red",
+  color: "#fff",
+  fontSize: 12,
+  borderRadius: "50%",
+  padding: "2px 6px",
+};
+
+const grid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+  gap: 20,
+};
+
+const card = {
+  border: "1px solid #e5e7eb",
+  borderRadius: 14,
+  padding: 12,
+  background: "#fff",
+};
+
+const img = {
+  width: "100%",
+  height: 180,
+  objectFit: "cover",
+  borderRadius: 12,
+};
+
+const qtyRow = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  marginTop: 8,
+};
+
 const qtyBtn = {
   width: 34,
   height: 34,
@@ -171,5 +197,14 @@ const qtyBtn = {
   border: "1px solid #e5e7eb",
   background: "#fff",
   fontSize: 18,
-  cursor: "pointer",
+};
+
+const addBtn = {
+  width: "100%",
+  marginTop: 12,
+  padding: 12,
+  background: "#f59e0b",
+  color: "#fff",
+  border: "none",
+  borderRadius: 10,
 };
