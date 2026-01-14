@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { jsPDF } from "jspdf";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function CheckoutPage() {
     state: "",
     pincode: ""
   });
+  const [orderPlaced, setOrderPlaced] = useState(false);
 
   /* 🔹 Load cart from localStorage */
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function CheckoutPage() {
     }
 
     try {
-      // Save each cart item as separate order (or combine as one order if you like)
+      // Save each cart item as separate order
       for (let item of cart) {
         await addDoc(collection(db, "orders"), {
           productId: item.id,
@@ -57,7 +59,7 @@ export default function CheckoutPage() {
         });
       }
 
-      // Save last order for PDF (optional)
+      // Save last order for PDF
       const orderData = {
         orderId: Date.now(),
         products: cart,
@@ -69,17 +71,62 @@ export default function CheckoutPage() {
 
       // Clear cart
       localStorage.removeItem("cart");
+      setOrderPlaced(true);
 
-      // Redirect to success page
-      router.push("/order-success");
+      alert("✅ Order placed successfully!");
     } catch (err) {
       console.error("ORDER ERROR", err);
       alert("Order failed, try again.");
     }
   };
 
+  /* 🔹 Download Invoice PDF */
+  const downloadInvoice = () => {
+    const order = JSON.parse(localStorage.getItem("lastOrder"));
+    if (!order) return alert("No order data found");
+
+    const doc = new jsPDF();
+    let y = 10;
+
+    doc.setFontSize(18);
+    doc.text("🛒 TULSIMALASTORE Invoice", 10, y);
+    y += 10;
+
+    doc.setFontSize(12);
+    doc.text(`Order ID: ${order.orderId}`, 10, y);
+    y += 8;
+    doc.text(`Customer: ${order.customer.name}`, 10, y);
+    y += 8;
+    doc.text(`Mobile: ${order.customer.mobile}`, 10, y);
+    y += 8;
+    doc.text(
+      `Address: ${order.customer.address}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}`,
+      10,
+      y
+    );
+    y += 8;
+    doc.text(`Payment Method: ${order.paymentMethod}`, 10, y);
+    y += 10;
+
+    doc.text("Products:", 10, y);
+    y += 8;
+
+    order.products.forEach((p, index) => {
+      doc.text(
+        `${index + 1}. ${p.name} - ₹${p.price} × ${p.qty} = ₹${p.total}`,
+        10,
+        y
+      );
+      y += 8;
+    });
+
+    doc.text(`Total: ₹${order.total}`, 10, y + 5);
+
+    doc.save(`invoice_${order.orderId}.pdf`);
+  };
+
   /* 🔹 If cart empty */
-  if (!cart.length) {
+  if (!cart.length && !orderPlaced) {
     return (
       <div style={wrap}>
         <h2>🛒 Your cart is empty</h2>
@@ -109,52 +156,63 @@ export default function CheckoutPage() {
       <h3 style={{ marginTop: 10 }}>Total: ₹{total}</h3>
 
       {/* Customer Details Form */}
-      <h3 style={{ marginTop: 20 }}>Customer Details</h3>
-      <input
-        style={input}
-        placeholder="Full Name"
-        value={form.name}
-        onChange={e => setForm({ ...form, name: e.target.value })}
-      />
-      <input
-        style={input}
-        placeholder="Mobile Number"
-        value={form.mobile}
-        onChange={e => setForm({ ...form, mobile: e.target.value })}
-      />
-      <textarea
-        style={input}
-        placeholder="Full Address"
-        value={form.address}
-        onChange={e => setForm({ ...form, address: e.target.value })}
-      />
-      <input
-        style={input}
-        placeholder="City"
-        value={form.city}
-        onChange={e => setForm({ ...form, city: e.target.value })}
-      />
-      <input
-        style={input}
-        placeholder="State"
-        value={form.state}
-        onChange={e => setForm({ ...form, state: e.target.value })}
-      />
-      <input
-        style={input}
-        placeholder="Pincode"
-        value={form.pincode}
-        onChange={e => setForm({ ...form, pincode: e.target.value })}
-      />
+      {!orderPlaced && (
+        <>
+          <h3 style={{ marginTop: 20 }}>Customer Details</h3>
+          <input
+            style={input}
+            placeholder="Full Name"
+            value={form.name}
+            onChange={e => setForm({ ...form, name: e.target.value })}
+          />
+          <input
+            style={input}
+            placeholder="Mobile Number"
+            value={form.mobile}
+            onChange={e => setForm({ ...form, mobile: e.target.value })}
+          />
+          <textarea
+            style={input}
+            placeholder="Full Address"
+            value={form.address}
+            onChange={e => setForm({ ...form, address: e.target.value })}
+          />
+          <input
+            style={input}
+            placeholder="City"
+            value={form.city}
+            onChange={e => setForm({ ...form, city: e.target.value })}
+          />
+          <input
+            style={input}
+            placeholder="State"
+            value={form.state}
+            onChange={e => setForm({ ...form, state: e.target.value })}
+          />
+          <input
+            style={input}
+            placeholder="Pincode"
+            value={form.pincode}
+            onChange={e => setForm({ ...form, pincode: e.target.value })}
+          />
 
-      {/* Payment Method */}
-      <p style={{ marginTop: 10 }}>
-        Payment Method: <b>Cash on Delivery</b>
-      </p>
+          {/* Payment Method */}
+          <p style={{ marginTop: 10 }}>
+            Payment Method: <b>Cash on Delivery</b>
+          </p>
 
-      <button style={btn} onClick={placeOrder}>
-        Place Order (₹{total})
-      </button>
+          <button style={btn} onClick={placeOrder}>
+            Place Order (₹{total})
+          </button>
+        </>
+      )}
+
+      {/* Download Invoice */}
+      {orderPlaced && (
+        <button style={btn} onClick={downloadInvoice}>
+          📄 Download Invoice (PDF)
+        </button>
+      )}
     </div>
   );
 }
