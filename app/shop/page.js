@@ -11,7 +11,6 @@ export default function ShopPage() {
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  /* 🔹 Fetch products */
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -20,20 +19,22 @@ export default function ShopPage() {
           where("active", "==", true)
         );
         const snap = await getDocs(q);
-        const data = snap.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setProducts(data);
-      } catch (err) {
-        console.error("Firestore error:", err);
+        setProducts(
+          snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+        );
+      } catch (e) {
+        console.error(e);
       } finally {
         setLoading(false);
       }
     };
-
     fetchProducts();
   }, []);
+
+  const go = (path) => {
+    setMenuOpen(false);
+    router.push(path);
+  };
 
   if (loading) {
     return <p style={{ padding: 40, textAlign: "center" }}>Loading shop...</p>;
@@ -42,49 +43,57 @@ export default function ShopPage() {
   return (
     <div>
 
-      {/* 🔶 TOP NOTICE BAR */}
+      {/* TOP BAR */}
       <div style={topBar}>
         🚚 Cash on Delivery • Free Shipping Available
       </div>
 
-      {/* 🔶 HEADER */}
+      {/* HEADER */}
       <header style={header}>
         <span style={menuIcon} onClick={() => setMenuOpen(true)}>☰</span>
         <h1 style={logo}>TULSIMALASTORE</h1>
         <span style={cart}>🛒</span>
       </header>
 
-      {/* 🔶 SIDE MENU */}
+      {/* SIDE MENU */}
       {menuOpen && (
         <div style={overlay} onClick={() => setMenuOpen(false)}>
           <div style={sideMenu} onClick={e => e.stopPropagation()}>
+
             <div style={sideHeader}>
               <span onClick={() => setMenuOpen(false)}>✕</span>
               <b>TULSIMALASTORE</b>
             </div>
 
             <ul style={menuList}>
-              <li onClick={() => router.push("/")}>Home</li>
-              <li>Kanthi Mala</li>
-              <li>Japa Mala</li>
-              <li>Black & Brown Mala</li>
-              <li>Hand Bracelet Tulsi</li>
-              <li>Japa Bag</li>
-              <li>Tulsi Locket Mala</li>
+              <li onClick={() => go("/")}>Home</li>
+              <li onClick={() => go("/category/kanthi-mala")}>Kanthi Mala</li>
+              <li onClick={() => go("/category/japa-mala")}>Japa Mala</li>
+              <li onClick={() => go("/category/black-brown-mala")}>Black & Brown Mala</li>
+              <li onClick={() => go("/category/hand-bracelet-tulsi")}>Hand Bracelet Tulsi</li>
+              <li onClick={() => go("/category/japa-bag")}>Japa Bag</li>
+              <li onClick={() => go("/category/tulsi-locket-mala")}>Tulsi Locket Mala</li>
             </ul>
 
             <hr />
 
             <ul style={menuList}>
-              <li>📦 DTDC Tracking</li>
-              <li>📦 Xpressbees Tracking</li>
-              <li>📦 Indian Post Tracking</li>
+              <li onClick={() => window.open("https://www.dtdc.in/tracking.asp","_blank")}>
+                📦 DTDC Tracking
+              </li>
+              <li onClick={() => window.open("https://www.xpressbees.com/track","_blank")}>
+                📦 Xpressbees Tracking
+              </li>
+              <li onClick={() => window.open("https://www.indiapost.gov.in/_layouts/15/dop.portal.tracking/trackconsignment.aspx","_blank")}>
+                📦 Indian Post Tracking
+              </li>
             </ul>
+
           </div>
         </div>
       )}
 
-      {/* 🔶 SHOP GRID */}
+      {/* SHOP */}
       <div style={container}>
         <h2 style={title}>🌿 Our Spiritual Products</h2>
 
@@ -98,7 +107,6 @@ export default function ShopPage() {
               {item.image && (
                 <img src={item.image} alt={item.name} style={image} />
               )}
-
               <h3 style={productName}>{item.name}</h3>
               <p style={price}>₹{item.price}</p>
             </div>
@@ -121,8 +129,8 @@ const topBar = {
 
 const header = {
   display: "flex",
-  alignItems: "center",
   justifyContent: "space-between",
+  alignItems: "center",
   padding: "12px 16px",
   borderBottom: "1px solid #eee",
   background: "#fff",
@@ -137,10 +145,7 @@ const logo = { fontSize: 18, color: "#1f7a3f", fontWeight: "bold" };
 
 const overlay = {
   position: "fixed",
-  top: 0,
-  left: 0,
-  width: "100%",
-  height: "100%",
+  inset: 0,
   background: "rgba(0,0,0,0.4)",
   zIndex: 100,
 };
@@ -166,6 +171,7 @@ const menuList = {
   padding: 0,
   fontSize: 16,
   lineHeight: "2.2em",
+  cursor: "pointer",
 };
 
 const container = { padding: 20 };
@@ -183,7 +189,6 @@ const card = {
   padding: 10,
   textAlign: "center",
   cursor: "pointer",
-  background: "#fff",
 };
 
 const image = {
