@@ -14,7 +14,7 @@ export default function ShopPage() {
   const [activeProduct, setActiveProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  /* 🔹 Fetch products */
+  /* 🔹 Fetch Products */
   useEffect(() => {
     (async () => {
       const q = query(
@@ -38,30 +38,41 @@ export default function ShopPage() {
     })();
   }, []);
 
-  /* 🔹 Cart Count (unique items only) */
+  /* 🧮 Cart Count (unique products) */
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
     setCartCount(cart.length);
   };
 
-  /* 🛒 Add to Cart */
+  /* 🛒 ADD TO CART (✅ FIXED) */
   const addToCart = (product) => {
-    const qty = qtyMap[product.id] || 1;
-    const total = product.price * qty;
+    const qty = Number(qtyMap[product.id] || 1);
+    const price = Number(product.price);
 
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
     const index = cart.findIndex(p => p.id === product.id);
 
-    if (index >= 0) {
+    if (index !== -1) {
+      // ✅ product already in cart → qty increase
       cart[index].qty += qty;
-      cart[index].total += total;
+      cart[index].total = cart[index].qty * price;
     } else {
-      cart.push({ ...product, qty, total });
+      // ✅ new product
+      cart.push({
+        id: product.id,
+        name: product.name,
+        image: product.image,
+        price,
+        qty,
+        total: price * qty,
+      });
     }
 
     localStorage.setItem("cart", JSON.stringify(cart));
     updateCartCount();
-    alert("✅ Added to cart");
+
+    alert(`✅ ${qty} item(s) added to cart`);
   };
 
   /* ⚡ Buy Now */
@@ -86,9 +97,7 @@ export default function ShopPage() {
       </header>
 
       <div style={{ padding: 16 }}>
-        <h2 style={{ textAlign: "center" }}>
-          🛍️ Our Shop
-        </h2>
+        <h2 style={{ textAlign: "center" }}>🛍️ Our Shop</h2>
 
         <div style={grid}>
           {products.map(item => {
@@ -110,7 +119,7 @@ export default function ShopPage() {
                   ₹{item.price}
                 </p>
 
-                {/* 🔹 SIMPLE VIEW (Second image) */}
+                {/* SIMPLE VIEW */}
                 {!isActive && (
                   <button
                     style={simpleBtn}
@@ -120,7 +129,7 @@ export default function ShopPage() {
                   </button>
                 )}
 
-                {/* 🔹 FULL VIEW (First image) */}
+                {/* FULL VIEW */}
                 {isActive && (
                   <>
                     {/* Qty */}
