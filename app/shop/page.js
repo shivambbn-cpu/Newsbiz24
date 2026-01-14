@@ -29,7 +29,6 @@ export default function ShopPage() {
 
       setProducts(data);
 
-      // default qty = 1
       const qObj = {};
       data.forEach(p => (qObj[p.id] = 1));
       setQtyMap(qObj);
@@ -41,7 +40,7 @@ export default function ShopPage() {
     fetchProducts();
   }, []);
 
-  /* ✅ TOTAL QUANTITY cart count */
+  /* 🧮 TOTAL QTY cart count */
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
     const totalQty = cart.reduce(
@@ -97,7 +96,11 @@ export default function ShopPage() {
           TULSIMALASTORE
         </span>
 
-        <div style={{ position: "relative", fontSize: 22 }}>
+        {/* 🛒 CART ICON (CLICKABLE) */}
+        <div
+          style={{ position: "relative", fontSize: 22, cursor: "pointer" }}
+          onClick={() => router.push("/checkout/cart")}
+        >
           🛒
           {cartCount > 0 && (
             <span style={cartBadge}>{cartCount}</span>
@@ -250,3 +253,4 @@ const buyBtn = {
   border: "none",
   borderRadius: 10,
 };
+
