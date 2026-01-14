@@ -7,7 +7,6 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 
 export default function ShopPage() {
   const router = useRouter();
-
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -37,11 +36,12 @@ export default function ShopPage() {
     fetchProducts();
   }, []);
 
-  /* 🛒 Cart count (localStorage) */
+  /* ✅ CART COUNT FIX (NO 48 ISSUE) */
   useEffect(() => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const totalQty = cart.reduce((sum, item) => sum + (item.qty || 1), 0);
-    setCartCount(totalQty);
+
+    // 👉 ONLY UNIQUE PRODUCTS COUNT
+    setCartCount(cart.length);
   }, []);
 
   if (loading) {
@@ -50,7 +50,7 @@ export default function ShopPage() {
 
   return (
     <div>
-      {/* 🔶 TOP NOTICE BAR */}
+      {/* 🔶 TOP BAR */}
       <div style={topBar}>
         🚚 Cash on Delivery • Free Shipping Available
       </div>
@@ -62,8 +62,8 @@ export default function ShopPage() {
         <h1 style={logo}>TULSIMALASTORE</h1>
 
         {/* 🛒 CART ICON */}
-        <div style={cartWrap} onClick={() => router.push("/cart")}>
-          <span style={cartIcon}>🛒︎</span>
+        <div style={{ position: "relative", cursor: "pointer" }}>
+          🛒
           {cartCount > 0 && (
             <span style={cartBadge}>{cartCount}</span>
           )}
@@ -88,19 +88,11 @@ export default function ShopPage() {
               <li>Japa Bag</li>
               <li>Tulsi Locket Mala</li>
             </ul>
-
-            <hr />
-
-            <ul style={menuList}>
-              <li>📦 DTDC Tracking</li>
-              <li>📦 Xpressbees Tracking</li>
-              <li>📦 Indian Post Tracking</li>
-            </ul>
           </div>
         </div>
       )}
 
-      {/* 🔶 SHOP GRID */}
+      {/* 🔶 PRODUCTS */}
       <div style={container}>
         <h2 style={title}>🌿 Our Spiritual Products</h2>
 
@@ -114,7 +106,6 @@ export default function ShopPage() {
               {item.image && (
                 <img src={item.image} alt={item.name} style={image} />
               )}
-
               <h3 style={productName}>{item.name}</h3>
               <p style={price}>₹{item.price}</p>
             </div>
@@ -150,29 +141,16 @@ const header = {
 const menuIcon = { fontSize: 24, cursor: "pointer" };
 const logo = { fontSize: 18, color: "#1f7a3f", fontWeight: "bold" };
 
-/* 🛒 CART STYLES */
-const cartWrap = {
-  position: "relative",
-  cursor: "pointer",
-};
-
-const cartIcon = {
-  fontSize: 26,
-};
-
 const cartBadge = {
   position: "absolute",
   top: -6,
   right: -10,
-  background: "#000",
+  background: "red",
   color: "#fff",
   borderRadius: "50%",
+  padding: "2px 6px",
   fontSize: 12,
-  width: 18,
-  height: 18,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
+  fontWeight: "bold",
 };
 
 const overlay = {
@@ -190,7 +168,6 @@ const sideMenu = {
   height: "100%",
   background: "#fff",
   padding: 20,
-  overflowY: "auto",
 };
 
 const sideHeader = {
