@@ -34,29 +34,6 @@ export default function ShopPage() {
     setCartCount(total);
   };
 
-  const addToCart = (product) => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const index = cart.findIndex(p => p.id === product.id);
-
-    if (index >= 0) {
-      cart[index].qty += qty;
-      cart[index].total += product.price * qty;
-    } else {
-      cart.push({
-        id: product.id,
-        name: product.name,
-        image: product.image,
-        price: product.price,
-        qty,
-        total: product.price * qty,
-      });
-    }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartCount();
-    alert("✅ Cart में add हो गया");
-  };
-
   const buyNow = (product) => {
     router.push(`/checkout/${product.id}?qty=${qty}`);
   };
@@ -70,7 +47,6 @@ export default function ShopPage() {
       {/* HEADER */}
       <header style={header}>
         <b>TULSIMALASTORE</b>
-
         <div style={{ position: "relative" }} onClick={() => router.push("/cart")}>
           🛒
           {cartCount > 0 && <span style={badge}>{cartCount}</span>}
@@ -95,13 +71,13 @@ export default function ShopPage() {
                 }}
               >
                 <img src={p.image} style={img} />
+                <h4 style={{ margin: "10px 0" }}>{p.name}</h4>
 
-                <h4 style={{ margin: "8px 0" }}>{p.name}</h4>
-
-                <div style={{ marginTop: 6 }}>
-                  <b style={{ fontSize: 18 }}>From ₹ {p.price}</b>
-                  <span style={cut}>₹{p.mrp || p.price * 2}</span>
-                  <span style={off}>55% OFF</span>
+                <div>
+                  <b style={{ fontSize: 18 }}>₹ {p.price}</b>
+                  {p.mrp && (
+                    <span style={cut}>₹{p.mrp}</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -114,26 +90,41 @@ export default function ShopPage() {
             .filter(p => p.id === openId)
             .map(item => (
               <div key={item.id} style={single}>
-                <img src={item.image} style={img} />
+                <img src={item.image} style={imgLarge} />
+
+                <p style={{ color: "#888", fontSize: 12 }}>
+                  TULSIMALASTORE.IN
+                </p>
 
                 <h2>{item.name}</h2>
 
-                <p style={{ color: "green", fontSize: 20 }}>
-                  ₹{item.price}
-                </p>
+                <div style={{ margin: "10px 0" }}>
+                  <b style={{ fontSize: 22 }}>Rs. {item.price}.00</b>
+                  {item.mrp && (
+                    <span style={cutBig}>Rs. {item.mrp}.00</span>
+                  )}
+                </div>
 
+                {/* ICON FEATURES */}
+                <div style={features}>
+                  <span>🔒 Secure</span>
+                  <span>🚚 Fast Ship</span>
+                  <span>✅ Quality</span>
+                </div>
+
+                {/* QTY */}
                 <div style={qtyRow}>
                   <button onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
                   <span>{qty}</span>
                   <button onClick={() => setQty(q => q + 1)}>+</button>
                 </div>
 
-                <button style={cartBtn} onClick={() => addToCart(item)}>
-                  🛒 Add to Cart
-                </button>
-
-                <button style={buyBtn} onClick={() => buyNow(item)}>
-                  ⚡ Buy Now
+                {/* BUY NOW */}
+                <button
+                  style={buyNowBtn}
+                  onClick={() => buyNow(item)}
+                >
+                  Buy Now
                 </button>
 
                 <button style={backBtn} onClick={() => setOpenId(null)}>
@@ -191,19 +182,24 @@ const img = {
   borderRadius: 12,
 };
 
+const imgLarge = {
+  width: "100%",
+  height: 260,
+  objectFit: "cover",
+  borderRadius: 14,
+};
+
 const cut = {
   marginLeft: 8,
   textDecoration: "line-through",
   color: "#999",
 };
 
-const off = {
-  marginLeft: 8,
-  background: "#000",
-  color: "#fff",
-  padding: "2px 6px",
-  borderRadius: 8,
-  fontSize: 12,
+const cutBig = {
+  marginLeft: 10,
+  textDecoration: "line-through",
+  color: "#999",
+  fontSize: 16,
 };
 
 const single = {
@@ -212,30 +208,29 @@ const single = {
   borderRadius: 14,
 };
 
+const features = {
+  display: "flex",
+  gap: 16,
+  color: "#16a34a",
+  fontSize: 14,
+  margin: "12px 0",
+};
+
 const qtyRow = {
   display: "flex",
   justifyContent: "center",
   gap: 16,
-  margin: "14px 0",
+  margin: "16px 0",
 };
 
-const cartBtn = {
+const buyNowBtn = {
   width: "100%",
-  padding: 12,
-  background: "#f59e0b",
-  border: "none",
+  padding: 14,
+  background: "#000",
   color: "#fff",
-  borderRadius: 10,
-  marginBottom: 10,
-};
-
-const buyBtn = {
-  width: "100%",
-  padding: 12,
-  background: "#16a34a",
   border: "none",
-  color: "#fff",
   borderRadius: 10,
+  fontSize: 18,
 };
 
 const backBtn = {
@@ -244,6 +239,5 @@ const backBtn = {
   background: "#eee",
   border: "none",
   borderRadius: 8,
-  marginTop: 10,
+  marginTop: 12,
 };
-
