@@ -34,6 +34,19 @@ export default function ShopPage() {
     setCartCount(total);
   };
 
+  const addToCart = (product) => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const existingIndex = cart.findIndex(item => item.id === product.id);
+    if (existingIndex >= 0) {
+      cart[existingIndex].qty += qty;
+    } else {
+      cart.push({ ...product, qty });
+    }
+    localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartCount();
+    alert(`${product.name} added to cart!`);
+  };
+
   const buyNow = (product) => {
     router.push(`/checkout/${product.id}?qty=${qty}`);
   };
@@ -119,13 +132,21 @@ export default function ShopPage() {
                   <button onClick={() => setQty(q => q + 1)}>+</button>
                 </div>
 
-                {/* BUY NOW */}
-                <button
-                  style={buyNowBtn}
-                  onClick={() => buyNow(item)}
-                >
-                  Buy Now
-                </button>
+                {/* ADD TO CART & BUY NOW */}
+                <div style={{ display: "flex", gap: 12 }}>
+                  <button
+                    style={addToCartBtn}
+                    onClick={() => addToCart(item)}
+                  >
+                    Add to Cart
+                  </button>
+                  <button
+                    style={buyNowBtn}
+                    onClick={() => buyNow(item)}
+                  >
+                    Buy Now
+                  </button>
+                </div>
 
                 <button style={backBtn} onClick={() => setOpenId(null)}>
                   ← Back
@@ -223,14 +244,26 @@ const qtyRow = {
   margin: "16px 0",
 };
 
+const addToCartBtn = {
+  flex: 1,
+  padding: 14,
+  background: "#16a34a",
+  color: "#fff",
+  border: "none",
+  borderRadius: 10,
+  fontSize: 16,
+  cursor: "pointer",
+};
+
 const buyNowBtn = {
-  width: "100%",
+  flex: 1,
   padding: 14,
   background: "#000",
   color: "#fff",
   border: "none",
   borderRadius: 10,
-  fontSize: 18,
+  fontSize: 16,
+  cursor: "pointer",
 };
 
 const backBtn = {
