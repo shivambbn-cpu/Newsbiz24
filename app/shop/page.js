@@ -12,8 +12,7 @@ export default function ShopPage() {
   const [qtyMap, setQtyMap] = useState({});
   const [cartCount, setCartCount] = useState(0);
   const [loading, setLoading] = useState(true);
-
-  const [openId, setOpenId] = useState(null); // ✅ NEW
+  const [openId, setOpenId] = useState(null); // ✅ only one open product
 
   /* 🔹 Fetch products */
   useEffect(() => {
@@ -31,9 +30,9 @@ export default function ShopPage() {
 
       setProducts(data);
 
-      const qObj = {};
-      data.forEach(p => (qObj[p.id] = 1));
-      setQtyMap(qObj);
+      const qtyObj = {};
+      data.forEach(p => (qtyObj[p.id] = 1));
+      setQtyMap(qtyObj);
 
       setLoading(false);
       updateCartCount();
@@ -77,7 +76,8 @@ export default function ShopPage() {
 
     localStorage.setItem("cart", JSON.stringify(cart));
     updateCartCount();
-    alert("✅ Cart me add ho gaya");
+
+    alert("✅ Cart में add हो गया");
   };
 
   /* ⚡ Buy Now */
@@ -106,76 +106,83 @@ export default function ShopPage() {
       </header>
 
       <div style={{ padding: 16 }}>
-        <h2 style={{ textAlign: "center" }}>🛍 Our Shop</h2>
+        <h2 style={{ textAlign: "center", marginBottom: 20 }}>
+          🛍 Our Shop
+        </h2>
 
         <div style={grid}>
-          {products.map(item => (
-            <div key={item.id} style={card}>
-              <img src={item.image} alt={item.name} style={img} />
+          {products.map(item => {
+            const isOpen = openId === item.id;
 
-              <h3>{item.name}</h3>
-              <p style={{ color: "#16a34a", fontWeight: "bold" }}>
-                ₹{item.price} रुपये
-              </p>
+            return (
+              <div key={item.id} style={card}>
+                <img src={item.image} alt={item.name} style={img} />
 
-              {/* 🔹 STATE 1 : SIMPLE (SECOND IMAGE) */}
-              {openId !== item.id && (
-                <button
-                  style={simpleAdd}
-                  onClick={() => setOpenId(item.id)}
-                >
-                  Add
-                </button>
-              )}
+                <h3>{item.name}</h3>
 
-              {/* 🔹 STATE 2 : FULL (FIRST IMAGE) */}
-              {openId === item.id && (
-                <>
-                  <div style={qtyRow}>
+                <p style={{ color: "#16a34a", fontWeight: "bold" }}>
+                  ₹{item.price} रुपये
+                </p>
+
+                {/* 🔹 SIMPLE VIEW */}
+                {!isOpen && (
+                  <button
+                    style={simpleAdd}
+                    onClick={() => setOpenId(item.id)}
+                  >
+                    Add
+                  </button>
+                )}
+
+                {/* 🔹 FULL VIEW */}
+                {isOpen && (
+                  <>
+                    <div style={qtyRow}>
+                      <button
+                        style={qtyBtn}
+                        onClick={() =>
+                          setQtyMap(q => ({
+                            ...q,
+                            [item.id]: Math.max(1, q[item.id] - 1),
+                          }))
+                        }
+                      >
+                        −
+                      </button>
+
+                      <span>{qtyMap[item.id]}</span>
+
+                      <button
+                        style={qtyBtn}
+                        onClick={() =>
+                          setQtyMap(q => ({
+                            ...q,
+                            [item.id]: q[item.id] + 1,
+                          }))
+                        }
+                      >
+                        +
+                      </button>
+                    </div>
+
                     <button
-                      style={qtyBtn}
-                      onClick={() =>
-                        setQtyMap(q => ({
-                          ...q,
-                          [item.id]: Math.max(1, q[item.id] - 1),
-                        }))
-                      }
+                      style={addBtn}
+                      onClick={() => addToCart(item)}
                     >
-                      −
+                      🛒 Add to Cart
                     </button>
 
-                    <span>{qtyMap[item.id]}</span>
-
                     <button
-                      style={qtyBtn}
-                      onClick={() =>
-                        setQtyMap(q => ({
-                          ...q,
-                          [item.id]: q[item.id] + 1,
-                        }))
-                      }
+                      style={buyBtn}
+                      onClick={() => buyNow(item)}
                     >
-                      +
+                      ⚡ Buy Now
                     </button>
-                  </div>
-
-                  <button
-                    style={addBtn}
-                    onClick={() => addToCart(item)}
-                  >
-                    🛒 Add to Cart
-                  </button>
-
-                  <button
-                    style={buyBtn}
-                    onClick={() => buyNow(item)}
-                  >
-                    ⚡ Buy Now
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </>
@@ -207,7 +214,7 @@ const cartBadge = {
 
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
   gap: 20,
 };
 
