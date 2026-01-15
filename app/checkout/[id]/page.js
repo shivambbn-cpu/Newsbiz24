@@ -11,8 +11,8 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 
-import CheckoutForm from "@/components/CheckoutForm";
-import "@/styles/checkout-form.css";
+import CheckoutFormBox from "@/components/CheckoutFormBox";
+import "@/styles/checkout-box.css";
 
 export default function CheckoutPage() {
   const { id } = useParams();
@@ -67,7 +67,9 @@ export default function CheckoutPage() {
   /* 🔹 Place Order */
   const placeOrder = async () => {
     for (let key in form) {
-      if (!form[key]) return alert("❌ Please fill all details");
+      if (!form[key]) {
+        return alert("❌ Please fill all details");
+      }
     }
 
     try {
@@ -122,12 +124,12 @@ export default function CheckoutPage() {
         Total: ₹{total}
       </h3>
 
-      {/* ✅ REUSABLE CHECKOUT FORM */}
-      <CheckoutForm
+      {/* ✅ REUSABLE CHECKOUT BOX */}
+      <CheckoutFormBox
         form={form}
         setForm={setForm}
         total={total}
-        onSubmit={placeOrder}
+        onPlaceOrder={placeOrder}
       />
     </div>
   );
