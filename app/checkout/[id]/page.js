@@ -16,7 +16,7 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const qty = Number(searchParams.get("qty") || 1);
+  const qty = parseInt(searchParams.get("qty") || "1", 10);
 
   const [product, setProduct] = useState(null);
   const [total, setTotal] = useState(0);
@@ -31,163 +31,151 @@ export default function CheckoutPage() {
     pincode: ""
   });
 
-  /* 🔹 Fetch product */
+  /* Fetch Product */
   useEffect(() => {
     if (!id) return;
 
     (async () => {
-      const ref = doc(db, "shop_products", id);
-      const snap = await getDoc(ref);
+      try {
+        const ref = doc(db, "shop_products", id);
+        const snap = await getDoc(ref);
 
-      if (snap.exists()) {
-        const data = snap.data();
-        const price = Number(data.price);
+        if (snap.exists()) {
+          const data = snap.data();
+          const price = Number(data.price);
 
-        setProduct({
-          id: snap.id,
-          name: data.name,
-          image: data.image,
-          price
-        });
+          setProduct({
+            id: snap.id,
+            name: data.name,
+            image: data.image,
+            price
+          });
 
-        setTotal(price * qty);
+          setTotal(price * qty);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, [id, qty]);
 
-  /* 🔹 Place Order */
+  /* Place Order */
   const placeOrder = async () => {
     for (let key in form) {
-      if (!form[key]) return alert("❌ Please fill all details");
+      if (!form[key]) {
+        return alert("Please fill all fields");
+      }
     }
 
-    try {
-      await addDoc(collection(db, "orders"), {
-        productId: product.id,
-        productName: product.name,
-        productImage: product.image,
-        price: product.price,
-        qty,
-        total,
-        paymentMethod: "Cash On Delivery",
-        customer: form,
-        status: "Pending",
-        createdAt: serverTimestamp()
-      });
+    await addDoc(collection(db, "orders"), {
+      productId: product.id,
+      productName: product.name,
+      price: product.price,
+      qty,
+      total,
+      customer: form,
+      paymentMethod: "Cash On Delivery",
+      status: "Pending",
+      createdAt: serverTimestamp()
+    });
 
-      const orderData = {
-        orderId: Date.now(),
-        products: [{ ...product, qty }],
-        total,
-        customer: form,
-        paymentMethod: "Cash On Delivery"
-      };
+    localStorage.setItem(
+      "lastOrder",
+      JSON.stringify({ product, qty, total, customer: form })
+    );
 
-      localStorage.setItem("lastOrder", JSON.stringify(orderData));
-      router.push("/order-success");
-
-    } catch (err) {
-      console.error(err);
-      alert("Order failed");
-    }
+    router.push("/order-success");
   };
 
-  if (loading) return <p style={{ padding: 30 }}>Loading...</p>;
-  if (!product) return <p>Product not found</p>;
+  if (loading) return <p style={{ padding: 40 }}>Loading...</p>;
+  if (!product) return <p style={{ padding: 40 }}>Product not found</p>;
 
   return (
-    <div style={wrap}>
-      <h2>Checkout</h2>
-
-      {/* Product box */}
-      <div style={itemBox}>
-        <img src={product.image} style={img} alt={product.name} />
-        <div>
-          <p><b>{product.name}</b></p>
-          <p>₹{product.price} × {qty}</p>
-          <p><b>₹{total}</b></p>
-        </div>
-      </div>
-
-      <h3>Total: ₹{total}</h3>
-
-      {/* FORM (same order as cart checkout) */}
+    <div style={page}>
+      {/* ONLY FORM – IMAGE JAISE */}
       <input
-        style={input}
         placeholder="Name"
+        value={form.name}
         onChange={e => setForm({ ...form, name: e.target.value })}
-      />
-      <input
         style={input}
-        placeholder="Mobile"
-        onChange={e => setForm({ ...form, mobile: e.target.value })}
-      />
-      <textarea
-        style={input}
-        placeholder="Address"
-        onChange={e => setForm({ ...form, address: e.target.value })}
-      />
-      <input
-        style={input}
-        placeholder="City"
-        onChange={e => setForm({ ...form, city: e.target.value })}
-      />
-      <input
-        style={input}
-        placeholder="State"
-        onChange={e => setForm({ ...form, state: e.target.value })}
-      />
-      <input
-        style={input}
-        placeholder="Pincode"
-        onChange={e => setForm({ ...form, pincode: e.target.value })}
       />
 
-      <button style={btn} onClick={placeOrder}>
+      <input
+        placeholder="Mobile"
+        value={form.mobile}
+        onChange={e => setForm({ ...form, mobile: e.target.value })}
+        style={input}
+      />
+
+      <textarea
+        placeholder="Address"
+        value={form.address}
+        onChange={e => setForm({ ...form, address: e.target.value })}
+        style={textarea}
+      />
+
+      <input
+        placeholder="City"
+        value={form.city}
+        onChange={e => setForm({ ...form, city: e.target.value })}
+        style={input}
+      />
+
+      <input
+        placeholder="State"
+        value={form.state}
+        onChange={e => setForm({ ...form, state: e.target.value })}
+        style={input}
+      />
+
+      <input
+        placeholder="Pincode"
+        value={form.pincode}
+        onChange={e => setForm({ ...form, pincode: e.target.value })}
+        style={input}
+      />
+
+      <button onClick={placeOrder} style={btn}>
         Place Order (₹{total})
       </button>
     </div>
   );
 }
 
-/* STYLES – SAME AS CHECKOUT PAGE */
-const wrap = {
-  maxWidth: 500,
-  margin: "auto",
-  padding: 20
-};
+/* ===== IMAGE EXACT STYLES ===== */
 
-const itemBox = {
-  display: "flex",
-  gap: 12,
-  borderBottom: "1px solid #ddd",
-  paddingBottom: 10,
-  marginBottom: 10
-};
-
-const img = {
-  width: 70,
-  height: 70,
-  borderRadius: 6,
-  objectFit: "cover"
+const page = {
+  maxWidth: 420,
+  margin: "30px auto",
+  padding: "10px"
 };
 
 const input = {
   width: "100%",
-  padding: 12,
-  margin: "6px 0",
-  border: "1px solid #ccc",
-  borderRadius: 6
+  padding: "18px",
+  marginBottom: "18px",
+  border: "2px solid #9e9e9e",
+  borderRadius: "6px",
+  fontSize: "16px",
+  outline: "none",
+  boxSizing: "border-box"
+};
+
+const textarea = {
+  ...input,
+  minHeight: "100px",
+  resize: "none"
 };
 
 const btn = {
   width: "100%",
-  padding: 14,
+  padding: "18px",
   background: "#16a34a",
-  color: "#fff",
-  border: "none",
-  borderRadius: 6,
-  fontSize: 16,
-  marginTop: 10
+  color: "#ffffff",
+  fontSize: "18px",
+  border: "2px solid #0f7a32",
+  borderRadius: "6px",
+  cursor: "pointer"
 };
