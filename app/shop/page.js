@@ -3,215 +3,151 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 export default function ShopPage() {
   const router = useRouter();
 
   const [products, setProducts] = useState([]);
-  const [qtyMap, setQtyMap] = useState({});
-  const [cartCount, setCartCount] = useState(0);
+  const [openId, setOpenId] = useState(null); // 👈 selected product
+  const [qty, setQty] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [openId, setOpenId] = useState(null); // ✅ only one open product
 
   /* 🔹 Fetch products */
   useEffect(() => {
     const fetchProducts = async () => {
-      const q = query(
-        collection(db, "shop_products"),
-        where("active", "==", true)
-      );
-
-      const snap = await getDocs(q);
+      const snap = await getDocs(collection(db, "shop_products"));
       const data = snap.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
-
       setProducts(data);
-
-      const qtyObj = {};
-      data.forEach(p => (qtyObj[p.id] = 1));
-      setQtyMap(qtyObj);
-
       setLoading(false);
-      updateCartCount();
     };
-
     fetchProducts();
   }, []);
 
-  /* 🧮 Cart count */
-  const updateCartCount = () => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const totalQty = cart.reduce(
-      (sum, item) => sum + Number(item.qty || 0),
-      0
-    );
-    setCartCount(totalQty);
-  };
-
   /* 🛒 Add to Cart */
   const addToCart = (product) => {
-    const qty = qtyMap[product.id] || 1;
-    const price = Number(product.price);
-    const total = price * qty;
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const index = cart.findIndex(p => p.id === product.id);
-
-    if (index >= 0) {
-      cart[index].qty += qty;
-      cart[index].total += total;
-    } else {
-      cart.push({
-        id: product.id,
-        name: product.name,
-        image: product.image,
-        price,
-        qty,
-        total,
-      });
-    }
+    cart.push({
+      id: product.id,
+      name: product.name,
+      image: product.image,
+      price: product.price,
+      qty,
+      total: product.price * qty,
+    });
 
     localStorage.setItem("cart", JSON.stringify(cart));
-    updateCartCount();
-
     alert("✅ Cart में add हो गया");
   };
 
   /* ⚡ Buy Now */
   const buyNow = (product) => {
-    const qty = qtyMap[product.id] || 1;
     router.push(`/checkout/${product.id}?qty=${qty}`);
   };
 
   if (loading) {
-    return <p style={{ padding: 40, textAlign: "center" }}>Loading…</p>;
+    return <p style={{ textAlign: "center", padding: 40 }}>Loading…</p>;
   }
 
   return (
-    <>
-      {/* 🔝 HEADER */}
-      <header style={headerStyle}>
-        <b style={{ color: "#16a34a" }}>TULSIMALASTORE</b>
+    <div style={{ padding: 16 }}>
+      <h2 style={{ textAlign: "center", marginBottom: 20 }}>
+        🛍 Our Shop
+      </h2>
 
-        <div
-          style={{ position: "relative", fontSize: 22, cursor: "pointer" }}
-          onClick={() => router.push("/cart")}
-        >
-          🛒
-          {cartCount > 0 && <span style={cartBadge}>{cartCount}</span>}
-        </div>
-      </header>
-
-      <div style={{ padding: 16 }}>
-        <h2 style={{ textAlign: "center", marginBottom: 20 }}>
-          🛍 Our Shop
-        </h2>
-
+      {/* 🔹 PRODUCT LIST (पहले सब दिखेंगे) */}
+      {openId === null && (
         <div style={grid}>
-          {products.map(item => {
-            const isOpen = openId === item.id;
+          {products.map(item => (
+            <div key={item.id} style={card}>
+              <img src={item.image} style={img} />
 
-            return (
-              <div key={item.id} style={card}>
-                <img src={item.image} alt={item.name} style={img} />
+              <h3>{item.name}</h3>
 
-                <h3>{item.name}</h3>
+              <p style={{ color: "green", fontWeight: "bold" }}>
+                ₹{item.price} रुपये
+              </p>
 
-                <p style={{ color: "#16a34a", fontWeight: "bold" }}>
+              <button
+                style={addBtn}
+                onClick={() => {
+                  setOpenId(item.id); // 👈 बाकी hide
+                  setQty(1);
+                }}
+              >
+                Add
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 🔹 SINGLE PRODUCT VIEW */}
+      {openId !== null && (
+        <>
+          {products
+            .filter(p => p.id === openId)
+            .map(item => (
+              <div key={item.id} style={singleCard}>
+                <img src={item.image} style={img} />
+
+                <h2>{item.name}</h2>
+
+                <p style={{ color: "green", fontWeight: "bold" }}>
                   ₹{item.price} रुपये
                 </p>
 
-                {/* 🔹 SIMPLE VIEW */}
-                {!isOpen && (
+                {/* Qty */}
+                <div style={qtyRow}>
                   <button
-                    style={simpleAdd}
-                    onClick={() => setOpenId(item.id)}
+                    onClick={() => setQty(q => Math.max(1, q - 1))}
+                    style={qtyBtn}
                   >
-                    Add
+                    −
                   </button>
-                )}
+                  <span>{qty}</span>
+                  <button
+                    onClick={() => setQty(q => q + 1)}
+                    style={qtyBtn}
+                  >
+                    +
+                  </button>
+                </div>
 
-                {/* 🔹 FULL VIEW */}
-                {isOpen && (
-                  <>
-                    <div style={qtyRow}>
-                      <button
-                        style={qtyBtn}
-                        onClick={() =>
-                          setQtyMap(q => ({
-                            ...q,
-                            [item.id]: Math.max(1, q[item.id] - 1),
-                          }))
-                        }
-                      >
-                        −
-                      </button>
+                <button
+                  style={cartBtn}
+                  onClick={() => addToCart(item)}
+                >
+                  🛒 Add to Cart
+                </button>
 
-                      <span>{qtyMap[item.id]}</span>
+                <button
+                  style={buyBtn}
+                  onClick={() => buyNow(item)}
+                >
+                  ⚡ Buy Now
+                </button>
 
-                      <button
-                        style={qtyBtn}
-                        onClick={() =>
-                          setQtyMap(q => ({
-                            ...q,
-                            [item.id]: q[item.id] + 1,
-                          }))
-                        }
-                      >
-                        +
-                      </button>
-                    </div>
-
-                    <button
-                      style={addBtn}
-                      onClick={() => addToCart(item)}
-                    >
-                      🛒 Add to Cart
-                    </button>
-
-                    <button
-                      style={buyBtn}
-                      onClick={() => buyNow(item)}
-                    >
-                      ⚡ Buy Now
-                    </button>
-                  </>
-                )}
+                {/* 🔙 BACK */}
+                <button
+                  style={backBtn}
+                  onClick={() => setOpenId(null)}
+                >
+                  ← Back to Products
+                </button>
               </div>
-            );
-          })}
-        </div>
-      </div>
-    </>
+            ))}
+        </>
+      )}
+    </div>
   );
 }
 
 /* 🎨 STYLES */
-const headerStyle = {
-  display: "flex",
-  justifyContent: "space-between",
-  padding: "12px 16px",
-  borderBottom: "1px solid #e5e7eb",
-  position: "sticky",
-  top: 0,
-  background: "#fff",
-  zIndex: 10,
-};
-
-const cartBadge = {
-  position: "absolute",
-  top: -6,
-  right: -10,
-  background: "red",
-  color: "#fff",
-  fontSize: 12,
-  borderRadius: "50%",
-  padding: "2px 6px",
-};
-
 const grid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
@@ -219,20 +155,27 @@ const grid = {
 };
 
 const card = {
-  border: "1px solid #e5e7eb",
+  border: "1px solid #ddd",
   borderRadius: 14,
   padding: 12,
   background: "#fff",
 };
 
+const singleCard = {
+  border: "1px solid #ddd",
+  borderRadius: 14,
+  padding: 16,
+  background: "#fff",
+};
+
 const img = {
   width: "100%",
-  height: 180,
+  height: 220,
   objectFit: "cover",
   borderRadius: 12,
 };
 
-const simpleAdd = {
+const addBtn = {
   width: "100%",
   padding: 12,
   background: "#3b82f6",
@@ -244,35 +187,43 @@ const simpleAdd = {
 const qtyRow = {
   display: "flex",
   justifyContent: "center",
-  gap: 12,
-  marginTop: 10,
+  gap: 16,
+  margin: "16px 0",
 };
 
 const qtyBtn = {
-  width: 34,
-  height: 34,
+  width: 36,
+  height: 36,
   borderRadius: 8,
-  border: "1px solid #e5e7eb",
+  border: "1px solid #ccc",
   background: "#fff",
   fontSize: 18,
 };
 
-const addBtn = {
+const cartBtn = {
   width: "100%",
-  marginTop: 12,
   padding: 12,
   background: "#f59e0b",
   color: "#fff",
   border: "none",
   borderRadius: 10,
+  marginBottom: 10,
 };
 
 const buyBtn = {
   width: "100%",
-  marginTop: 8,
   padding: 12,
   background: "#16a34a",
   color: "#fff",
   border: "none",
   borderRadius: 10,
+};
+
+const backBtn = {
+  width: "100%",
+  padding: 10,
+  marginTop: 12,
+  background: "#eee",
+  border: "none",
+  borderRadius: 8,
 };
