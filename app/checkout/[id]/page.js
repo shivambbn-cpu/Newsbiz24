@@ -11,6 +11,9 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 
+import CheckoutForm from "@/components/CheckoutForm";
+import "@/styles/checkout-form.css";
+
 export default function CheckoutPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
@@ -54,7 +57,7 @@ export default function CheckoutPage() {
           setTotal(price * qty);
         }
       } catch (err) {
-        console.error("PRODUCT ERROR", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -64,7 +67,7 @@ export default function CheckoutPage() {
   /* 🔹 Place Order */
   const placeOrder = async () => {
     for (let key in form) {
-      if (!form[key]) return alert("❌ Please fill all address fields");
+      if (!form[key]) return alert("❌ Please fill all details");
     }
 
     try {
@@ -115,86 +118,17 @@ export default function CheckoutPage() {
       <p>Price: ₹{product.price}</p>
       <p>Quantity: <b>{qty}</b></p>
 
-      <h3 style={{ color: "#16a34a", marginBottom: 20 }}>
+      <h3 style={{ color: "#16a34a", marginBottom: 10 }}>
         Total: ₹{total}
       </h3>
 
-      {/* ✅ Customer Detail Form */}
-      <input
-        placeholder="Name"
-        value={form.name}
-        onChange={(e) => setForm({ ...form, name: e.target.value })}
-        style={input}
+      {/* ✅ REUSABLE CHECKOUT FORM */}
+      <CheckoutForm
+        form={form}
+        setForm={setForm}
+        total={total}
+        onSubmit={placeOrder}
       />
-
-      <input
-        placeholder="Mobile"
-        value={form.mobile}
-        onChange={(e) => setForm({ ...form, mobile: e.target.value })}
-        style={input}
-      />
-
-      <textarea
-        placeholder="Address"
-        value={form.address}
-        onChange={(e) => setForm({ ...form, address: e.target.value })}
-        style={textarea}
-      />
-
-      <input
-        placeholder="City"
-        value={form.city}
-        onChange={(e) => setForm({ ...form, city: e.target.value })}
-        style={input}
-      />
-
-      <input
-        placeholder="State"
-        value={form.state}
-        onChange={(e) => setForm({ ...form, state: e.target.value })}
-        style={input}
-      />
-
-      <input
-        placeholder="Pincode"
-        value={form.pincode}
-        onChange={(e) => setForm({ ...form, pincode: e.target.value })}
-        style={input}
-      />
-
-      <button style={btn} onClick={placeOrder}>
-        Place Order (₹{total})
-      </button>
     </div>
   );
-}
-
-/* ✅ IMAGE-STYLE INPUTS AND BUTTON CSS */
-const input = {
-  width: "100%",
-  padding: "14px",
-  marginBottom: "12px",
-  borderRadius: "6px",
-  border: "2px solid #999",
-  fontSize: "16px",
-  outline: "none"
-};
-
-const textarea = {
-  ...input,
-  minHeight: "80px",
-  resize: "none"
-};
-
-const btn = {
-  width: "100%",
-  padding: "16px",
-  background: "#16a34a",
-  color: "#fff",
-  border: "none",
-  borderRadius: "6px",
-  fontSize: "18px",
-  fontWeight: "600",
-  cursor: "pointer",
-  marginTop: "10px"
-};
+      }
