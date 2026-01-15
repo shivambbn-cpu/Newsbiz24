@@ -64,9 +64,7 @@ export default function CheckoutPage() {
   /* 🔹 Place Order */
   const placeOrder = async () => {
     for (let key in form) {
-      if (!form[key]) {
-        return alert("❌ Please fill all address fields");
-      }
+      if (!form[key]) return alert("❌ Please fill all address fields");
     }
 
     try {
@@ -111,18 +109,17 @@ export default function CheckoutPage() {
       <img
         src={product.image}
         alt={product.name}
-        style={{ width: "100%", borderRadius: 10 }}
+        style={{ width: "100%", borderRadius: 10, marginBottom: 12 }}
       />
 
       <p>Price: ₹{product.price}</p>
       <p>Quantity: <b>{qty}</b></p>
 
-      <h3 style={{ color: "#16a34a" }}>
+      <h3 style={{ color: "#16a34a", marginBottom: 20 }}>
         Total: ₹{total}
       </h3>
 
-      {/* ✅ IMAGE STYLE ADDRESS FORM */}
-
+      {/* ✅ Customer Detail Form */}
       <input
         placeholder="Name"
         value={form.name}
@@ -172,7 +169,7 @@ export default function CheckoutPage() {
   );
 }
 
-/* ✅ IMAGE STYLE CSS */
+/* ✅ IMAGE-STYLE INPUTS AND BUTTON CSS */
 const input = {
   width: "100%",
   padding: "14px",
