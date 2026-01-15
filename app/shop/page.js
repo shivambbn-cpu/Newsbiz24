@@ -13,6 +13,8 @@ export default function ShopPage() {
   const [cartCount, setCartCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
+  const [openId, setOpenId] = useState(null); // ✅ NEW
+
   /* 🔹 Fetch products */
   useEffect(() => {
     const fetchProducts = async () => {
@@ -40,7 +42,7 @@ export default function ShopPage() {
     fetchProducts();
   }, []);
 
-  /* 🧮 Cart total quantity */
+  /* 🧮 Cart count */
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
     const totalQty = cart.reduce(
@@ -75,8 +77,7 @@ export default function ShopPage() {
 
     localStorage.setItem("cart", JSON.stringify(cart));
     updateCartCount();
-
-    alert(`✅ ${qty} item(s) added to cart`);
+    alert("✅ Cart me add ho gaya");
   };
 
   /* ⚡ Buy Now */
@@ -93,27 +94,19 @@ export default function ShopPage() {
     <>
       {/* 🔝 HEADER */}
       <header style={headerStyle}>
-        <span style={{ fontWeight: "bold", color: "#16a34a" }}>
-          TULSIMALASTORE
-        </span>
+        <b style={{ color: "#16a34a" }}>TULSIMALASTORE</b>
 
-        {/* 🛒 CART ICON (FIXED & CLICKABLE) */}
         <div
           style={{ position: "relative", fontSize: 22, cursor: "pointer" }}
           onClick={() => router.push("/cart")}
         >
           🛒
-          {cartCount > 0 && (
-            <span style={cartBadge}>{cartCount}</span>
-          )}
+          {cartCount > 0 && <span style={cartBadge}>{cartCount}</span>}
         </div>
       </header>
 
-      {/* 🛍️ PRODUCTS */}
       <div style={{ padding: 16 }}>
-        <h2 style={{ textAlign: "center", marginBottom: 20 }}>
-          🌿 Our Spiritual Products
-        </h2>
+        <h2 style={{ textAlign: "center" }}>🛍 Our Shop</h2>
 
         <div style={grid}>
           {products.map(item => (
@@ -122,51 +115,65 @@ export default function ShopPage() {
 
               <h3>{item.name}</h3>
               <p style={{ color: "#16a34a", fontWeight: "bold" }}>
-                ₹{item.price}
+                ₹{item.price} रुपये
               </p>
 
-              {/* Quantity */}
-              <div style={qtyRow}>
+              {/* 🔹 STATE 1 : SIMPLE (SECOND IMAGE) */}
+              {openId !== item.id && (
                 <button
-                  style={qtyBtn}
-                  onClick={() =>
-                    setQtyMap(q => ({
-                      ...q,
-                      [item.id]: Math.max(1, q[item.id] - 1),
-                    }))
-                  }
+                  style={simpleAdd}
+                  onClick={() => setOpenId(item.id)}
                 >
-                  −
+                  Add
                 </button>
+              )}
 
-                <span>{qtyMap[item.id]}</span>
+              {/* 🔹 STATE 2 : FULL (FIRST IMAGE) */}
+              {openId === item.id && (
+                <>
+                  <div style={qtyRow}>
+                    <button
+                      style={qtyBtn}
+                      onClick={() =>
+                        setQtyMap(q => ({
+                          ...q,
+                          [item.id]: Math.max(1, q[item.id] - 1),
+                        }))
+                      }
+                    >
+                      −
+                    </button>
 
-                <button
-                  style={qtyBtn}
-                  onClick={() =>
-                    setQtyMap(q => ({
-                      ...q,
-                      [item.id]: q[item.id] + 1,
-                    }))
-                  }
-                >
-                  +
-                </button>
-              </div>
+                    <span>{qtyMap[item.id]}</span>
 
-              <button
-                style={addBtn}
-                onClick={() => addToCart(item)}
-              >
-                🛒 Add to Cart
-              </button>
+                    <button
+                      style={qtyBtn}
+                      onClick={() =>
+                        setQtyMap(q => ({
+                          ...q,
+                          [item.id]: q[item.id] + 1,
+                        }))
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
 
-              <button
-                style={buyBtn}
-                onClick={() => buyNow(item)}
-              >
-                ⚡ Buy Now
-              </button>
+                  <button
+                    style={addBtn}
+                    onClick={() => addToCart(item)}
+                  >
+                    🛒 Add to Cart
+                  </button>
+
+                  <button
+                    style={buyBtn}
+                    onClick={() => buyNow(item)}
+                  >
+                    ⚡ Buy Now
+                  </button>
+                </>
+              )}
             </div>
           ))}
         </div>
@@ -179,7 +186,6 @@ export default function ShopPage() {
 const headerStyle = {
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "center",
   padding: "12px 16px",
   borderBottom: "1px solid #e5e7eb",
   position: "sticky",
@@ -219,11 +225,20 @@ const img = {
   borderRadius: 12,
 };
 
+const simpleAdd = {
+  width: "100%",
+  padding: 12,
+  background: "#3b82f6",
+  color: "#fff",
+  border: "none",
+  borderRadius: 10,
+};
+
 const qtyRow = {
   display: "flex",
-  alignItems: "center",
-  gap: 10,
-  marginTop: 8,
+  justifyContent: "center",
+  gap: 12,
+  marginTop: 10,
 };
 
 const qtyBtn = {
