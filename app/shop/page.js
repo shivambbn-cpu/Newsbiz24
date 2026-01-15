@@ -1,139 +1,130 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 export default function ShopPage() {
   const router = useRouter();
+
   const [products, setProducts] = useState([]);
   const [showActions, setShowActions] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
-      const snap = await getDocs(collection(db, "products"));
+      const snap = await getDocs(collection(db, "shop_products"));
       const data = snap.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
       }));
       setProducts(data);
+      setLoading(false);
     };
     fetchProducts();
   }, []);
-
-  const handleBuyNow = (product) => {
-    setShowActions(product.id);
-  };
 
   const addToCart = (product) => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
     cart.push({ ...product, qty: 1 });
     localStorage.setItem("cart", JSON.stringify(cart));
-    alert("Product added to cart");
+    alert("✅ Product added to cart");
   };
+
+  const handleBuyNowClick = (productId) => {
+    setShowActions(productId);
+  };
+
+  if (loading) {
+    return <p style={{ textAlign: "center", padding: 40 }}>Loading…</p>;
+  }
 
   return (
     <div style={{ padding: 14 }}>
-      {products.map((product) => (
-        <div
-          key={product.id}
-          style={{
-            background: "#fff",
-            borderRadius: 12,
-            padding: 12,
-            marginBottom: 18,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-          }}
-        >
-          {/* PRODUCT IMAGE */}
-          <Image
-            src={product.image}
-            alt={product.title}
-            width={400}
-            height={400}
+      <h3 style={{ textAlign: "center", marginBottom: 16 }}>🛍 Our Products</h3>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
+        {products.map((p) => (
+          <div
+            key={p.id}
             style={{
-              width: "100%",
-              height: "auto",
-              borderRadius: 10,
+              border: "1px solid #e5e7eb",
+              borderRadius: 14,
+              padding: 12,
+              background: "#fff",
             }}
-          />
+          >
+            {/* PRODUCT IMAGE */}
+            <img
+              src={p.image}
+              alt={p.name}
+              style={{ width: "100%", height: 160, objectFit: "cover", borderRadius: 10 }}
+            />
 
-          {/* PRODUCT TITLE */}
-          <h3 style={{ marginTop: 10, fontSize: 18 }}>
-            {product.title}
-          </h3>
+            {/* PRODUCT NAME */}
+            <h4 style={{ margin: "10px 0" }}>{p.name}</h4>
 
-          {/* PRICE (NO DISCOUNT) */}
-          <div style={{ fontSize: 20, fontWeight: "bold", margin: "6px 0" }}>
-            ₹ {product.price}
-          </div>
+            {/* PRICE */}
+            <div style={{ fontWeight: "bold", fontSize: 18, marginBottom: 6 }}>₹ {p.price}</div>
 
-          {/* TRUST BADGES */}
-          <div style={{ color: "green", fontSize: 14 }}>
-            <div>🛡 Secure</div>
-            <div>🚚 Fast Ship</div>
-            <div>✅ Quality</div>
-          </div>
+            {/* FEATURES */}
+            <div style={{ display: "flex", gap: 12, color: "#16a34a", fontSize: 12, marginBottom: 10 }}>
+              <span>🔒 Secure</span>
+              <span>🚚 Fast Ship</span>
+              <span>✅ Quality</span>
+            </div>
 
-          {/* BUY NOW BUTTON */}
-          {!showActions && (
-            <button
-              onClick={() => handleBuyNow(product)}
-              style={{
-                marginTop: 12,
-                width: "100%",
-                padding: 14,
-                background: "#000",
-                color: "#fff",
-                borderRadius: 8,
-                border: "none",
-                fontSize: 16,
-                fontWeight: "bold",
-              }}
-            >
-              Buy Now
-            </button>
-          )}
-
-          {/* AFTER CLICK → ADD TO CART + BUY NOW */}
-          {showActions === product.id && (
-            <div style={{ marginTop: 12 }}>
+            {/* BUY NOW / ADD TO CART */}
+            {showActions === p.id ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <button
+                  onClick={() => addToCart(p)}
+                  style={{
+                    width: "100%",
+                    padding: 12,
+                    background: "#f1f1f1",
+                    border: "1px solid #ccc",
+                    borderRadius: 8,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Add to Cart
+                </button>
+                <button
+                  onClick={() => router.push(`/checkout/${p.id}`)}
+                  style={{
+                    width: "100%",
+                    padding: 14,
+                    background: "#000",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    fontWeight: "bold",
+                  }}
+                >
+                  Buy Now
+                </button>
+              </div>
+            ) : (
               <button
-                onClick={() => addToCart(product)}
-                style={{
-                  width: "100%",
-                  padding: 12,
-                  background: "#f1f1f1",
-                  borderRadius: 8,
-                  border: "1px solid #ccc",
-                  marginBottom: 8,
-                  fontWeight: "bold",
-                }}
-              >
-                Add to Cart
-              </button>
-
-              <button
-                onClick={() => router.push("/checkout")}
+                onClick={() => handleBuyNowClick(p.id)}
                 style={{
                   width: "100%",
                   padding: 14,
                   background: "#000",
                   color: "#fff",
-                  borderRadius: 8,
                   border: "none",
-                  fontSize: 16,
+                  borderRadius: 8,
                   fontWeight: "bold",
                 }}
               >
                 Buy Now
               </button>
-            </div>
-          )}
-        </div>
-      ))}
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
-}
+  }
