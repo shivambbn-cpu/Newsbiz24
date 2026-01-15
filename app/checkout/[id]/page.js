@@ -16,8 +16,7 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // ✅ qty always NUMBER
-  const qty = parseInt(searchParams.get("qty") || "1", 10);
+  const qty = Number(searchParams.get("qty") || 1);
 
   const [product, setProduct] = useState(null);
   const [total, setTotal] = useState(0);
@@ -32,130 +31,154 @@ export default function CheckoutPage() {
     pincode: ""
   });
 
-  /* 🔹 Fetch Product */
+  /* 🔹 Fetch product */
   useEffect(() => {
     if (!id) return;
 
     (async () => {
-      try {
-        const ref = doc(db, "shop_products", id);
-        const snap = await getDoc(ref);
+      const ref = doc(db, "shop_products", id);
+      const snap = await getDoc(ref);
 
-        if (snap.exists()) {
-          const data = snap.data();
+      if (snap.exists()) {
+        const data = snap.data();
+        const price = Number(data.price);
 
-          const price = Number(data.price); // ✅ number only
-          const finalQty = Number(qty);
+        setProduct({
+          id: snap.id,
+          name: data.name,
+          image: data.image,
+          price
+        });
 
-          setProduct({
-            id: snap.id,
-            name: data.name,
-            image: data.image,
-            price
-          });
-
-          setTotal(price * finalQty); // ✅ correct total
-        }
-      } catch (err) {
-        console.error("PRODUCT ERROR", err);
-      } finally {
-        setLoading(false);
+        setTotal(price * qty);
       }
+      setLoading(false);
     })();
   }, [id, qty]);
 
   /* 🔹 Place Order */
   const placeOrder = async () => {
-    if (!product) return alert("Product not loaded");
-
     for (let key in form) {
-      if (!form[key]) {
-        return alert("❌ Please fill all address fields");
-      }
+      if (!form[key]) return alert("❌ Please fill all details");
     }
 
     try {
-      /* ✅ Save Order in Firestore */
       await addDoc(collection(db, "orders"), {
         productId: product.id,
         productName: product.name,
         productImage: product.image,
-        price: Number(product.price),
-        qty: Number(qty),
-        total: Number(total),
+        price: product.price,
+        qty,
+        total,
         paymentMethod: "Cash On Delivery",
         customer: form,
         status: "Pending",
         createdAt: serverTimestamp()
       });
 
-      /* ✅ Save clean data for PDF */
       const orderData = {
         orderId: Date.now(),
-        productName: product.name,
-        price: Number(product.price),
-        qty: Number(qty),
-        total: Number(total),
+        products: [{ ...product, qty }],
+        total,
         customer: form,
         paymentMethod: "Cash On Delivery"
       };
 
       localStorage.setItem("lastOrder", JSON.stringify(orderData));
-
       router.push("/order-success");
 
     } catch (err) {
-      console.error("ORDER ERROR", err);
+      console.error(err);
       alert("Order failed");
     }
   };
 
-  if (loading) return <p style={{ padding: 40 }}>Loading...</p>;
-  if (!product) return <p style={{ padding: 40 }}>Product not found</p>;
+  if (loading) return <p style={{ padding: 30 }}>Loading...</p>;
+  if (!product) return <p>Product not found</p>;
 
   return (
-    <div style={{ padding: 20, maxWidth: 520, margin: "auto" }}>
-      <h2>{product.name}</h2>
+    <div style={wrap}>
+      <h2>Checkout</h2>
 
-      <img
-        src={product.image}
-        alt={product.name}
-        style={{ width: "100%", borderRadius: 10 }}
+      {/* Product box */}
+      <div style={itemBox}>
+        <img src={product.image} style={img} alt={product.name} />
+        <div>
+          <p><b>{product.name}</b></p>
+          <p>₹{product.price} × {qty}</p>
+          <p><b>₹{total}</b></p>
+        </div>
+      </div>
+
+      <h3>Total: ₹{total}</h3>
+
+      {/* FORM (same order as cart checkout) */}
+      <input
+        style={input}
+        placeholder="Name"
+        onChange={e => setForm({ ...form, name: e.target.value })}
+      />
+      <input
+        style={input}
+        placeholder="Mobile"
+        onChange={e => setForm({ ...form, mobile: e.target.value })}
+      />
+      <textarea
+        style={input}
+        placeholder="Address"
+        onChange={e => setForm({ ...form, address: e.target.value })}
+      />
+      <input
+        style={input}
+        placeholder="City"
+        onChange={e => setForm({ ...form, city: e.target.value })}
+      />
+      <input
+        style={input}
+        placeholder="State"
+        onChange={e => setForm({ ...form, state: e.target.value })}
+      />
+      <input
+        style={input}
+        placeholder="Pincode"
+        onChange={e => setForm({ ...form, pincode: e.target.value })}
       />
 
-      <p>Price: ₹{product.price}</p>
-      <p>Quantity: <b>{qty}</b></p>
-
-      <h3 style={{ color: "#16a34a" }}>
-        Grand Total: ₹{total}
-      </h3>
-
-      {/* Address */}
-      <input placeholder="Full Name" onChange={e => setForm({ ...form, name: e.target.value })} style={input} />
-      <input placeholder="Mobile Number" onChange={e => setForm({ ...form, mobile: e.target.value })} style={input} />
-      <textarea placeholder="Full Address" onChange={e => setForm({ ...form, address: e.target.value })} style={input} />
-      <input placeholder="City" onChange={e => setForm({ ...form, city: e.target.value })} style={input} />
-      <input placeholder="State" onChange={e => setForm({ ...form, state: e.target.value })} style={input} />
-      <input placeholder="Pincode" onChange={e => setForm({ ...form, pincode: e.target.value })} style={input} />
-
-      <p style={{ marginTop: 10 }}>
-        Payment Method: <b>Cash on Delivery</b>
-      </p>
-
-      <button onClick={placeOrder} style={btn}>
+      <button style={btn} onClick={placeOrder}>
         Place Order (₹{total})
       </button>
     </div>
   );
 }
 
-/* Styles */
+/* STYLES – SAME AS CHECKOUT PAGE */
+const wrap = {
+  maxWidth: 500,
+  margin: "auto",
+  padding: 20
+};
+
+const itemBox = {
+  display: "flex",
+  gap: 12,
+  borderBottom: "1px solid #ddd",
+  paddingBottom: 10,
+  marginBottom: 10
+};
+
+const img = {
+  width: 70,
+  height: 70,
+  borderRadius: 6,
+  objectFit: "cover"
+};
+
 const input = {
   width: "100%",
-  padding: 10,
+  padding: 12,
   margin: "6px 0",
-  borderRadius: 6,
-  border: "1px solid #ccc"
+  border: "1px solid #ccc",
+  borderRadius: 6
 };
 
 const btn = {
@@ -164,8 +187,7 @@ const btn = {
   background: "#16a34a",
   color: "#fff",
   border: "none",
-  borderRadius: 10,
+  borderRadius: 6,
   fontSize: 16,
-  marginTop: 10,
-  cursor: "pointer"
+  marginTop: 10
 };
