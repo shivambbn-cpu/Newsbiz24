@@ -123,11 +123,11 @@ export default function CheckoutPage() {
         style={{ width: "100%", borderRadius: 10 }}
       />
 
-      <p>Price:₹‚¹{product.price}</p>
+      <p>Price:₹{product.price}</p>
       <p>Quantity: <b>{qty}</b></p>
 
       <h3 style={{ color: "#16a34a" }}>
-        Grand Total: ₹‚¹{total}
+        Grand Total: ₹{total}
       </h3>
 
       {/* Address */}
@@ -143,7 +143,7 @@ export default function CheckoutPage() {
       </p>
 
       <button onClick={placeOrder} style={btn}>
-        Place Order (₹‚¹{total})
+        Place Order (₹{total})
       </button>
     </div>
   );
