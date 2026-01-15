@@ -9,12 +9,11 @@ export default function ShopPage() {
   const router = useRouter();
 
   const [products, setProducts] = useState([]);
-  const [openId, setOpenId] = useState(null); // 👈 selected product
+  const [openId, setOpenId] = useState(null);
   const [qty, setQty] = useState(1);
-  const [loading, setLoading] = useState(true);
   const [cartCount, setCartCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  /* 🔹 Fetch products */
   useEffect(() => {
     const fetchProducts = async () => {
       const snap = await getDocs(collection(db, "shop_products"));
@@ -29,17 +28,12 @@ export default function ShopPage() {
     fetchProducts();
   }, []);
 
-  /* 🧮 Cart count */
   const updateCartCount = () => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const totalQty = cart.reduce(
-      (sum, item) => sum + Number(item.qty || 0),
-      0
-    );
-    setCartCount(totalQty);
+    const total = cart.reduce((s, i) => s + Number(i.qty || 0), 0);
+    setCartCount(total);
   };
 
-  /* 🛒 Add to Cart */
   const addToCart = (product) => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
     const index = cart.findIndex(p => p.id === product.id);
@@ -63,7 +57,6 @@ export default function ShopPage() {
     alert("✅ Cart में add हो गया");
   };
 
-  /* ⚡ Buy Now */
   const buyNow = (product) => {
     router.push(`/checkout/${product.id}?qty=${qty}`);
   };
@@ -74,43 +67,44 @@ export default function ShopPage() {
 
   return (
     <>
-      {/* 🔝 HEADER WITH CART */}
+      {/* HEADER */}
       <header style={header}>
-        <b style={{ color: "#16a34a" }}>TULSIMALASTORE</b>
+        <b>TULSIMALASTORE</b>
 
-        <div
-          style={{ position: "relative", cursor: "pointer", fontSize: 22 }}
-          onClick={() => router.push("/cart")}
-        >
+        <div style={{ position: "relative" }} onClick={() => router.push("/cart")}>
           🛒
-          {cartCount > 0 && (
-            <span style={cartBadge}>{cartCount}</span>
-          )}
+          {cartCount > 0 && <span style={badge}>{cartCount}</span>}
         </div>
       </header>
 
-      <div style={{ padding: 16 }}>
-        <h2 style={{ textAlign: "center", marginBottom: 20 }}>
-          🛍 Our Shop
-        </h2>
+      <div style={{ padding: 14 }}>
+        <h3 style={{ textAlign: "center", marginBottom: 16 }}>
+          🛍 Our Products
+        </h3>
 
-        {/* 🔹 PRODUCT LIST */}
+        {/* PRODUCT LIST */}
         {openId === null && (
           <div style={grid}>
-            {products.map(item => (
-              <div key={item.id} style={card}>
-                <img src={item.image} style={img} />
+            {products.map(p => (
+              <div key={p.id} style={card}>
+                <img src={p.image} style={img} />
 
-                <h3>{item.name}</h3>
+                <h4 style={{ margin: "8px 0" }}>{p.name}</h4>
 
-                <p style={{ color: "green", fontWeight: "bold" }}>
-                  ₹{item.price} रुपये
-                </p>
+                <div style={rating}>
+                  ⭐⭐⭐⭐☆ <span style={{ color: "#777" }}>({p.reviews || 1200})</span>
+                </div>
+
+                <div style={{ marginTop: 6 }}>
+                  <b style={{ fontSize: 18 }}>From ₹ {p.price}</b>
+                  <span style={cut}>₹{p.mrp || p.price * 2}</span>
+                  <span style={off}>55% OFF</span>
+                </div>
 
                 <button
                   style={addBtn}
                   onClick={() => {
-                    setOpenId(item.id);
+                    setOpenId(p.id);
                     setQty(1);
                   }}
                 >
@@ -121,55 +115,36 @@ export default function ShopPage() {
           </div>
         )}
 
-        {/* 🔹 SINGLE PRODUCT VIEW */}
+        {/* SINGLE PRODUCT */}
         {openId !== null &&
           products
             .filter(p => p.id === openId)
             .map(item => (
-              <div key={item.id} style={singleCard}>
+              <div key={item.id} style={single}>
                 <img src={item.image} style={img} />
 
                 <h2>{item.name}</h2>
 
-                <p style={{ color: "green", fontWeight: "bold" }}>
-                  ₹{item.price} रुपये
+                <p style={{ color: "green", fontSize: 20 }}>
+                  ₹{item.price}
                 </p>
 
                 <div style={qtyRow}>
-                  <button
-                    style={qtyBtn}
-                    onClick={() => setQty(q => Math.max(1, q - 1))}
-                  >
-                    −
-                  </button>
+                  <button onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
                   <span>{qty}</span>
-                  <button
-                    style={qtyBtn}
-                    onClick={() => setQty(q => q + 1)}
-                  >
-                    +
-                  </button>
+                  <button onClick={() => setQty(q => q + 1)}>+</button>
                 </div>
 
-                <button
-                  style={cartBtn}
-                  onClick={() => addToCart(item)}
-                >
+                <button style={cartBtn} onClick={() => addToCart(item)}>
                   🛒 Add to Cart
                 </button>
 
-                <button
-                  style={buyBtn}
-                  onClick={() => buyNow(item)}
-                >
+                <button style={buyBtn} onClick={() => buyNow(item)}>
                   ⚡ Buy Now
                 </button>
 
-                <button
-                  style={backBtn}
-                  onClick={() => setOpenId(null)}
-                >
-                  ← Back to Products
+                <button style={backBtn} onClick={() => setOpenId(null)}>
+                  ← Back
                 </button>
               </div>
             ))}
@@ -178,88 +153,99 @@ export default function ShopPage() {
   );
 }
 
-/* 🎨 STYLES */
+/* STYLES */
+
 const header = {
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "center",
   padding: "12px 16px",
-  borderBottom: "1px solid #e5e7eb",
+  borderBottom: "1px solid #eee",
   position: "sticky",
   top: 0,
   background: "#fff",
   zIndex: 10,
 };
 
-const cartBadge = {
+const badge = {
   position: "absolute",
   top: -6,
   right: -10,
   background: "red",
   color: "#fff",
-  fontSize: 12,
   borderRadius: "50%",
+  fontSize: 12,
   padding: "2px 6px",
 };
 
 const grid = {
   display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-  gap: 20,
+  gridTemplateColumns: "repeat(2, 1fr)",
+  gap: 14,
 };
 
 const card = {
-  border: "1px solid #ddd",
+  border: "1px solid #e5e7eb",
   borderRadius: 14,
-  padding: 12,
-  background: "#fff",
-};
-
-const singleCard = {
-  border: "1px solid #ddd",
-  borderRadius: 14,
-  padding: 16,
+  padding: 10,
   background: "#fff",
 };
 
 const img = {
   width: "100%",
-  height: 220,
+  height: 160,
   objectFit: "cover",
   borderRadius: 12,
 };
 
+const rating = {
+  fontSize: 14,
+  color: "#f59e0b",
+};
+
+const cut = {
+  marginLeft: 8,
+  textDecoration: "line-through",
+  color: "#999",
+};
+
+const off = {
+  marginLeft: 8,
+  background: "#000",
+  color: "#fff",
+  padding: "2px 6px",
+  borderRadius: 8,
+  fontSize: 12,
+};
+
 const addBtn = {
   width: "100%",
-  padding: 12,
-  background: "#3b82f6",
+  marginTop: 10,
+  padding: 10,
+  background: "#2563eb",
   color: "#fff",
   border: "none",
   borderRadius: 10,
+};
+
+const single = {
+  border: "1px solid #ddd",
+  padding: 16,
+  borderRadius: 14,
 };
 
 const qtyRow = {
   display: "flex",
   justifyContent: "center",
   gap: 16,
-  margin: "16px 0",
-};
-
-const qtyBtn = {
-  width: 36,
-  height: 36,
-  borderRadius: 8,
-  border: "1px solid #ccc",
-  background: "#fff",
-  fontSize: 18,
+  margin: "14px 0",
 };
 
 const cartBtn = {
   width: "100%",
   padding: 12,
   background: "#f59e0b",
-  color: "#fff",
   border: "none",
+  color: "#fff",
   borderRadius: 10,
   marginBottom: 10,
 };
@@ -268,16 +254,16 @@ const buyBtn = {
   width: "100%",
   padding: 12,
   background: "#16a34a",
-  color: "#fff",
   border: "none",
+  color: "#fff",
   borderRadius: 10,
 };
 
 const backBtn = {
   width: "100%",
   padding: 10,
-  marginTop: 12,
   background: "#eee",
   border: "none",
   borderRadius: 8,
+  marginTop: 10,
 };
