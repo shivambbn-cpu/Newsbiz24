@@ -86,30 +86,23 @@ export default function ShopPage() {
         {openId === null && (
           <div style={grid}>
             {products.map(p => (
-              <div key={p.id} style={card}>
+              <div
+                key={p.id}
+                style={card}
+                onClick={() => {
+                  setOpenId(p.id);
+                  setQty(1);
+                }}
+              >
                 <img src={p.image} style={img} />
 
                 <h4 style={{ margin: "8px 0" }}>{p.name}</h4>
-
-                <div style={rating}>
-                  ⭐⭐⭐⭐☆ <span style={{ color: "#777" }}>({p.reviews || 1200})</span>
-                </div>
 
                 <div style={{ marginTop: 6 }}>
                   <b style={{ fontSize: 18 }}>From ₹ {p.price}</b>
                   <span style={cut}>₹{p.mrp || p.price * 2}</span>
                   <span style={off}>55% OFF</span>
                 </div>
-
-                <button
-                  style={addBtn}
-                  onClick={() => {
-                    setOpenId(p.id);
-                    setQty(1);
-                  }}
-                >
-                  Add
-                </button>
               </div>
             ))}
           </div>
@@ -188,6 +181,7 @@ const card = {
   borderRadius: 14,
   padding: 10,
   background: "#fff",
+  cursor: "pointer",
 };
 
 const img = {
@@ -195,11 +189,6 @@ const img = {
   height: 160,
   objectFit: "cover",
   borderRadius: 12,
-};
-
-const rating = {
-  fontSize: 14,
-  color: "#f59e0b",
 };
 
 const cut = {
@@ -215,16 +204,6 @@ const off = {
   padding: "2px 6px",
   borderRadius: 8,
   fontSize: 12,
-};
-
-const addBtn = {
-  width: "100%",
-  marginTop: 10,
-  padding: 10,
-  background: "#2563eb",
-  color: "#fff",
-  border: "none",
-  borderRadius: 10,
 };
 
 const single = {
@@ -267,3 +246,4 @@ const backBtn = {
   borderRadius: 8,
   marginTop: 10,
 };
+
