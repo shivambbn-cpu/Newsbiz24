@@ -12,6 +12,7 @@ export default function ShopPage() {
   const [openId, setOpenId] = useState(null); // 👈 selected product
   const [qty, setQty] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [cartCount, setCartCount] = useState(0);
 
   /* 🔹 Fetch products */
   useEffect(() => {
@@ -23,24 +24,42 @@ export default function ShopPage() {
       }));
       setProducts(data);
       setLoading(false);
+      updateCartCount();
     };
     fetchProducts();
   }, []);
 
+  /* 🧮 Cart count */
+  const updateCartCount = () => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const totalQty = cart.reduce(
+      (sum, item) => sum + Number(item.qty || 0),
+      0
+    );
+    setCartCount(totalQty);
+  };
+
   /* 🛒 Add to Cart */
   const addToCart = (product) => {
     const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    const index = cart.findIndex(p => p.id === product.id);
 
-    cart.push({
-      id: product.id,
-      name: product.name,
-      image: product.image,
-      price: product.price,
-      qty,
-      total: product.price * qty,
-    });
+    if (index >= 0) {
+      cart[index].qty += qty;
+      cart[index].total += product.price * qty;
+    } else {
+      cart.push({
+        id: product.id,
+        name: product.name,
+        image: product.image,
+        price: product.price,
+        qty,
+        total: product.price * qty,
+      });
+    }
 
     localStorage.setItem("cart", JSON.stringify(cart));
+    updateCartCount();
     alert("✅ Cart में add हो गया");
   };
 
@@ -54,42 +73,57 @@ export default function ShopPage() {
   }
 
   return (
-    <div style={{ padding: 16 }}>
-      <h2 style={{ textAlign: "center", marginBottom: 20 }}>
-        🛍 Our Shop
-      </h2>
+    <>
+      {/* 🔝 HEADER WITH CART */}
+      <header style={header}>
+        <b style={{ color: "#16a34a" }}>TULSIMALASTORE</b>
 
-      {/* 🔹 PRODUCT LIST (पहले सब दिखेंगे) */}
-      {openId === null && (
-        <div style={grid}>
-          {products.map(item => (
-            <div key={item.id} style={card}>
-              <img src={item.image} style={img} />
-
-              <h3>{item.name}</h3>
-
-              <p style={{ color: "green", fontWeight: "bold" }}>
-                ₹{item.price} रुपये
-              </p>
-
-              <button
-                style={addBtn}
-                onClick={() => {
-                  setOpenId(item.id); // 👈 बाकी hide
-                  setQty(1);
-                }}
-              >
-                Add
-              </button>
-            </div>
-          ))}
+        <div
+          style={{ position: "relative", cursor: "pointer", fontSize: 22 }}
+          onClick={() => router.push("/cart")}
+        >
+          🛒
+          {cartCount > 0 && (
+            <span style={cartBadge}>{cartCount}</span>
+          )}
         </div>
-      )}
+      </header>
 
-      {/* 🔹 SINGLE PRODUCT VIEW */}
-      {openId !== null && (
-        <>
-          {products
+      <div style={{ padding: 16 }}>
+        <h2 style={{ textAlign: "center", marginBottom: 20 }}>
+          🛍 Our Shop
+        </h2>
+
+        {/* 🔹 PRODUCT LIST */}
+        {openId === null && (
+          <div style={grid}>
+            {products.map(item => (
+              <div key={item.id} style={card}>
+                <img src={item.image} style={img} />
+
+                <h3>{item.name}</h3>
+
+                <p style={{ color: "green", fontWeight: "bold" }}>
+                  ₹{item.price} रुपये
+                </p>
+
+                <button
+                  style={addBtn}
+                  onClick={() => {
+                    setOpenId(item.id);
+                    setQty(1);
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 🔹 SINGLE PRODUCT VIEW */}
+        {openId !== null &&
+          products
             .filter(p => p.id === openId)
             .map(item => (
               <div key={item.id} style={singleCard}>
@@ -101,18 +135,17 @@ export default function ShopPage() {
                   ₹{item.price} रुपये
                 </p>
 
-                {/* Qty */}
                 <div style={qtyRow}>
                   <button
-                    onClick={() => setQty(q => Math.max(1, q - 1))}
                     style={qtyBtn}
+                    onClick={() => setQty(q => Math.max(1, q - 1))}
                   >
                     −
                   </button>
                   <span>{qty}</span>
                   <button
-                    onClick={() => setQty(q => q + 1)}
                     style={qtyBtn}
+                    onClick={() => setQty(q => q + 1)}
                   >
                     +
                   </button>
@@ -132,7 +165,6 @@ export default function ShopPage() {
                   ⚡ Buy Now
                 </button>
 
-                {/* 🔙 BACK */}
                 <button
                   style={backBtn}
                   onClick={() => setOpenId(null)}
@@ -141,13 +173,35 @@ export default function ShopPage() {
                 </button>
               </div>
             ))}
-        </>
-      )}
-    </div>
+      </div>
+    </>
   );
 }
 
 /* 🎨 STYLES */
+const header = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  padding: "12px 16px",
+  borderBottom: "1px solid #e5e7eb",
+  position: "sticky",
+  top: 0,
+  background: "#fff",
+  zIndex: 10,
+};
+
+const cartBadge = {
+  position: "absolute",
+  top: -6,
+  right: -10,
+  background: "red",
+  color: "#fff",
+  fontSize: 12,
+  borderRadius: "50%",
+  padding: "2px 6px",
+};
+
 const grid = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
