@@ -11,15 +11,12 @@ import {
   serverTimestamp
 } from "firebase/firestore";
 
-import CheckoutFormBox from "@/components/CheckoutFormBox";
-import "@/styles/checkout-box.css";
-
 export default function CheckoutPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // ✅ qty always NUMBER
+  // âœ… qty always NUMBER
   const qty = parseInt(searchParams.get("qty") || "1", 10);
 
   const [product, setProduct] = useState(null);
@@ -35,7 +32,7 @@ export default function CheckoutPage() {
     pincode: ""
   });
 
-  /* 🔹 Fetch Product */
+  /* ðŸ”¹ Fetch Product */
   useEffect(() => {
     if (!id) return;
 
@@ -46,7 +43,9 @@ export default function CheckoutPage() {
 
         if (snap.exists()) {
           const data = snap.data();
-          const price = Number(data.price);
+
+          const price = Number(data.price); // âœ… number only
+          const finalQty = Number(qty);
 
           setProduct({
             id: snap.id,
@@ -55,7 +54,7 @@ export default function CheckoutPage() {
             price
           });
 
-          setTotal(price * qty);
+          setTotal(price * finalQty); // âœ… correct total
         }
       } catch (err) {
         console.error("PRODUCT ERROR", err);
@@ -65,17 +64,18 @@ export default function CheckoutPage() {
     })();
   }, [id, qty]);
 
-  /* 🔹 Place Order */
+  /* ðŸ”¹ Place Order */
   const placeOrder = async () => {
     if (!product) return alert("Product not loaded");
 
     for (let key in form) {
       if (!form[key]) {
-        return alert("❌ Please fill all address fields");
+        return alert("âŒ Please fill all address fields");
       }
     }
 
     try {
+      /* âœ… Save Order in Firestore */
       await addDoc(collection(db, "orders"), {
         productId: product.id,
         productName: product.name,
@@ -89,20 +89,21 @@ export default function CheckoutPage() {
         createdAt: serverTimestamp()
       });
 
-      localStorage.setItem(
-        "lastOrder",
-        JSON.stringify({
-          orderId: Date.now(),
-          productName: product.name,
-          price: Number(product.price),
-          qty: Number(qty),
-          total: Number(total),
-          customer: form,
-          paymentMethod: "Cash On Delivery"
-        })
-      );
+      /* âœ… Save clean data for PDF */
+      const orderData = {
+        orderId: Date.now(),
+        productName: product.name,
+        price: Number(product.price),
+        qty: Number(qty),
+        total: Number(total),
+        customer: form,
+        paymentMethod: "Cash On Delivery"
+      };
+
+      localStorage.setItem("lastOrder", JSON.stringify(orderData));
 
       router.push("/order-success");
+
     } catch (err) {
       console.error("ORDER ERROR", err);
       alert("Order failed");
@@ -119,23 +120,52 @@ export default function CheckoutPage() {
       <img
         src={product.image}
         alt={product.name}
-        style={{ width: "100%", borderRadius: 10, marginBottom: 10 }}
+        style={{ width: "100%", borderRadius: 10 }}
       />
 
-      <p>Price: ₹{product.price}</p>
+      <p>Price: â‚¹{product.price}</p>
       <p>Quantity: <b>{qty}</b></p>
 
-      <h3 style={{ color: "#16a34a", marginBottom: 10 }}>
-        Grand Total: ₹{total}
+      <h3 style={{ color: "#16a34a" }}>
+        Grand Total: â‚¹{total}
       </h3>
 
-      {/* ✅ REUSABLE CHECKOUT BOX */}
-      <CheckoutFormBox
-        form={form}
-        setForm={setForm}
-        total={total}
-        onPlaceOrder={placeOrder}
-      />
+      {/* Address */}
+      <input placeholder="Full Name" onChange={e => setForm({ ...form, name: e.target.value })} style={input} />
+      <input placeholder="Mobile Number" onChange={e => setForm({ ...form, mobile: e.target.value })} style={input} />
+      <textarea placeholder="Full Address" onChange={e => setForm({ ...form, address: e.target.value })} style={input} />
+      <input placeholder="City" onChange={e => setForm({ ...form, city: e.target.value })} style={input} />
+      <input placeholder="State" onChange={e => setForm({ ...form, state: e.target.value })} style={input} />
+      <input placeholder="Pincode" onChange={e => setForm({ ...form, pincode: e.target.value })} style={input} />
+
+      <p style={{ marginTop: 10 }}>
+        Payment Method: <b>Cash on Delivery</b>
+      </p>
+
+      <button onClick={placeOrder} style={btn}>
+        Place Order (â‚¹{total})
+      </button>
     </div>
   );
-    }
+}
+
+/* Styles */
+const input = {
+  width: "100%",
+  padding: 10,
+  margin: "6px 0",
+  borderRadius: 6,
+  border: "1px solid #ccc"
+};
+
+const btn = {
+  width: "100%",
+  padding: 14,
+  background: "#16a34a",
+  color: "#fff",
+  border: "none",
+  borderRadius: 10,
+  fontSize: 16,
+  marginTop: 10,
+  cursor: "pointer"
+};
