@@ -1,1 +1,138 @@
+"use client";
+import { jsPDF } from "jspdf";
 
+import { useState, useEffect } from "react";
+import Header from "./components/Header";
+import SideMenu from "./components/SideMenu";
+import HomeView from "./components/HomeView";
+import DetailView from "./components/DetailView";
+import Footer from "./components/Footer";
+
+import { db } from "../lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
+
+export default function HomePage() {
+  const [posts, setPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [currentCategory, setCurrentCategory] = useState("astro");
+  const [loading, setLoading] = useState(true);
+
+  // Ã°Å¸â€Â SEARCH STATE (HEADER SE CONNECTED)
+  const [searchText, setSearchText] = useState("");
+
+  // Ã°Å¸â€Â¥ Firestore data load
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+
+        const colRef = collection(db, currentCategory);
+        const snapshot = await getDocs(colRef);
+
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        setPosts(data);
+        setSelectedPost(null);
+        setSearchText(""); // category change pe search reset
+      } catch (err) {
+        console.error("Firestore Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [currentCategory]);
+
+  // Ã°Å¸â€Â TITLE SEARCH LOGIC
+  const filteredPosts = posts.filter((post) =>
+    post?.title?.toLowerCase().includes(searchText.toLowerCase())
+  );
+
+  const openDetail = (post) => setSelectedPost(post);
+  const closeDetail = () => setSelectedPost(null);
+
+  // Cards filtered data se
+  const bigCard = filteredPosts[0];
+  const smallCards = filteredPosts.slice(1, 10);
+
+  return (
+    <>
+      <Header searchText={searchText} onSearch={setSearchText} />
+
+      <SideMenu onCategorySelect={setCurrentCategory} />
+
+      <div className="content-wrapper">
+        {/* Ã°Å¸â€â€ž Loader */}
+        {loading && (
+          <div style={loaderWrap}>
+            <div style={loader}></div>
+          </div>
+        )}
+
+        {/* DetailView */}
+        {!loading && selectedPost && (
+          <DetailView post={selectedPost} onClose={closeDetail} />
+        )}
+
+        {/* HomeView or No matching posts */}
+        {!loading && !selectedPost && (
+          <>
+            {filteredPosts.length > 0 ? (
+              <HomeView
+                bigCard={bigCard}
+                smallCards={smallCards}
+                onSelectPost={openDetail}
+              />
+            ) : (
+              <div style={noPostStyle}>
+                Sorry.! Ã°Å¸Ëœâ€Ã°Å¸Ëœâ€ No matching post found.!
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <Footer />
+    </>
+  );
+}
+
+/* Ã°Å¸â€Âµ Loader Styles */
+const loaderWrap = {
+  minHeight: "60vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const loader = {
+  width: "46px",
+  height: "46px",
+  border: "4px solid rgba(22,163,74,0.2)",
+  borderTop: "4px solid #16a34a",
+  borderRadius: "50%",
+  animation: "spinFast 0.6s linear infinite",
+  boxShadow: "0 0 12px rgba(22,163,74,0.35)",
+};
+
+/* Ã°Å¸â€Â¹ No matching post style */
+const noPostStyle = {
+  minHeight: "40vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  fontSize: "1.5rem",
+  fontWeight: "600",
+  color: "#555",
+  textAlign: "center",
+};
+
+
+
+    
