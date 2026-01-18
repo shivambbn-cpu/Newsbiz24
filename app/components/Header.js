@@ -47,14 +47,7 @@ export default function Header({ onSearch }) {
           />
         </div>
 
-        {/* 🛍️ SHOP ICON (Next.js Navigation) */}
-        <div
-          className="shop-icon"
-          onClick={() => router.push("/shop")} // ✅ UPDATED
-          title="Shop"
-        >
-          🛍️
-        </div>
+      
 
       </div>
     </header>
