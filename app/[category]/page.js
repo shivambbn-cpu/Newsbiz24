@@ -2,12 +2,12 @@ import { db } from "@/lib/firebase";
 import Link from "next/link";
 import { categorySEO } from "@/lib/categorySEO";
 
-// ✅ SEO metadata (AUTO)
+// ✅ SEO metadata
 export async function generateMetadata({ params }) {
-  const { category } = params;
+  const category = params?.category;
 
   const data = categorySEO[category] || {
-    title: "News Biz 24",
+    title: category?.toUpperCase() || "News",
     description: "Latest Hindi News",
   };
 
@@ -30,6 +30,18 @@ export async function generateMetadata({ params }) {
       ],
     },
 
+    twitter: {
+      card: "summary_large_image",
+      title: data.title,
+      description: data.description,
+      images: ["https://www.newsbiz24.in/og-image.jpg"],
+    },
+
+    robots: {
+      index: true,
+      follow: true,
+    },
+
     alternates: {
       canonical: url,
     },
@@ -43,10 +55,9 @@ export default async function CategoryPage({ params }) {
   let posts = [];
 
   try {
-    // ❗ category check
     if (!category) throw new Error("No category");
 
-    // 🔥 dynamic import (server crash fix)
+    // 🔥 safe dynamic import (no crash)
     const { collection, getDocs } = await import("firebase/firestore");
 
     const snap = await getDocs(collection(db, category));
@@ -59,19 +70,17 @@ export default async function CategoryPage({ params }) {
     console.error("Firestore error:", error);
   }
 
-  // ❗ fallback UI
-  if (!categorySEO[category]) {
-    return <div>Invalid category</div>;
-  }
-
   return (
     <div style={{ padding: "20px" }}>
+      {/* ✅ SEO-friendly heading */}
       <h1 style={{ fontSize: "24px", marginBottom: "20px" }}>
         {categorySEO[category]?.title || category.toUpperCase()}
       </h1>
 
+      {/* ❗ empty state */}
       {posts.length === 0 && <p>No posts found</p>}
 
+      {/* ✅ posts list */}
       {posts.map((post) => (
         <div key={post.id} style={{ marginBottom: "20px" }}>
           <Link href={`/post/${encodeURIComponent(post.slug)}`}>
@@ -92,5 +101,5 @@ export default async function CategoryPage({ params }) {
   );
 }
 
-// 🔥 Performance boost
+// 🔥 caching
 export const revalidate = 3600;
