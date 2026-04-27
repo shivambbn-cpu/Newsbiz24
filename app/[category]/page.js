@@ -1,5 +1,4 @@
-
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebaseAdmin";
 import Link from "next/link";
 import { categorySEO } from "@/lib/categorySEO";
 
@@ -58,10 +57,8 @@ export default async function CategoryPage({ params }) {
   try {
     if (!category) throw new Error("No category");
 
-    // 🔥 safe dynamic import (no crash)
-    const { collection, getDocs } = await import("firebase/firestore");
-
-    const snap = await getDocs(collection(db, category));
+    // 🔥 Admin SDK (FINAL FIX)
+    const snap = await adminDb.collection(category).get();
 
     posts = snap.docs.map((doc) => ({
       id: doc.id,
@@ -73,15 +70,12 @@ export default async function CategoryPage({ params }) {
 
   return (
     <div style={{ padding: "20px" }}>
-      {/* ✅ SEO-friendly heading */}
       <h1 style={{ fontSize: "24px", marginBottom: "20px" }}>
         {categorySEO[category]?.title || category.toUpperCase()}
       </h1>
 
-      {/* ❗ empty state */}
       {posts.length === 0 && <p>No posts found</p>}
 
-      {/* ✅ posts list */}
       {posts.map((post) => (
         <div key={post.id} style={{ marginBottom: "20px" }}>
           <Link href={`/post/${encodeURIComponent(post.slug)}`}>
@@ -104,3 +98,6 @@ export default async function CategoryPage({ params }) {
 
 // 🔥 caching
 export const revalidate = 3600;
+
+
+    
