@@ -1,5 +1,4 @@
 import { db } from "@/lib/firebase";
-import { collection, getDocs } from "firebase/firestore";
 import Link from "next/link";
 import { categorySEO } from "@/lib/categorySEO";
 
@@ -39,11 +38,17 @@ export async function generateMetadata({ params }) {
 
 // ✅ Page component
 export default async function CategoryPage({ params }) {
-  const { category } = params;
+  const category = params?.category;
 
   let posts = [];
 
   try {
+    // ❗ category check
+    if (!category) throw new Error("No category");
+
+    // 🔥 dynamic import (server crash fix)
+    const { collection, getDocs } = await import("firebase/firestore");
+
     const snap = await getDocs(collection(db, category));
 
     posts = snap.docs.map((doc) => ({
@@ -51,13 +56,18 @@ export default async function CategoryPage({ params }) {
       ...doc.data(),
     }));
   } catch (error) {
-    console.error("Error fetching posts:", error);
+    console.error("Firestore error:", error);
+  }
+
+  // ❗ fallback UI
+  if (!categorySEO[category]) {
+    return <div>Invalid category</div>;
   }
 
   return (
     <div style={{ padding: "20px" }}>
       <h1 style={{ fontSize: "24px", marginBottom: "20px" }}>
-        {category.toUpperCase()} NEWS
+        {categorySEO[category]?.title || category.toUpperCase()}
       </h1>
 
       {posts.length === 0 && <p>No posts found</p>}
@@ -84,5 +94,3 @@ export default async function CategoryPage({ params }) {
 
 // 🔥 Performance boost
 export const revalidate = 3600;
-
-
