@@ -1,4 +1,4 @@
-"use client";
+
 import { db } from "@/lib/firebase";
 import Link from "next/link";
 import { categorySEO } from "@/lib/categorySEO";
