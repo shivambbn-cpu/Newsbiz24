@@ -1,14 +1,12 @@
 import "./globals.css";
+import Script from "next/script";
 
 const siteDescription =
   "Newsbiz24.in पर पाएं धार्मिक, ट्रेंडिंग, एस्ट्रो, व्यापार, स्वास्थ्य, जीवनशैली और ताज़ा खबरों की कवरेज।";
 
 export const metadata = {
   title: "News Biz 24",
-
-  // ✅ FIXED Hindi text
   description: siteDescription,
-
   robots: "index, follow",
 
   openGraph: {
@@ -37,7 +35,29 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="hi">
-      <body>{children}</body>
+      <body>
+        {children}
+
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-RRHYP5Y8ZZ"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-RRHYP5Y8ZZ');
+          `}
+        </Script>
+      </body>
     </html>
   );
 }
+
+
+
+
