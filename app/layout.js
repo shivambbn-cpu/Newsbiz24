@@ -35,9 +35,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="hi">
-      <body>
-        {children}
-
+      <head>
         {/* Google Analytics */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-RRHYP5Y8ZZ"
@@ -47,17 +45,26 @@ export default function RootLayout({ children }) {
         <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
+
+            function gtag(){
+              dataLayer.push(arguments);
+            }
+
             gtag('js', new Date());
 
-            gtag('config', 'G-RRHYP5Y8ZZ');
+            gtag('config', 'G-RRHYP5Y8ZZ', {
+              page_path: window.location.pathname,
+              send_page_view: true,
+              debug_mode: true
+            });
           `}
         </Script>
-      </body>
+      </head>
+
+      <body>{children}</body>
     </html>
   );
 }
-
 
 
 
