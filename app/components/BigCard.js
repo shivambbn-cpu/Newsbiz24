@@ -1,115 +1,71 @@
 "use client";
 
 import Image from "next/image";
-import {
-  memo,
-  useEffect,
-  useState,
-  useCallback,
-} from "react";
+import { memo, useCallback } from "react";
 
-function BigPostCard({
-  posts = [],
-  onSelectPost,
-}) {
+function BigPostCard({ post, onSelectPost }) {
+if (!post) return null;
 
-  const [current, setCurrent] = useState(0);
+const handleClick = useCallback(() => {
+onSelectPost(post);
+}, [post, onSelectPost]);
 
-  // AUTO SLIDE
-  useEffect(() => {
+// âœ… Safe image URL
+const imageUrl =
+typeof post.image === "string" && post.image.trim() !== ""
+? post.image.trim()
+: null;
 
-    if (posts.length <= 1) return;
+// âœ… Safe date (Firestore + normal)
+const postDate = post?.date?.toDate
+? post.date.toDate()
+: post?.date
+? new Date(post.date)
+: null;
 
-    const interval = setInterval(() => {
+return (
+<div className="big-card post-card" onClick={handleClick}>
+{/* Image */}
+{imageUrl && (
+<Image  
+src={imageUrl}  
+alt={post.title}  
+width={800}  
+height={450}  
+priority  
+className="big-img"  
+/>
+)}
 
-      setCurrent((prev) =>
-        prev === posts.length - 1
-          ? 0
-          : prev + 1
-      );
+<div className="big-details">  
+    {/* âœ… TITLE â†’ h3 (CSS match) */}  
+    <h3>{post.title}</h3>  
 
-    }, 4000);
+    {/* âœ… CONTENT â†’ p (CSS match) */}  
+    <p  
+      dangerouslySetInnerHTML={{  
+        __html:  
+          ((post.content || "")  
+            .substring(0, 150)  
+            .replace(/\n/g, "<br />")) + "...",  
+      }}  
+    />  
 
-    return () => clearInterval(interval);
+    {/* âœ… DATE â†’ className match */}  
+    {postDate && (  
+      <small className="post-date-info">  
+        Posted on :{" "}  
+        {postDate.toLocaleDateString("en-IN", {  
+          day: "2-digit",  
+          month: "long",  
+          year: "numeric",  
+        })}  
+      </small>  
+    )}  
+  </div>  
+</div>
 
-  }, [posts]);
-
-  // NO POSTS
-  if (!posts.length) return null;
-
-  const post = posts[current];
-
-  // SAFE IMAGE
-  const imageUrl =
-    typeof post.image === "string" &&
-    post.image.trim() !== ""
-      ? post.image.trim()
-      : null;
-
-  // OPEN DETAIL
-  const handleClick = useCallback(() => {
-    onSelectPost(post);
-  }, [post, onSelectPost]);
-
-  return (
-    <div className="hero-slider">
-
-      {/* SLIDE */}
-      <div
-        className="slide-card"
-        onClick={handleClick}
-      >
-
-        {/* IMAGE */}
-        {imageUrl && (
-          <Image
-            src={imageUrl}
-            alt={post.title}
-            width={1200}
-            height={700}
-            priority
-            className="hero-image"
-          />
-        )}
-
-        {/* CONTENT */}
-        <div className="slide-content">
-
-          {/* CATEGORY */}
-          {post.category && (
-            <span className="category-name">
-              {post.category}
-            </span>
-          )}
-
-          {/* TITLE */}
-          <h2>{post.title}</h2>
-
-        </div>
-
-      </div>
-
-      {/* DOTS */}
-      <div className="slider-dots">
-
-        {posts.map((_, index) => (
-
-          <span
-            key={index}
-            className={`dot ${
-              current === index ? "active" : ""
-            }`}
-            onClick={() => setCurrent(index)}
-          />
-
-        ))}
-
-      </div>
-
-    </div>
-  );
+);
 }
 
 export default memo(BigPostCard);
-
-    
