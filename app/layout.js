@@ -2,73 +2,67 @@ import "./globals.css";
 import Script from "next/script";
 
 const siteDescription =
-  "Newsbiz24.in पर पाएं धार्मिक, ट्रेंडिंग, एस्ट्रो, व्यापार, स्वास्थ्य, जीवनशैली और ताज़ा खबरों की कवरेज।";
+"Newsbiz24.in पर पाएं धार्मिक, ट्रेंडिंग, एस्ट्रो, व्यापार, स्वास्थ्य, जीवनशैली और ताज़ा खबरों की कवरेज।";
 
 export const metadata = {
-  title: "News Biz 24",
-  description: siteDescription,
-  robots: "index, follow",
-  openGraph: {
-    type: "website",
-    title: "News Biz 24",
-    description: siteDescription,
-    url: "https://newsbiz24.in",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "News Biz 24",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "News Biz 24",
-    description: siteDescription,
-    images: ["/og-image.jpg"],
-  },
+title: "News Biz 24",
+description: siteDescription,
+robots: "index, follow",
+
+openGraph: {
+type: "website",
+title: "News Biz 24",
+description: siteDescription,
+url: "https://newsbiz24.in",
+images: [
+{
+url: "/og-image.jpg",
+width: 1200,
+height: 630,
+alt: "News Biz 24",
+},
+],
+},
+
+twitter: {
+card: "summary_large_image",
+title: "News Biz 24",
+description: siteDescription,
+images: ["/og-image.jpg"],
+},
 };
 
 export default function RootLayout({ children }) {
-  return (
-    <html lang="hi">
-      <head>
-        {/* Google Analytics */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-RRHYP5Y8ZZ"
-          strategy="afterInteractive"
-        />
+return (
+<html lang="hi">
+<head>
+{/* Google Analytics */}
+<Script  
+src="https://www.googletagmanager.com/gtag/js?id=G-RRHYP5Y8ZZ"  
+strategy="afterInteractive"  
+/>
 
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-RRHYP5Y8ZZ', {
-              page_path: window.location.pathname,
-              send_page_view: true,
-              debug_mode: true
-            });
-          `}
-        </Script>
-      </head>
+<Script id="google-analytics" strategy="afterInteractive">  
+      {`  
+        window.dataLayer = window.dataLayer || [];  
 
-      <body>
+        function gtag(){  
+          dataLayer.push(arguments);  
+        }  
 
-        {children}
+        gtag('js', new Date());  
 
-        {/* 🔥 ADSTERRA SCRIPT (GLOBAL ADS) */}
-        <div
-          dangerouslySetInnerHTML={{
-            __html: `
-              <script async="async" data-cfasync="false" src="https://pl29380719.profitablecpmratenetwork.com/b9524e570677110d9322556dbe2d48a6/invoke.js"></script>
-              <div id="container-b9524e570677110d9322556dbe2d48a6"></div>
-            `,
-          }}
-        />
+        gtag('config', 'G-RRHYP5Y8ZZ', {  
+          page_path: window.location.pathname,  
+          send_page_view: true,  
+          debug_mode: true  
+        });  
+      `}  
+    </Script>  
+  </head>  
 
-      </body>
-    </html>
-  );
-}
+  <body>{children}</body>  
+</html>
+
+);
+  }
