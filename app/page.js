@@ -13,185 +13,149 @@ import { collection, getDocs } from "firebase/firestore";
 
 export default function HomePage() {
 
-const [posts, setPosts] = useState([]);
-const [selectedPost, setSelectedPost] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [currentCategory, setCurrentCategory] = useState("astro");
+  const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState("");
 
-const [currentCategory, setCurrentCategory] =
-useState("astro");
+  // 🔥 FIRESTORE DATA LOAD
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
 
-const [loading, setLoading] = useState(true);
+        const colRef = collection(db, currentCategory);
+        const snapshot = await getDocs(colRef);
 
-// SEARCH
-const [searchText, setSearchText] = useState("");
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
 
-// FIRESTORE LOAD
-useEffect(() => {
+        data.sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        );
 
-const fetchPosts = async () => {  
+        setPosts(data);
+        setSelectedPost(null);
+        setSearchText("");
 
-  try {  
+      } catch (err) {
+        console.error("Firestore Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setLoading(true);  
+    fetchPosts();
+  }, [currentCategory]);
 
-    const colRef = collection(  
-      db,  
-      currentCategory  
-    );  
+  // 🔥 ADSTERRA SCRIPT (WORKING FIX)
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src =
+      "https://pl29380722.profitablecpmratenetwork.com/e6/5f/d5/e65fd505ce60a13973fe2ba4b6554740.js";
+    script.async = true;
 
-    const snapshot = await getDocs(colRef);  
+    document.body.appendChild(script);
 
-    const data = snapshot.docs.map((doc) => ({  
-      id: doc.id,  
-      ...doc.data(),  
-    }));  
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
-    // LATEST FIRST  
-    data.sort(  
-      (a, b) =>  
-        new Date(b.date) - new Date(a.date)  
-    );  
+  const filteredPosts = posts.filter((post) =>
+    post?.title?.toLowerCase().includes(searchText.toLowerCase())
+  );
 
-    setPosts(data);  
+  const openDetail = (post) => setSelectedPost(post);
+  const closeDetail = () => setSelectedPost(null);
 
-    setSelectedPost(null);  
+  const bigPosts = filteredPosts.slice(0, 3);
+  const smallCards = filteredPosts.slice(3, 15);
 
-    setSearchText("");  
+  return (
+    <>
+      {/* HEADER */}
+      <Header
+        searchText={searchText}
+        onSearch={setSearchText}
+      />
 
-  } catch (err) {  
+      {/* SIDE MENU */}
+      <SideMenu
+        onCategorySelect={setCurrentCategory}
+      />
 
-    console.error(  
-      "Firestore Error:",  
-      err  
-    );  
+      <div className="content-wrapper">
 
-  } finally {  
+        {/* LOADER */}
+        {loading && (
+          <div style={loaderWrap}>
+            <div style={loader}></div>
+          </div>
+        )}
 
-    setLoading(false);  
+        {/* DETAIL PAGE */}
+        {!loading && selectedPost && (
+          <DetailView
+            post={selectedPost}
+            onClose={closeDetail}
+          />
+        )}
 
-  }  
-};  
+        {/* HOME PAGE */}
+        {!loading && !selectedPost && (
+          <>
+            {filteredPosts.length > 0 ? (
+              <HomeView
+                bigPosts={bigPosts}
+                smallCards={smallCards}
+                onSelectPost={openDetail}
+              />
+            ) : (
+              <div style={noPostStyle}>
+                Sorry! 😔 No matching post found!
+              </div>
+            )}
+          </>
+        )}
 
-fetchPosts();
+      </div>
 
-}, [currentCategory]);
-
-// SEARCH FILTER
-const filteredPosts = posts.filter((post) =>
-post?.title
-?.toLowerCase()
-.includes(searchText.toLowerCase())
-);
-
-// OPEN DETAIL
-const openDetail = (post) => {
-setSelectedPost(post);
-};
-
-// CLOSE DETAIL
-const closeDetail = () => {
-setSelectedPost(null);
-};
-
-// BIG SLIDER POSTS (LATEST 3)
-const bigPosts = filteredPosts.slice(0, 3);
-
-// SMALL POSTS
-const smallCards = filteredPosts.slice(3, 15);
-
-return (
-<>
-{/* HEADER */}
-<Header  
-searchText={searchText}  
-onSearch={setSearchText}  
-/>
-
-{/* SIDE MENU */}  
-  <SideMenu  
-    onCategorySelect={setCurrentCategory}  
-  />  
-
-  <div className="content-wrapper">  
-
-    {/* LOADER */}  
-    {loading && (  
-      <div style={loaderWrap}>  
-        <div style={loader}></div>  
-      </div>  
-    )}  
-
-    {/* DETAIL PAGE */}  
-    {!loading && selectedPost && (  
-      <DetailView  
-        post={selectedPost}  
-        onClose={closeDetail}  
-      />  
-    )}  
-
-    {/* HOME PAGE */}  
-    {!loading && !selectedPost && (  
-      <>  
-        {filteredPosts.length > 0 ? (  
-
-          <HomeView  
-            bigPosts={bigPosts}  
-            smallCards={smallCards}  
-            onSelectPost={openDetail}  
-          />  
-
-        ) : (  
-
-          <div style={noPostStyle}>  
-            Sorry! 😔 No matching post found!  
-          </div>  
-
-        )}  
-      </>  
-    )}  
-
-  </div>  
-
-  {/* FOOTER */}  
-  <Footer />  
-</>
-
-);
+      {/* FOOTER */}
+      <Footer />
+    </>
+  );
 }
 
 /* LOADER */
 const loaderWrap = {
-minHeight: "60vh",
-display: "flex",
-justifyContent: "center",
-alignItems: "center",
+  minHeight: "60vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
 };
 
 const loader = {
-width: "46px",
-height: "46px",
-border:
-"4px solid rgba(22,163,74,0.2)",
-
-borderTop: "4px solid #16a34a",
-
-borderRadius: "50%",
-
-animation:
-"spinFast 0.6s linear infinite",
-
-boxShadow:
-"0 0 12px rgba(22,163,74,0.35)",
+  width: "46px",
+  height: "46px",
+  border: "4px solid rgba(22,163,74,0.2)",
+  borderTop: "4px solid #16a34a",
+  borderRadius: "50%",
+  animation: "spinFast 0.6s linear infinite",
+  boxShadow: "0 0 12px rgba(22,163,74,0.35)",
 };
 
 /* NO POSTS */
 const noPostStyle = {
-minHeight: "40vh",
-display: "flex",
-justifyContent: "center",
-alignItems: "center",
-fontSize: "1.5rem",
-fontWeight: "600",
-color: "#555",
-textAlign: "center",
+  minHeight: "40vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  fontSize: "1.5rem",
+  fontWeight: "600",
+  color: "#555",
+  textAlign: "center",
 };
-
