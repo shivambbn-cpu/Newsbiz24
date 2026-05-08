@@ -8,7 +8,6 @@ export const metadata = {
   title: "News Biz 24",
   description: siteDescription,
   robots: "index, follow",
-
   openGraph: {
     type: "website",
     title: "News Biz 24",
@@ -23,7 +22,6 @@ export const metadata = {
       },
     ],
   },
-
   twitter: {
     card: "summary_large_image",
     title: "News Biz 24",
@@ -45,13 +43,8 @@ export default function RootLayout({ children }) {
         <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
-
-            function gtag(){
-              dataLayer.push(arguments);
-            }
-
+            function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-
             gtag('config', 'G-RRHYP5Y8ZZ', {
               page_path: window.location.pathname,
               send_page_view: true,
@@ -61,10 +54,21 @@ export default function RootLayout({ children }) {
         </Script>
       </head>
 
-      <body>{children}</body>
+      <body>
+
+        {children}
+
+        {/* 🔥 ADSTERRA SCRIPT (GLOBAL ADS) */}
+        <div
+          dangerouslySetInnerHTML={{
+            __html: `
+              <script async="async" data-cfasync="false" src="https://pl29380719.profitablecpmratenetwork.com/b9524e570677110d9322556dbe2d48a6/invoke.js"></script>
+              <div id="container-b9524e570677110d9322556dbe2d48a6"></div>
+            `,
+          }}
+        />
+
+      </body>
     </html>
   );
 }
-
-
-
