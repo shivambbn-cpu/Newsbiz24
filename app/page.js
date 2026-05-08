@@ -1,3 +1,4 @@
+
 "use client";
 import { jsPDF } from "jspdf";
 
@@ -12,21 +13,31 @@ import { db } from "../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 export default function HomePage() {
+
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
-  const [currentCategory, setCurrentCategory] = useState("astro");
+  const [currentCategory, setCurrentCategory] =
+    useState("astro");
+
   const [loading, setLoading] = useState(true);
 
-  // Ã°Å¸â€Â SEARCH STATE (HEADER SE CONNECTED)
+  // SEARCH
   const [searchText, setSearchText] = useState("");
 
-  // Ã°Å¸â€Â¥ Firestore data load
+  // FIRESTORE LOAD
   useEffect(() => {
+
     const fetchPosts = async () => {
+
       try {
+
         setLoading(true);
 
-        const colRef = collection(db, currentCategory);
+        const colRef = collection(
+          db,
+          currentCategory
+        );
+
         const snapshot = await getDocs(colRef);
 
         const data = snapshot.docs.map((doc) => ({
@@ -34,76 +45,119 @@ export default function HomePage() {
           ...doc.data(),
         }));
 
-        data.sort((a, b) => new Date(b.date) - new Date(a.date));
+        // LATEST FIRST
+        data.sort(
+          (a, b) =>
+            new Date(b.date) - new Date(a.date)
+        );
 
         setPosts(data);
+
         setSelectedPost(null);
-        setSearchText(""); // category change pe search reset
+
+        setSearchText("");
+
       } catch (err) {
-        console.error("Firestore Error:", err);
+
+        console.error(
+          "Firestore Error:",
+          err
+        );
+
       } finally {
+
         setLoading(false);
+
       }
     };
 
     fetchPosts();
+
   }, [currentCategory]);
 
-  // Ã°Å¸â€Â TITLE SEARCH LOGIC
+  // SEARCH FILTER
   const filteredPosts = posts.filter((post) =>
-    post?.title?.toLowerCase().includes(searchText.toLowerCase())
+    post?.title
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase())
   );
 
-  const openDetail = (post) => setSelectedPost(post);
-  const closeDetail = () => setSelectedPost(null);
+  // OPEN DETAIL
+  const openDetail = (post) => {
+    setSelectedPost(post);
+  };
 
-  // Cards filtered data se
-  const bigCard = filteredPosts[0];
-  const smallCards = filteredPosts.slice(1, 10);
+  // CLOSE DETAIL
+  const closeDetail = () => {
+    setSelectedPost(null);
+  };
+
+  // BIG SLIDER POSTS
+  const bigPosts = filteredPosts.slice(0, 5);
+
+  // SMALL POSTS
+  const smallCards = filteredPosts.slice(5, 15);
 
   return (
     <>
-      <Header searchText={searchText} onSearch={setSearchText} />
+      {/* HEADER */}
+      <Header
+        searchText={searchText}
+        onSearch={setSearchText}
+      />
 
-      <SideMenu onCategorySelect={setCurrentCategory} />
+      {/* SIDE MENU */}
+      <SideMenu
+        onCategorySelect={setCurrentCategory}
+      />
 
       <div className="content-wrapper">
-        {/* Ã°Å¸â€â€ž Loader */}
+
+        {/* LOADER */}
         {loading && (
           <div style={loaderWrap}>
             <div style={loader}></div>
           </div>
         )}
 
-        {/* DetailView */}
+        {/* DETAIL PAGE */}
         {!loading && selectedPost && (
-          <DetailView post={selectedPost} onClose={closeDetail} />
+          <DetailView
+            post={selectedPost}
+            onClose={closeDetail}
+          />
         )}
 
-        {/* HomeView or No matching posts */}
+        {/* HOME PAGE */}
         {!loading && !selectedPost && (
           <>
             {filteredPosts.length > 0 ? (
+
               <HomeView
-                bigCard={bigCard}
+                bigPosts={bigPosts}
                 smallCards={smallCards}
                 onSelectPost={openDetail}
               />
+
             ) : (
+
               <div style={noPostStyle}>
-                Sorry.! Ã°Å¸Ëœâ€Ã°Å¸Ëœâ€ No matching post found.!
+                Sorry! 😔 No matching post found!
               </div>
+
             )}
           </>
         )}
+
       </div>
 
+      {/* FOOTER */}
       <Footer />
     </>
   );
 }
 
-/* Ã°Å¸â€Âµ Loader Styles */
+/* LOADER */
 const loaderWrap = {
   minHeight: "60vh",
   display: "flex",
@@ -114,14 +168,21 @@ const loaderWrap = {
 const loader = {
   width: "46px",
   height: "46px",
-  border: "4px solid rgba(22,163,74,0.2)",
+  border:
+    "4px solid rgba(22,163,74,0.2)",
+
   borderTop: "4px solid #16a34a",
+
   borderRadius: "50%",
-  animation: "spinFast 0.6s linear infinite",
-  boxShadow: "0 0 12px rgba(22,163,74,0.35)",
+
+  animation:
+    "spinFast 0.6s linear infinite",
+
+  boxShadow:
+    "0 0 12px rgba(22,163,74,0.35)",
 };
 
-/* Ã°Å¸â€Â¹ No matching post style */
+/* NO POSTS */
 const noPostStyle = {
   minHeight: "40vh",
   display: "flex",
@@ -133,6 +194,7 @@ const noPostStyle = {
   textAlign: "center",
 };
 
+  
 
 
     
