@@ -1,70 +1,165 @@
 "use client";
+import { jsPDF } from "jspdf";
 
-import Image from "next/image";
-import { memo, useCallback } from "react";
+import { useState, useEffect } from "react";
+import Header from "./components/Header";
+import SideMenu from "./components/SideMenu";
+import HomeView from "./components/HomeView";
+import DetailView from "./components/DetailView";
+import Footer from "./components/Footer";
 
-function BigPostCard({ post, onSelectPost }) {
-  if (!post) return null;
+import { db } from "../lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
-  const handleClick = useCallback(() => {
-    onSelectPost(post);
-  }, [post, onSelectPost]);
+export default function HomePage() {
+  const [posts, setPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [currentCategory, setCurrentCategory] = useState("astro");
+  const [loading, setLoading] = useState(true);
 
-  // ✅ Safe image URL
-  const imageUrl =
-    typeof post.image === "string" && post.image.trim() !== ""
-      ? post.image.trim()
-      : null;
+  // SEARCH
+  const [searchText, setSearchText] = useState("");
 
-  // ✅ Safe date (Firestore + normal)
-  const postDate = post?.date?.toDate
-    ? post.date.toDate()
-    : post?.date
-    ? new Date(post.date)
-    : null;
+  // Firestore data load
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+
+        const colRef = collection(db, currentCategory);
+        const snapshot = await getDocs(colRef);
+
+        const data = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        // Latest first
+        data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        setPosts(data);
+        setSelectedPost(null);
+        setSearchText("");
+      } catch (err) {
+        console.error("Firestore Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [currentCategory]);
+
+  // SEARCH FILTER
+  const filteredPosts = posts.filter((post) =>
+    post?.title
+      ?.toLowerCase()
+      .includes(searchText.toLowerCase())
+  );
+
+  // OPEN DETAIL
+  const openDetail = (post) => {
+    setSelectedPost(post);
+  };
+
+  // CLOSE DETAIL
+  const closeDetail = () => {
+    setSelectedPost(null);
+  };
+
+  // BIG SLIDER POSTS
+  const bigPosts = filteredPosts.slice(0, 5);
+
+  // SMALL POSTS
+  const smallCards = filteredPosts.slice(5, 15);
 
   return (
-    <div className="big-card post-card" onClick={handleClick}>
-      {/* Image */}
-      {imageUrl && (
-        <Image
-          src={imageUrl}
-          alt={post.title}
-          width={800}
-          height={450}
-          priority
-          className="big-img"
-        />
-      )}
+    <>
+      {/* Header */}
+      <Header
+        searchText={searchText}
+        onSearch={setSearchText}
+      />
 
-      <div className="big-details">
-        {/* ✅ TITLE → h3 (CSS match) */}
-        <h3>{post.title}</h3>
+      {/* Side Menu */}
+      <SideMenu
+        onCategorySelect={setCurrentCategory}
+      />
 
-        {/* ✅ CONTENT → p (CSS match) */}
-        <p
-          dangerouslySetInnerHTML={{
-            __html:
-              ((post.content || "")
-                .substring(0, 150)
-                .replace(/\n/g, "<br />")) + "...",
-          }}
-        />
+      <div className="content-wrapper">
 
-        {/* ✅ DATE → className match */}
-        {postDate && (
-          <small className="post-date-info">
-            Posted on :{" "}
-            {postDate.toLocaleDateString("en-IN", {
-              day: "2-digit",
-              month: "long",
-              year: "numeric",
-            })}
-          </small>
+        {/* Loader */}
+        {loading && (
+          <div style={loaderWrap}>
+            <div style={loader}></div>
+          </div>
+        )}
+
+        {/* Detail Page */}
+        {!loading && selectedPost && (
+          <DetailView
+            post={selectedPost}
+            onClose={closeDetail}
+          />
+        )}
+
+        {/* Homepage */}
+        {!loading && !selectedPost && (
+          <>
+            {filteredPosts.length > 0 ? (
+
+              <HomeView
+                bigPosts={bigPosts}
+                smallCards={smallCards}
+                onSelectPost={openDetail}
+              />
+
+            ) : (
+
+              <div style={noPostStyle}>
+                Sorry! 😔 No matching post found!
+              </div>
+
+            )}
+          </>
         )}
       </div>
-    </div>
+
+      {/* Footer */}
+      <Footer />
+    </>
   );
 }
 
-export default memo(BigPostCard);
+/* Loader Styles */
+const loaderWrap = {
+  minHeight: "60vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const loader = {
+  width: "46px",
+  height: "46px",
+  border: "4px solid rgba(22,163,74,0.2)",
+  borderTop: "4px solid #16a34a",
+  borderRadius: "50%",
+  animation: "spinFast 0.6s linear infinite",
+  boxShadow: "0 0 12px rgba(22,163,74,0.35)",
+};
+
+/* No post style */
+const noPostStyle = {
+  minHeight: "40vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  fontSize: "1.5rem",
+  fontWeight: "600",
+  color: "#555",
+  textAlign: "center",
+};
+
+
+          
