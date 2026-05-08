@@ -1,4 +1,3 @@
-
 "use client";
 import { jsPDF } from "jspdf";
 
@@ -13,188 +12,125 @@ import { db } from "../lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 export default function HomePage() {
+const [posts, setPosts] = useState([]);
+const [selectedPost, setSelectedPost] = useState(null);
+const [currentCategory, setCurrentCategory] = useState("astro");
+const [loading, setLoading] = useState(true);
 
-  const [posts, setPosts] = useState([]);
-  const [selectedPost, setSelectedPost] = useState(null);
-  const [currentCategory, setCurrentCategory] =
-    useState("astro");
+// Ã°Å¸â€Â SEARCH STATE (HEADER SE CONNECTED)
+const [searchText, setSearchText] = useState("");
 
-  const [loading, setLoading] = useState(true);
+// Ã°Å¸â€Â¥ Firestore data load
+useEffect(() => {
+const fetchPosts = async () => {
+try {
+setLoading(true);
 
-  // SEARCH
-  const [searchText, setSearchText] = useState("");
+const colRef = collection(db, currentCategory);  
+    const snapshot = await getDocs(colRef);  
 
-  // FIRESTORE LOAD
-  useEffect(() => {
+    const data = snapshot.docs.map((doc) => ({  
+      id: doc.id,  
+      ...doc.data(),  
+    }));  
 
-    const fetchPosts = async () => {
+    data.sort((a, b) => new Date(b.date) - new Date(a.date));  
 
-      try {
+    setPosts(data);  
+    setSelectedPost(null);  
+    setSearchText(""); // category change pe search reset  
+  } catch (err) {  
+    console.error("Firestore Error:", err);  
+  } finally {  
+    setLoading(false);  
+  }  
+};  
 
-        setLoading(true);
+fetchPosts();
 
-        const colRef = collection(
-          db,
-          currentCategory
-        );
+}, [currentCategory]);
 
-        const snapshot = await getDocs(colRef);
+// Ã°Å¸â€Â TITLE SEARCH LOGIC
+const filteredPosts = posts.filter((post) =>
+post?.title?.toLowerCase().includes(searchText.toLowerCase())
+);
 
-        const data = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+const openDetail = (post) => setSelectedPost(post);
+const closeDetail = () => setSelectedPost(null);
 
-        // LATEST FIRST
-        data.sort(
-          (a, b) =>
-            new Date(b.date) - new Date(a.date)
-        );
+// Cards filtered data se
+const bigCard = filteredPosts[0];
+const smallCards = filteredPosts.slice(1, 10);
 
-        setPosts(data);
+return (
+<>
+<Header searchText={searchText} onSearch={setSearchText} />
 
-        setSelectedPost(null);
+<SideMenu onCategorySelect={setCurrentCategory} />  
 
-        setSearchText("");
+  <div className="content-wrapper">  
+    {/* Ã°Å¸â€â€ž Loader */}  
+    {loading && (  
+      <div style={loaderWrap}>  
+        <div style={loader}></div>  
+      </div>  
+    )}  
 
-      } catch (err) {
+    {/* DetailView */}  
+    {!loading && selectedPost && (  
+      <DetailView post={selectedPost} onClose={closeDetail} />  
+    )}  
 
-        console.error(
-          "Firestore Error:",
-          err
-        );
+    {/* HomeView or No matching posts */}  
+    {!loading && !selectedPost && (  
+      <>  
+        {filteredPosts.length > 0 ? (  
+          <HomeView  
+            bigCard={bigCard}  
+            smallCards={smallCards}  
+            onSelectPost={openDetail}  
+          />  
+        ) : (  
+          <div style={noPostStyle}>  
+            Sorry.! Ã°Å¸Ëœâ€Ã°Å¸Ëœâ€ No matching post found.!  
+          </div>  
+        )}  
+      </>  
+    )}  
+  </div>  
 
-      } finally {
+  <Footer />  
+</>
 
-        setLoading(false);
-
-      }
-    };
-
-    fetchPosts();
-
-  }, [currentCategory]);
-
-  // SEARCH FILTER
-  const filteredPosts = posts.filter((post) =>
-    post?.title
-      ?.toLowerCase()
-      .includes(searchText.toLowerCase())
-  );
-
-  // OPEN DETAIL
-  const openDetail = (post) => {
-    setSelectedPost(post);
-  };
-
-  // CLOSE DETAIL
-  const closeDetail = () => {
-    setSelectedPost(null);
-  };
-
-  // BIG SLIDER POSTS
-  const bigPosts = filteredPosts.slice(0, 5);
-
-  // SMALL POSTS
-  const smallCards = filteredPosts.slice(5, 15);
-
-  return (
-    <>
-      {/* HEADER */}
-      <Header
-        searchText={searchText}
-        onSearch={setSearchText}
-      />
-
-      {/* SIDE MENU */}
-      <SideMenu
-        onCategorySelect={setCurrentCategory}
-      />
-
-      <div className="content-wrapper">
-
-        {/* LOADER */}
-        {loading && (
-          <div style={loaderWrap}>
-            <div style={loader}></div>
-          </div>
-        )}
-
-        {/* DETAIL PAGE */}
-        {!loading && selectedPost && (
-          <DetailView
-            post={selectedPost}
-            onClose={closeDetail}
-          />
-        )}
-
-        {/* HOME PAGE */}
-        {!loading && !selectedPost && (
-          <>
-            {filteredPosts.length > 0 ? (
-
-              <HomeView
-                bigPosts={bigPosts}
-                smallCards={smallCards}
-                onSelectPost={openDetail}
-              />
-
-            ) : (
-
-              <div style={noPostStyle}>
-                Sorry! 😔 No matching post found!
-              </div>
-
-            )}
-          </>
-        )}
-
-      </div>
-
-      {/* FOOTER */}
-      <Footer />
-    </>
-  );
+);
 }
 
-/* LOADER */
+/* Ã°Å¸â€Âµ Loader Styles */
 const loaderWrap = {
-  minHeight: "60vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
+minHeight: "60vh",
+display: "flex",
+justifyContent: "center",
+alignItems: "center",
 };
 
 const loader = {
-  width: "46px",
-  height: "46px",
-  border:
-    "4px solid rgba(22,163,74,0.2)",
-
-  borderTop: "4px solid #16a34a",
-
-  borderRadius: "50%",
-
-  animation:
-    "spinFast 0.6s linear infinite",
-
-  boxShadow:
-    "0 0 12px rgba(22,163,74,0.35)",
+width: "46px",
+height: "46px",
+border: "4px solid rgba(22,163,74,0.2)",
+borderTop: "4px solid #16a34a",
+borderRadius: "50%",
+animation: "spinFast 0.6s linear infinite",
+boxShadow: "0 0 12px rgba(22,163,74,0.35)",
 };
 
-/* NO POSTS */
+/* Ã°Å¸â€Â¹ No matching post style */
 const noPostStyle = {
-  minHeight: "40vh",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  fontSize: "1.5rem",
-  fontWeight: "600",
-  color: "#555",
-  textAlign: "center",
+minHeight: "40vh",
+display: "flex",
+justifyContent: "center",
+alignItems: "center",
+fontSize: "1.5rem",
+fontWeight: "600",
+color: "#555",
+textAlign: "center",
 };
-
-  
-
-
-    
