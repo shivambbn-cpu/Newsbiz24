@@ -4,30 +4,39 @@ import BigPostCard from "./BigCard";
 import SmallPostCard from "./SmallCard";
 
 export default function HomeView({
-  bigCard,
+  bigPosts,
   smallCards,
   onSelectPost,
 }) {
+
   return (
     <div className="home-view">
-      {bigCard && (
+
+      {/* TOP SLIDER */}
+      {bigPosts?.length > 0 && (
         <BigPostCard
-          post={bigCard}
-          onSelectPost={() => onSelectPost(bigCard)}
+          posts={bigPosts}
+          onSelectPost={onSelectPost}
         />
       )}
 
+      {/* SMALL POSTS */}
       <div className="small-cards-container">
+
         {smallCards?.map((post) => (
+
           <SmallPostCard
             key={post.id}
             post={post}
-            onSelectPost={() => onSelectPost(post)}
+            onSelectPost={() =>
+              onSelectPost(post)
+            }
           />
+
         ))}
+
       </div>
+
     </div>
   );
 }
-
-              
