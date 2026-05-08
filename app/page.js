@@ -1,5 +1,6 @@
 "use client";
 import { jsPDF } from "jspdf";
+import Script from "next/script"; // ✅ ADDED
 
 import { useState, useEffect } from "react";
 import Header from "./components/Header";
@@ -15,29 +16,18 @@ export default function HomePage() {
 
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
-
-  const [currentCategory, setCurrentCategory] =
-    useState("astro");
-
+  const [currentCategory, setCurrentCategory] = useState("astro");
   const [loading, setLoading] = useState(true);
-
-  // SEARCH
   const [searchText, setSearchText] = useState("");
 
-  // FIRESTORE LOAD
   useEffect(() => {
 
     const fetchPosts = async () => {
 
       try {
-
         setLoading(true);
 
-        const colRef = collection(
-          db,
-          currentCategory
-        );
-
+        const colRef = collection(db, currentCategory);
         const snapshot = await getDocs(colRef);
 
         const data = snapshot.docs.map((doc) => ({
@@ -45,29 +35,19 @@ export default function HomePage() {
           ...doc.data(),
         }));
 
-        // LATEST FIRST
         data.sort(
           (a, b) =>
             new Date(b.date) - new Date(a.date)
         );
 
         setPosts(data);
-
         setSelectedPost(null);
-
         setSearchText("");
 
       } catch (err) {
-
-        console.error(
-          "Firestore Error:",
-          err
-        );
-
+        console.error("Firestore Error:", err);
       } finally {
-
         setLoading(false);
-
       }
     };
 
@@ -75,27 +55,14 @@ export default function HomePage() {
 
   }, [currentCategory]);
 
-  // SEARCH FILTER
   const filteredPosts = posts.filter((post) =>
-    post?.title
-      ?.toLowerCase()
-      .includes(searchText.toLowerCase())
+    post?.title?.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  // OPEN DETAIL
-  const openDetail = (post) => {
-    setSelectedPost(post);
-  };
+  const openDetail = (post) => setSelectedPost(post);
+  const closeDetail = () => setSelectedPost(null);
 
-  // CLOSE DETAIL
-  const closeDetail = () => {
-    setSelectedPost(null);
-  };
-
-  // BIG SLIDER POSTS (LATEST 3)
   const bigPosts = filteredPosts.slice(0, 3);
-
-  // SMALL POSTS
   const smallCards = filteredPosts.slice(3, 15);
 
   return (
@@ -132,19 +99,15 @@ export default function HomePage() {
         {!loading && !selectedPost && (
           <>
             {filteredPosts.length > 0 ? (
-
               <HomeView
                 bigPosts={bigPosts}
                 smallCards={smallCards}
                 onSelectPost={openDetail}
               />
-
             ) : (
-
               <div style={noPostStyle}>
                 Sorry! 😔 No matching post found!
               </div>
-
             )}
           </>
         )}
@@ -153,6 +116,13 @@ export default function HomePage() {
 
       {/* FOOTER */}
       <Footer />
+
+      {/* 🔥 ADSTERRA SCRIPT (MAIN ADDITION) */}
+      <Script
+        src="https://pl29380722.profitablecpmratenetwork.com/e6/5f/d5/e65fd505ce60a13973fe2ba4b6554740.js"
+        strategy="afterInteractive"
+      />
+
     </>
   );
 }
@@ -168,18 +138,11 @@ const loaderWrap = {
 const loader = {
   width: "46px",
   height: "46px",
-  border:
-    "4px solid rgba(22,163,74,0.2)",
-
+  border: "4px solid rgba(22,163,74,0.2)",
   borderTop: "4px solid #16a34a",
-
   borderRadius: "50%",
-
-  animation:
-    "spinFast 0.6s linear infinite",
-
-  boxShadow:
-    "0 0 12px rgba(22,163,74,0.35)",
+  animation: "spinFast 0.6s linear infinite",
+  boxShadow: "0 0 12px rgba(22,163,74,0.35)",
 };
 
 /* NO POSTS */
@@ -193,8 +156,3 @@ const noPostStyle = {
   color: "#555",
   textAlign: "center",
 };
-
-
-
-
-      
