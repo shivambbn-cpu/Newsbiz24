@@ -92,11 +92,11 @@ export default function HomePage() {
     setSelectedPost(null);
   };
 
-  // BIG SLIDER POSTS (LATEST 5)
-  const bigPosts = filteredPosts.slice(0, 5);
+  // BIG SLIDER POSTS (LATEST 3)
+  const bigPosts = filteredPosts.slice(0, 3);
 
   // SMALL POSTS
-  const smallCards = filteredPosts.slice(5, 15);
+  const smallCards = filteredPosts.slice(3, 15);
 
   return (
     <>
